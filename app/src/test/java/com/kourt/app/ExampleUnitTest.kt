@@ -1,4 +1,4 @@
-package com.example.kourt
+package com.kourt.app
 
 import org.junit.Test
 

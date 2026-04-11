@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "109773853321",
+    "project_id": "kourt-5c277",
+    "storage_bucket": "kourt-5c277.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:109773853321:android:0abaf4826f386487d0ac58",
+        "android_client_info": {
+          "package_name": "com.kourt.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCLncDYjTCRaSUQ341TffJ0OOQAVcd2e8M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

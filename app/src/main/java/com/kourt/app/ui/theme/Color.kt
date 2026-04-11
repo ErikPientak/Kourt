@@ -1,4 +1,4 @@
-package com.example.kourt.ui.theme
+package com.kourt.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

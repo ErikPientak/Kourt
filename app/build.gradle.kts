@@ -4,15 +4,15 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.android)
-    // alias(libs.plugins.google.services) — uncomment after adding google-services.json
+    alias(libs.plugins.google.services)
 }
 
 android {
-    namespace = "com.example.kourt"
+    namespace = "com.kourt.app"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.kourt"
+        applicationId = "com.kourt.app"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
