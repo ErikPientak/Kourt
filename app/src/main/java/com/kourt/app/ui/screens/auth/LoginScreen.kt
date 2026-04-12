@@ -56,6 +56,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kourt.app.R
+import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.KourtButton
 import com.kourt.app.ui.theme.DarkPlaceholder
 import com.kourt.app.ui.theme.KourtTheme
@@ -63,11 +64,7 @@ import com.kourt.app.ui.theme.LightPlaceholder
 
 @Composable
 fun LoginScreen(
-    modifier: Modifier = Modifier,
-    onLoginClick: (email: String, password: String) -> Unit = { _, _ -> },
-    onGoogleSignInClick: () -> Unit = {},
-    onNavigateToRegister: () -> Unit = {},
-    onForgotPasswordClick: () -> Unit = {},
+    navigation: INavigationRouter,
 ) {
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
@@ -80,7 +77,7 @@ fun LoginScreen(
     val iconContainerColor = if (isDark) Color(0x003A3633) else Color(0x774B2500)
 
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
@@ -183,7 +180,7 @@ fun LoginScreen(
                         append(stringResource(R.string.auth_forgot_password))
                     }
                 },
-                onClick = { onForgotPasswordClick() },
+                onClick = { },
             )
         }
 
@@ -235,7 +232,7 @@ fun LoginScreen(
         // Log In button
         KourtButton(
             text = stringResource(R.string.auth_login_button),
-            onClick = { onLoginClick(email, password) },
+            onClick = { },
             modifier = Modifier.fillMaxWidth(),
         )
 
@@ -243,7 +240,7 @@ fun LoginScreen(
 
         // Sign in with Google button
         OutlinedButton(
-            onClick = onGoogleSignInClick,
+            onClick = { },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
@@ -296,7 +293,7 @@ fun LoginScreen(
                     append(stringResource(R.string.auth_create_account))
                 }
             },
-            onClick = { onNavigateToRegister() },
+            onClick = { navigation.navigateToRegisterScreen() },
             modifier = Modifier.align(Alignment.CenterHorizontally),
         )
 
@@ -387,22 +384,3 @@ internal fun GoogleLogo(modifier: Modifier = Modifier) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// Previews
-// ---------------------------------------------------------------------------
-
-@Preview(showBackground = true, backgroundColor = 0xFF1C1917, name = "Login — Dark")
-@Composable
-private fun LoginScreenDarkPreview() {
-    KourtTheme(darkTheme = true) {
-        LoginScreen()
-    }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF, name = "Login — Light")
-@Composable
-private fun LoginScreenLightPreview() {
-    KourtTheme(darkTheme = false) {
-        LoginScreen()
-    }
-}

@@ -41,33 +41,6 @@ fun KourtButton(
         contentAlignment = Alignment.Center,
         modifier = modifier.height(80.dp),  // 52dp button + 14dp glow room top & bottom
     ) {
-        if (isDark) {
-            // Outermost glow layer — widest, most transparent
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(160.dp)
-                    .clip(KourtButtonShape)
-                    .background(primaryColor.copy(alpha = 0.95f))
-            )
-            // Middle glow layer
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(66.dp)
-                    .clip(KourtButtonShape)
-                    .background(primaryColor.copy(alpha = 0.25f))
-            )
-            // Inner glow layer — tightest, most opaque
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(58.dp)
-                    .clip(KourtButtonShape)
-                    .background(primaryColor.copy(alpha = 0.35f))
-            )
-        }
-
         Button(
             onClick = onClick,
             modifier = Modifier
@@ -97,30 +70,4 @@ fun KourtButton(
     }
 }
 
-// ---------------------------------------------------------------------------
-// Previews
-// ---------------------------------------------------------------------------
 
-@Preview(showBackground = true, backgroundColor = 0xFF1C1917, name = "KourtButton — Dark")
-@Composable
-private fun KourtButtonDarkPreview() {
-    KourtTheme(darkTheme = true) {
-        KourtButton(text = "Log In", onClick = {}, modifier = Modifier.fillMaxWidth())
-    }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF, name = "KourtButton — Light")
-@Composable
-private fun KourtButtonLightPreview() {
-    KourtTheme(darkTheme = false) {
-        KourtButton(text = "Log In", onClick = {}, modifier = Modifier.fillMaxWidth())
-    }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFF1C1917, name = "KourtButton — Disabled Dark")
-@Composable
-private fun KourtButtonDisabledDarkPreview() {
-    KourtTheme(darkTheme = true) {
-        KourtButton(text = "Log In", onClick = {}, modifier = Modifier.fillMaxWidth(), enabled = false)
-    }
-}

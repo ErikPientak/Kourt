@@ -42,6 +42,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kourt.app.R
+import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.KourtButton
 import com.kourt.app.ui.theme.DarkPlaceholder
 import com.kourt.app.ui.theme.KourtTheme
@@ -49,10 +50,9 @@ import com.kourt.app.ui.theme.LightPlaceholder
 
 @Composable
 fun RegisterScreen(
-    modifier: Modifier = Modifier,
-    onSignUpClick: (fullName: String, email: String, password: String) -> Unit = { _, _, _ -> },
-    onNavigateToLogin: () -> Unit = {},
-) {
+    navigation: INavigationRouter,
+
+    ) {
     var fullName by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
@@ -64,7 +64,7 @@ fun RegisterScreen(
     val placeholderColor = if (isDark) DarkPlaceholder else LightPlaceholder
 
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
@@ -257,7 +257,7 @@ fun RegisterScreen(
         // Sign Up button
         KourtButton(
             text = stringResource(R.string.auth_signup_button),
-            onClick = { onSignUpClick(fullName, email, password) },
+            onClick = { },
             modifier = Modifier.fillMaxWidth(),
         )
 
@@ -287,7 +287,7 @@ fun RegisterScreen(
                     append(stringResource(R.string.auth_login_button))
                 }
             },
-            onClick = { onNavigateToLogin() },
+            onClick = { navigation.navigateToLoginScreen() },
             modifier = Modifier.align(Alignment.CenterHorizontally),
         )
 
@@ -295,22 +295,3 @@ fun RegisterScreen(
     }
 }
 
-// ---------------------------------------------------------------------------
-// Previews
-// ---------------------------------------------------------------------------
-
-@Preview(showBackground = true, backgroundColor = 0xFF1C1917, name = "Register — Dark")
-@Composable
-private fun RegisterScreenDarkPreview() {
-    KourtTheme(darkTheme = true) {
-        RegisterScreen()
-    }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF, name = "Register — Light")
-@Composable
-private fun RegisterScreenLightPreview() {
-    KourtTheme(darkTheme = false) {
-        RegisterScreen()
-    }
-}
