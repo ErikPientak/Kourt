@@ -1,0 +1,316 @@
+package com.kourt.app.ui.screens.auth
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.kourt.app.R
+import com.kourt.app.ui.components.KourtButton
+import com.kourt.app.ui.theme.DarkPlaceholder
+import com.kourt.app.ui.theme.KourtTheme
+import com.kourt.app.ui.theme.LightPlaceholder
+
+@Composable
+fun RegisterScreen(
+    modifier: Modifier = Modifier,
+    onSignUpClick: (fullName: String, email: String, password: String) -> Unit = { _, _, _ -> },
+    onNavigateToLogin: () -> Unit = {},
+) {
+    var fullName by rememberSaveable { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
+    var confirmPassword by rememberSaveable { mutableStateOf("") }
+    var passwordVisible by rememberSaveable { mutableStateOf(false) }
+    var confirmPasswordVisible by rememberSaveable { mutableStateOf(false) }
+
+    val isDark = isSystemInDarkTheme()
+    val placeholderColor = if (isDark) DarkPlaceholder else LightPlaceholder
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.Start,
+    ) {
+        Spacer(modifier = Modifier.height(64.dp))
+
+        // "Join" — orange
+        Text(
+            text = stringResource(R.string.auth_join),
+            style = MaterialTheme.typography.displayMedium,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        // "Kourt" — white (on the next line, visually continuous with "Join")
+        Text(
+            text = stringResource(R.string.app_name),
+            style = MaterialTheme.typography.displayMedium,
+            color = MaterialTheme.colorScheme.primary,
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Subtitle
+        Text(
+            text = stringResource(R.string.auth_register_subtitle),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+
+        Spacer(modifier = Modifier.height(36.dp))
+
+        // Full Name field
+        AuthFieldLabel(label = stringResource(R.string.auth_full_name_label))
+        Spacer(modifier = Modifier.height(6.dp))
+        OutlinedTextField(
+            value = fullName,
+            onValueChange = { fullName = it },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = {
+                Text(
+                    text = stringResource(R.string.auth_full_name_placeholder),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = placeholderColor,
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                capitalization = KeyboardCapitalization.Words,
+                imeAction = ImeAction.Next,
+            ),
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp),
+            colors = authTextFieldColors(placeholderColor = placeholderColor),
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Email field
+        AuthFieldLabel(label = stringResource(R.string.auth_email_label))
+        Spacer(modifier = Modifier.height(6.dp))
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = {
+                Text(
+                    text = stringResource(R.string.auth_email_placeholder),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = placeholderColor,
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Email,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next,
+            ),
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp),
+            colors = authTextFieldColors(placeholderColor = placeholderColor),
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Password field
+        AuthFieldLabel(label = stringResource(R.string.auth_password_label))
+        Spacer(modifier = Modifier.height(6.dp))
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = {
+                Text(
+                    text = stringResource(R.string.auth_password_placeholder),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = placeholderColor,
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Lock,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            },
+            trailingIcon = {
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(
+                        painter = painterResource(
+                            id = if (passwordVisible) R.drawable.visibility_off else R.drawable.visibility
+                        ),
+                        contentDescription = stringResource(
+                            if (passwordVisible) R.string.auth_password_hide else R.string.auth_password_show
+                        ),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            },
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Next,
+            ),
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp),
+            colors = authTextFieldColors(placeholderColor = placeholderColor),
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Confirm Password field
+        AuthFieldLabel(label = stringResource(R.string.auth_confirm_password_label))
+        Spacer(modifier = Modifier.height(6.dp))
+        OutlinedTextField(
+            value = confirmPassword,
+            onValueChange = { confirmPassword = it },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = {
+                Text(
+                    text = stringResource(R.string.auth_confirm_password_placeholder),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = placeholderColor,
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Lock,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            },
+            trailingIcon = {
+                IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                    Icon(
+                        painter = painterResource(
+                            id = if (confirmPasswordVisible) R.drawable.visibility_off else R.drawable.visibility
+                        ),
+                        contentDescription = stringResource(
+                            if (confirmPasswordVisible) R.string.auth_password_hide else R.string.auth_password_show
+                        ),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            },
+            visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done,
+            ),
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp),
+            colors = authTextFieldColors(placeholderColor = placeholderColor),
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Sign Up button
+        KourtButton(
+            text = stringResource(R.string.auth_signup_button),
+            onClick = { onSignUpClick(fullName, email, password) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        Spacer(modifier = Modifier.height(36.dp))
+
+        // "Already have an account? Log In" footer
+        ClickableText(
+            text = buildAnnotatedString {
+                withStyle(
+                    SpanStyle(
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                        fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
+                    )
+                ) {
+                    append(stringResource(R.string.auth_have_account))
+                    append("  ")
+                }
+                withStyle(
+                    SpanStyle(
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                        fontWeight = MaterialTheme.typography.labelMedium.fontWeight,
+                        fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
+                    )
+                ) {
+                    append(stringResource(R.string.auth_login_button))
+                }
+            },
+            onClick = { onNavigateToLogin() },
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+        )
+
+        Spacer(modifier = Modifier.height(40.dp))
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Previews
+// ---------------------------------------------------------------------------
+
+@Preview(showBackground = true, backgroundColor = 0xFF1C1917, name = "Register — Dark")
+@Composable
+private fun RegisterScreenDarkPreview() {
+    KourtTheme(darkTheme = true) {
+        RegisterScreen()
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF, name = "Register — Light")
+@Composable
+private fun RegisterScreenLightPreview() {
+    KourtTheme(darkTheme = false) {
+        RegisterScreen()
+    }
+}

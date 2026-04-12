@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Kourt</string>
+    <string name="web_client_id">109773853321-9g237i8e2e9n7q6ldfnc887ll6vn0i1d.apps.googleusercontent.com</string>
+
+    <string name="app_icon_content_desc">Ikona aplikace Kourt</string>
+    <string name="app_tagline">Posuňte správu svých zápasů na vyšší úroveň</string>
+
+    <string name="auth_email_label">E-mailová adresa</string>
+    <string name="auth_email_placeholder">trener@tym.cz</string>
+    <string name="auth_password_label">Heslo</string>
+    <string name="auth_password_placeholder">••••••••</string>
+    <string name="auth_password_show">Zobrazit heslo</string>
+    <string name="auth_password_hide">Skrýt heslo</string>
+
+    <string name="auth_forgot_password">Zapomněli jste?</string>
+    <string name="auth_login_button">Přihlásit se</string>
+    <string name="auth_sign_in_google">Přihlásit se přes Google</string>
+    <string name="auth_no_account">Poprvé na hřišti?</string>
+    <string name="auth_create_account">Vytvořit účet</string>
+
+    <string name="auth_join">Přidat se</string>
+    <string name="auth_register_subtitle">Vytvořte si účet a začněte spravovat své hřiště.</string>
+    <string name="auth_full_name_label">Celé jméno</string>
+    <string name="auth_full_name_placeholder">Zadejte své celé jméno</string>
+    <string name="auth_confirm_password_label">Potvrdit heslo</string>
+    <string name="auth_confirm_password_placeholder">Znovu zadejte heslo</string>
+    <string name="auth_signup_button">Zaregistrovat se</string>
+    <string name="auth_have_account">Už máte účet?</string>
+</resources>

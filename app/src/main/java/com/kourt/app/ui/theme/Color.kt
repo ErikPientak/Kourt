@@ -2,10 +2,25 @@ package com.kourt.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Brand
+val OrangeDark = Color(0xFFFF5A25)
+val OrangeLight = Color(0xFFF2800E)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+// Dark theme
+val DarkBackground = Color(0xFF1C1917)
+val DarkSurface = Color(0xFF292524)
+val DarkOnBackground = Color(0xFFFFFFFF)
+val DarkOnSurface = Color(0xFFFFFFFF)
+val DarkPlaceholder = Color(0xFF6B7280)
+val DarkOutline = Color(0xFF334155)
+
+// Light theme
+val LightBackground = Color(0xFFFFFFFF)
+val LightSurface = Color(0xFFEEF0F8)
+val LightOnBackground = Color(0xFF000000)
+val LightOnSurface = Color(0xFF000000)
+val LightPlaceholder = Color(0xFF64748B)
+val LightOutline = Color(0xFFE6E6E6)
+
+// Shared
+val White = Color(0xFFFFFFFF)
