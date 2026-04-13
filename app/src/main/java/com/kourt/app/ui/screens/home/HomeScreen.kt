@@ -33,14 +33,30 @@ fun HomeScreen(
             onClick = { navigation.navigateToLoginScreen() },
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text(text = "Go to Login")
+            Text(
+                text = "Go to Login",
+                style = MaterialTheme.typography.labelLarge,
+            )
         }
 
         Button(
             onClick = { navigation.navigateToRegisterScreen() },
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text(text = "Go to Register")
+            Text(
+                text = "Go to Register",
+                style = MaterialTheme.typography.labelLarge,
+            )
+        }
+
+        Button(
+            onClick = { navigation.navigateToSetupScreen() },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                text = "Go to Setup",
+                style = MaterialTheme.typography.labelLarge,
+            )
         }
 
         Button(
@@ -54,7 +70,10 @@ fun HomeScreen(
                 containerColor = MaterialTheme.colorScheme.error,
             ),
         ) {
-            Text(text = "Delete User")
+            Text(
+                text = "Delete User",
+                style = MaterialTheme.typography.labelLarge,
+            )
         }
     }
 }

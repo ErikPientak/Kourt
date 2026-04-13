@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import com.kourt.app.ui.screens.auth.login.LoginScreen
 import com.kourt.app.ui.screens.auth.register.RegisterScreen
 import com.kourt.app.ui.screens.home.HomeScreen
+import com.kourt.app.ui.screens.setup.SetupScreen
 
 @Composable
 fun NavGraph(
@@ -33,6 +34,10 @@ fun NavGraph(
 
         composable(route = Destination.HomeScreen.route) {
             HomeScreen(navigation = navigation)
+        }
+
+        composable(route = Destination.SetupScreen.route) {
+            SetupScreen(navigation = navigation)
         }
 
     }

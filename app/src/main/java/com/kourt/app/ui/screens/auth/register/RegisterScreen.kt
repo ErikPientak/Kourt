@@ -268,7 +268,7 @@ fun RegisterScreen(
             Text(
                 text = uiState.error,
                 color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 12.dp),

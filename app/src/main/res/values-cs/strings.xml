@@ -13,6 +13,19 @@
     <string name="auth_password_show">Zobrazit heslo</string>
     <string name="auth_password_hide">Skrýt heslo</string>
 
+    <!-- Setup -->
+    <string name="setup_greeting">Rádi tě tu vidíme!</string>
+    <string name="setup_title">Nastavení</string>
+    <string name="setup_subtitle">Vyber si, jak chceš na hřišti pokračovat.</string>
+    <string name="setup_description">Teď musíme nastavit tvůj klub. Jsi trenér, nebo se k někomu přidáváš?</string>
+    <string name="setup_create_club_title">Vytvořit nový klub</string>
+    <string name="setup_create_club_subtitle">Jsi trenér? Sestav si soupisku, plánuj tréninky a zápasy.</string>
+    <string name="setup_create_club_button">Vytvořit klub</string>
+    <string name="setup_join_team_title">Přidat se k týmu</string>
+    <string name="setup_join_team_subtitle">Máš kód od svého trenéra? Zadej ho a přidej se k týmu.</string>
+    <string name="setup_join_code_placeholder">Zadej kód…</string>
+    <string name="setup_join_button">Přidat se</string>
+
     <string name="auth_forgot_password">Zapomněli jste?</string>
     <string name="auth_login_button">Přihlásit se</string>
     <string name="auth_sign_in_google">Přihlásit se přes Google</string>

@@ -21,6 +21,19 @@
     <string name="auth_no_account">New to the court?</string>
     <string name="auth_create_account">Create an account</string>
 
+    <!-- Setup -->
+    <string name="setup_greeting">Great to have you here!</string>
+    <string name="setup_title">Setting up</string>
+    <string name="setup_subtitle">Choose how you want to proceed on the court.</string>
+    <string name="setup_description">Now we need to set up your club. Are you a coach, or are you joining one?</string>
+    <string name="setup_create_club_title">Create New Club</string>
+    <string name="setup_create_club_subtitle">Are you a coach? Create your roster, plan practices and games.</string>
+    <string name="setup_create_club_button">Create Club</string>
+    <string name="setup_join_team_title">Join a Team</string>
+    <string name="setup_join_team_subtitle">Do you have a code from your coach? Enter it and join the team.</string>
+    <string name="setup_join_code_placeholder">Enter code…</string>
+    <string name="setup_join_button">Join</string>
+
     <!-- Auth — Register -->
     <string name="auth_join">Join</string>
     <string name="auth_register_subtitle">Create an account to start managing your court.</string>

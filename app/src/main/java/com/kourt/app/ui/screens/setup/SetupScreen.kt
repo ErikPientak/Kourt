@@ -1,0 +1,153 @@
+package com.kourt.app.ui.screens.setup
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.kourt.app.R
+import com.kourt.app.navigation.INavigationRouter
+import com.kourt.app.ui.components.KourtButton
+import com.kourt.app.ui.components.SetupOptionCard
+import com.kourt.app.ui.theme.DarkPlaceholder
+import com.kourt.app.ui.theme.LightPlaceholder
+import com.kourt.app.ui.theme.White
+import com.kourt.app.viewmodel.SetupViewModel
+
+@Composable
+fun SetupScreen(
+    navigation: INavigationRouter,
+    viewModel: SetupViewModel = hiltViewModel(),
+) {
+    val uiState = viewModel.uiState
+    val isDark = isSystemInDarkTheme()
+    val enterCodeTextFieldColor = if (isDark) White else LightPlaceholder
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp),
+    ) {
+        Spacer(modifier = Modifier.height(48.dp))
+
+        Text(
+            text = stringResource(R.string.setup_greeting),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = stringResource(R.string.setup_title),
+            style = MaterialTheme.typography.displayMedium,
+            color = MaterialTheme.colorScheme.primary,
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = stringResource(R.string.setup_subtitle),
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = stringResource(R.string.setup_description),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Create Club card
+        SetupOptionCard(
+            icon = painterResource(R.drawable.whistle),
+            iconContentDescription = stringResource(R.string.setup_create_club_title),
+            title = stringResource(R.string.setup_create_club_title),
+            subtitle = stringResource(R.string.setup_create_club_subtitle),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            KourtButton(
+                text = stringResource(R.string.setup_create_club_button),
+                onClick = { viewModel.onCreateClub() },
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Join a Team card
+        SetupOptionCard(
+            icon = painterResource(R.drawable.handshake),
+            iconContentDescription = stringResource(R.string.setup_join_team_title),
+            title = stringResource(R.string.setup_join_team_title),
+            subtitle = stringResource(R.string.setup_join_team_subtitle),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            OutlinedTextField(
+                value = uiState.joinCode,
+                onValueChange = { viewModel.onJoinCodeChange(it) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = enterCodeTextFieldColor,
+                    unfocusedContainerColor = enterCodeTextFieldColor,
+                    focusedTextColor = Color.Black,
+                ),
+                placeholder = {
+                    Text(
+                        text = stringResource(R.string.setup_join_code_placeholder),
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                },
+                textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Done,
+                ),
+                singleLine = true,
+                shape = RoundedCornerShape(50.dp),
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            KourtButton(
+                text = stringResource(R.string.setup_join_button),
+                onClick = { viewModel.onJoinTeam() },
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        Spacer(modifier = Modifier.height(40.dp))
+    }
+}
