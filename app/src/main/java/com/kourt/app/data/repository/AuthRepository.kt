@@ -58,4 +58,8 @@ class AuthRepository @Inject constructor(
     fun signOut() {
         auth.signOut()
     }
+
+    suspend fun deleteAccount(): Result<Unit> = runCatching {
+        auth.currentUser?.delete()?.await() ?: error("No user signed in")
+    }
 }

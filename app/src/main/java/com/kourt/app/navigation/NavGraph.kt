@@ -4,13 +4,12 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.kourt.app.ui.screens.auth.LoginScreen
-import com.kourt.app.ui.screens.auth.RegisterScreen
+import com.kourt.app.ui.screens.auth.login.LoginScreen
+import com.kourt.app.ui.screens.auth.register.RegisterScreen
+import com.kourt.app.ui.screens.home.HomeScreen
 
 @Composable
 fun NavGraph(
@@ -30,6 +29,10 @@ fun NavGraph(
 
         composable(route = Destination.RegisterScreen.route){
             RegisterScreen(navigation)
+        }
+
+        composable(route = Destination.HomeScreen.route) {
+            HomeScreen(navigation = navigation)
         }
 
     }

@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "109773853321-afulcsd7greoj99s048l1tfhnfbjlbn5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kourt.app",
+            "certificate_hash": "44dfeeb5fe85a586c49cd5e1928631f7b92623b5"
+          }
+        },
+        {
           "client_id": "109773853321-9g237i8e2e9n7q6ldfnc887ll6vn0i1d.apps.googleusercontent.com",
           "client_type": 3
         }

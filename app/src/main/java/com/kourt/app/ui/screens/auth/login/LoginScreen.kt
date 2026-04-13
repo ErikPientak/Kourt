@@ -1,7 +1,6 @@
-package com.kourt.app.ui.screens.auth
+package com.kourt.app.ui.screens.auth.login
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -29,20 +28,19 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
@@ -53,19 +51,24 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kourt.app.R
 import com.kourt.app.navigation.INavigationRouter
+import com.kourt.app.ui.components.AuthFieldLabel
 import com.kourt.app.ui.components.KourtButton
+import com.kourt.app.ui.components.authTextFieldColors
 import com.kourt.app.ui.theme.DarkPlaceholder
-import com.kourt.app.ui.theme.KourtTheme
 import com.kourt.app.ui.theme.LightPlaceholder
+import com.kourt.app.viewmodel.LoginViewModel
 
 @Composable
 fun LoginScreen(
     navigation: INavigationRouter,
+    viewModel: LoginViewModel = hiltViewModel(),
 ) {
+    val uiState = viewModel.uiState
+    val context = LocalContext.current
+
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
@@ -75,6 +78,10 @@ fun LoginScreen(
 
     // A slightly lighter tone for the icon container background
     val iconContainerColor = if (isDark) Color(0x003A3633) else Color(0x774B2500)
+
+    LaunchedEffect(uiState.isSuccess) {
+        if (uiState.isSuccess) navigation.navigateToHome()
+    }
 
     Column(
         modifier = Modifier
@@ -229,10 +236,23 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(28.dp))
 
+        // Error message
+        if (uiState.error != null) {
+            Text(
+                text = uiState.error,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp),
+            )
+        }
+
         // Log In button
         KourtButton(
             text = stringResource(R.string.auth_login_button),
-            onClick = { },
+            onClick = { viewModel.onSignInWithEmail(email, password) },
+            enabled = !uiState.isLoading,
             modifier = Modifier.fillMaxWidth(),
         )
 
@@ -240,7 +260,8 @@ fun LoginScreen(
 
         // Sign in with Google button
         OutlinedButton(
-            onClick = { },
+            onClick = { viewModel.onSignInWithGoogle(context) },
+            enabled = !uiState.isLoading,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
@@ -254,12 +275,6 @@ fun LoginScreen(
                 color = MaterialTheme.colorScheme.outline,
             ),
         ) {
-            GoogleLogo(
-                modifier = Modifier
-                    .size(20.dp)
-                    .padding(end = 0.dp)
-            )
-            Spacer(modifier = Modifier.size(10.dp))
             Text(
                 text = stringResource(R.string.auth_sign_in_google),
                 style = MaterialTheme.typography.labelLarge,
@@ -300,87 +315,3 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(40.dp))
     }
 }
-
-// ---------------------------------------------------------------------------
-// Shared internal helpers (used by both Login and Register in this package)
-// ---------------------------------------------------------------------------
-
-@Composable
-internal fun AuthFieldLabel(label: String, modifier: Modifier = Modifier) {
-    Text(
-        text = label,
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onBackground,
-        modifier = modifier.fillMaxWidth(),
-    )
-}
-
-@Composable
-internal fun authTextFieldColors(placeholderColor: Color) = OutlinedTextFieldDefaults.colors(
-    focusedContainerColor = MaterialTheme.colorScheme.surface,
-    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-    disabledContainerColor = MaterialTheme.colorScheme.surface,
-    focusedBorderColor = Color.Transparent,
-    unfocusedBorderColor = Color.Transparent,
-    disabledBorderColor = Color.Transparent,
-    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-    cursorColor = MaterialTheme.colorScheme.primary,
-    focusedPlaceholderColor = placeholderColor,
-    unfocusedPlaceholderColor = placeholderColor,
-)
-
-/**
- * Draws the Google "G" logo using four coloured arcs via Canvas.
- * This avoids needing an image asset or the extended icons library.
- */
-@Composable
-internal fun GoogleLogo(modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier) {
-        val stroke = size.minDimension * 0.13f
-        val halfStroke = stroke / 2f
-        val radius = (size.minDimension / 2f) - halfStroke
-
-        // Red arc (top-right, going clockwise)
-        drawArc(
-            color = Color(0xFFEA4335),
-            startAngle = -45f,
-            sweepAngle = 90f,
-            useCenter = false,
-            style = Stroke(width = stroke),
-            topLeft = Offset(halfStroke, halfStroke),
-            size = Size(radius * 2, radius * 2),
-        )
-        // Blue arc (top-left)
-        drawArc(
-            color = Color(0xFF4285F4),
-            startAngle = -135f,
-            sweepAngle = 90f,
-            useCenter = false,
-            style = Stroke(width = stroke),
-            topLeft = Offset(halfStroke, halfStroke),
-            size = Size(radius * 2, radius * 2),
-        )
-        // Yellow arc (bottom-left)
-        drawArc(
-            color = Color(0xFFFBBC05),
-            startAngle = 135f,
-            sweepAngle = 90f,
-            useCenter = false,
-            style = Stroke(width = stroke),
-            topLeft = Offset(halfStroke, halfStroke),
-            size = Size(radius * 2, radius * 2),
-        )
-        // Green arc (bottom-right)
-        drawArc(
-            color = Color(0xFF34A853),
-            startAngle = 45f,
-            sweepAngle = 90f,
-            useCenter = false,
-            style = Stroke(width = stroke),
-            topLeft = Offset(halfStroke, halfStroke),
-            size = Size(radius * 2, radius * 2),
-        )
-    }
-}
-

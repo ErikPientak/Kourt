@@ -10,6 +10,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import com.kourt.app.navigation.NavGraph
 import com.kourt.app.ui.theme.KourtTheme
+import com.kourt.app.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

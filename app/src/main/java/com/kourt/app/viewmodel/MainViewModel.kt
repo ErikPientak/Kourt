@@ -1,4 +1,4 @@
-package com.kourt.app
+package com.kourt.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.kourt.app.data.repository.AuthRepository
