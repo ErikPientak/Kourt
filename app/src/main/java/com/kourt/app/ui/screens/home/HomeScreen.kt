@@ -60,6 +60,16 @@ fun HomeScreen(
         }
 
         Button(
+            onClick = { navigation.navigateToClubManagementScreen() },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                text = "Go to ClubManagement",
+                style = MaterialTheme.typography.labelLarge,
+            )
+        }
+
+        Button(
             onClick = {
                 viewModel.deleteUser {
                     navigation.navigateToLoginScreen()

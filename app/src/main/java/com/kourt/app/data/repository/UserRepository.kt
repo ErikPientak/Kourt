@@ -10,7 +10,7 @@ import javax.inject.Singleton
 class UserRepository @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
-    private val collection = firestore.collection("users")
+    private val collection = firestore.collection("User")
 
     suspend fun getUser(id: String): User? =
         collection.document(id).get().await().toObject(User::class.java)

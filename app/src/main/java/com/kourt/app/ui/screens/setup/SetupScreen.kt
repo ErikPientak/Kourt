@@ -2,12 +2,14 @@ package com.kourt.app.ui.screens.setup
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -17,6 +19,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -48,7 +51,6 @@ fun SetupScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp),
     ) {
@@ -76,7 +78,7 @@ fun SetupScreen(
             color = MaterialTheme.colorScheme.onBackground,
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         Text(
             text = stringResource(R.string.setup_description),
@@ -96,8 +98,10 @@ fun SetupScreen(
         ) {
             KourtButton(
                 text = stringResource(R.string.setup_create_club_button),
-                onClick = { viewModel.onCreateClub() },
-                modifier = Modifier.fillMaxWidth(),
+                onClick = { navigation.navigateToCreateClubScreen() },
+                modifier = Modifier
+                    .padding(start = 68.dp)
+                    .fillMaxWidth(),
             )
         }
 
@@ -115,6 +119,7 @@ fun SetupScreen(
                 value = uiState.joinCode,
                 onValueChange = { viewModel.onJoinCodeChange(it) },
                 modifier = Modifier
+                    .padding(start = 68.dp)
                     .fillMaxWidth()
                     .height(52.dp),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -125,12 +130,12 @@ fun SetupScreen(
                 placeholder = {
                     Text(
                         text = stringResource(R.string.setup_join_code_placeholder),
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.labelLarge,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth(),
                     )
                 },
-                textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
+                textStyle = MaterialTheme.typography.labelLarge.copy(textAlign = TextAlign.Center),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.Done,
@@ -139,12 +144,14 @@ fun SetupScreen(
                 shape = RoundedCornerShape(50.dp),
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(2.dp))
 
             KourtButton(
                 text = stringResource(R.string.setup_join_button),
                 onClick = { viewModel.onJoinTeam() },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .padding(start = 68.dp)
+                    .fillMaxWidth(),
             )
         }
 

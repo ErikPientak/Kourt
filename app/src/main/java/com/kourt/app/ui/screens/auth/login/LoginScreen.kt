@@ -16,7 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -41,8 +41,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -50,7 +48,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.kourt.app.R
 import com.kourt.app.navigation.INavigationRouter
@@ -59,7 +56,7 @@ import com.kourt.app.ui.components.KourtButton
 import com.kourt.app.ui.components.authTextFieldColors
 import com.kourt.app.ui.theme.DarkPlaceholder
 import com.kourt.app.ui.theme.LightPlaceholder
-import com.kourt.app.viewmodel.LoginViewModel
+import com.kourt.app.viewmodel.auth.LoginViewModel
 
 @Composable
 fun LoginScreen(
@@ -90,6 +87,7 @@ fun LoginScreen(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
     ) {
         Spacer(modifier = Modifier.height(64.dp))
 
@@ -105,7 +103,7 @@ fun LoginScreen(
                 painter = painterResource(R.drawable.basketball),
                 contentDescription = stringResource(R.string.app_icon_content_desc),
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(44.dp)
+                modifier = Modifier.size(66.dp)
             )
         }
 
@@ -156,7 +154,7 @@ fun LoginScreen(
                 imeAction = ImeAction.Next,
             ),
             singleLine = true,
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(52.dp),
             colors = authTextFieldColors(placeholderColor = placeholderColor),
         )
 
@@ -174,20 +172,11 @@ fun LoginScreen(
                 color = MaterialTheme.colorScheme.onBackground,
             )
             // Forgot password — tappable text
-            ClickableText(
-                text = buildAnnotatedString {
-                    withStyle(
-                        SpanStyle(
-                            color = MaterialTheme.colorScheme.primary,
-                            fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                            fontWeight = MaterialTheme.typography.labelMedium.fontWeight,
-                            fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
-                        )
-                    ) {
-                        append(stringResource(R.string.auth_forgot_password))
-                    }
-                },
-                onClick = { },
+            Text(
+                text = stringResource(R.string.auth_forgot_password),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.clickable { },
             )
         }
 
@@ -230,7 +219,7 @@ fun LoginScreen(
                 imeAction = ImeAction.Done,
             ),
             singleLine = true,
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(52.dp),
             colors = authTextFieldColors(placeholderColor = placeholderColor),
         )
 
@@ -244,7 +233,7 @@ fun LoginScreen(
                 style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 12.dp),
+                    .padding(bottom = 52.dp),
             )
         }
 
@@ -285,32 +274,22 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(36.dp))
 
         // "New to the court? Create an account" footer
-        ClickableText(
-            text = buildAnnotatedString {
-                withStyle(
-                    SpanStyle(
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                        fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
-                    )
-                ) {
-                    append(stringResource(R.string.auth_no_account))
-                    append("  ")
-                }
-                withStyle(
-                    SpanStyle(
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                        fontWeight = MaterialTheme.typography.labelMedium.fontWeight,
-                        fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
-                    )
-                ) {
-                    append(stringResource(R.string.auth_create_account))
-                }
-            },
-            onClick = { navigation.navigateToRegisterScreen() },
+        Row(
             modifier = Modifier.align(Alignment.CenterHorizontally),
-        )
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.auth_no_account),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            Text(
+                text = stringResource(R.string.auth_create_account),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.clickable { navigation.navigateToRegisterScreen() },
+            )
+        }
 
         Spacer(modifier = Modifier.height(40.dp))
     }

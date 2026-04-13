@@ -12,7 +12,7 @@ import javax.inject.Singleton
 class EventRepository @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
-    private val collection = firestore.collection("events")
+    private val collection = firestore.collection("Event")
 
     suspend fun getEvent(id: String): Event? =
         collection.document(id).get().await().toObject(Event::class.java)

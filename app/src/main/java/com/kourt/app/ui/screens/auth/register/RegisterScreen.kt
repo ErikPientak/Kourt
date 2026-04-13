@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -31,14 +33,11 @@ import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -49,7 +48,7 @@ import com.kourt.app.ui.components.KourtButton
 import com.kourt.app.ui.components.authTextFieldColors
 import com.kourt.app.ui.theme.DarkPlaceholder
 import com.kourt.app.ui.theme.LightPlaceholder
-import com.kourt.app.viewmodel.RegisterViewModel
+import com.kourt.app.viewmodel.auth.RegisterViewModel
 
 @Composable
 fun RegisterScreen(
@@ -79,7 +78,9 @@ fun RegisterScreen(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.Start,
-    ) {
+        verticalArrangement = Arrangement.Center,
+
+        ) {
         Spacer(modifier = Modifier.height(64.dp))
 
         // "Join" — orange
@@ -133,7 +134,7 @@ fun RegisterScreen(
                 imeAction = ImeAction.Next,
             ),
             singleLine = true,
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(52.dp),
             colors = authTextFieldColors(placeholderColor = placeholderColor),
         )
 
@@ -165,7 +166,7 @@ fun RegisterScreen(
                 imeAction = ImeAction.Next,
             ),
             singleLine = true,
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(52.dp),
             colors = authTextFieldColors(placeholderColor = placeholderColor),
         )
 
@@ -211,7 +212,7 @@ fun RegisterScreen(
                 imeAction = ImeAction.Next,
             ),
             singleLine = true,
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(52.dp),
             colors = authTextFieldColors(placeholderColor = placeholderColor),
         )
 
@@ -257,7 +258,7 @@ fun RegisterScreen(
                 imeAction = ImeAction.Done,
             ),
             singleLine = true,
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(52.dp),
             colors = authTextFieldColors(placeholderColor = placeholderColor),
         )
 
@@ -271,7 +272,7 @@ fun RegisterScreen(
                 style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 12.dp),
+                    .padding(bottom = 52.dp),
             )
         }
 
@@ -286,32 +287,22 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(36.dp))
 
         // "Already have an account? Log In" footer
-        ClickableText(
-            text = buildAnnotatedString {
-                withStyle(
-                    SpanStyle(
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                        fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
-                    )
-                ) {
-                    append(stringResource(R.string.auth_have_account))
-                    append("  ")
-                }
-                withStyle(
-                    SpanStyle(
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                        fontWeight = MaterialTheme.typography.labelMedium.fontWeight,
-                        fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
-                    )
-                ) {
-                    append(stringResource(R.string.auth_login_button))
-                }
-            },
-            onClick = { navigation.navigateToLoginScreen() },
+        Row(
             modifier = Modifier.align(Alignment.CenterHorizontally),
-        )
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.auth_have_account),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            Text(
+                text = stringResource(R.string.auth_login_button),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.clickable { navigation.navigateToLoginScreen() },
+            )
+        }
 
         Spacer(modifier = Modifier.height(40.dp))
     }

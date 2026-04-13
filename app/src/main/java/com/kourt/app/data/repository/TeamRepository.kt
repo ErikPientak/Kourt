@@ -10,7 +10,7 @@ import javax.inject.Singleton
 class TeamRepository @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
-    private val collection = firestore.collection("teams")
+    private val collection = firestore.collection("Team")
 
     suspend fun getTeam(id: String): Team? =
         collection.document(id).get().await().toObject(Team::class.java)

@@ -29,7 +29,7 @@ val Typography = Typography(
     headlineLarge = TextStyle(
         fontFamily = LexendFontFamily,
         fontWeight = FontWeight.Bold,
-        fontSize = 28.sp,
+        fontSize = 36.sp,
         lineHeight = 36.sp,
         letterSpacing = 0.sp,
     ),

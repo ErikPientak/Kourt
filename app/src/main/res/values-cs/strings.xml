@@ -26,6 +26,26 @@
     <string name="setup_join_code_placeholder">Zadej kód…</string>
     <string name="setup_join_button">Přidat se</string>
 
+    <!-- Create Club -->
+    <string name="create_club_title">Vytvořit nový klub</string>
+    <string name="create_club_back_content_desc">Zpět</string>
+    <string name="create_club_upload_logo">Nahrát logo klubu</string>
+    <string name="create_club_upload_logo_subtitle">Vytvořte vizuální identitu svého týmu</string>
+    <string name="club_name_label">Název klubu</string>
+    <string name="club_name_placeholder">např. Basketbalový klub Sparta</string>
+    <string name="short_name_label">Zkratka / Krátký název</string>
+    <string name="short_name_placeholder">např. BKS</string>
+    <string name="club_president_label">Prezident klubu</string>
+    <string name="club_president_placeholder">např. Jan Novák</string>
+    <string name="technical_director_label">Technický ředitel</string>
+    <string name="technical_director_placeholder">např. Michael Jordan</string>
+    <string name="country_label">Země</string>
+    <string name="city_label">Domovské město</string>
+    <string name="city_placeholder">např. Praha</string>
+    <string name="create_club_button">Vytvořit klub</string>
+    <string name="create_club_terms">Vytvořením klubu souhlasíte s </string>
+    <string name="create_club_terms_link">Podmínkami služby Kourt</string>
+
     <string name="auth_forgot_password">Zapomněli jste?</string>
     <string name="auth_login_button">Přihlásit se</string>
     <string name="auth_sign_in_google">Přihlásit se přes Google</string>

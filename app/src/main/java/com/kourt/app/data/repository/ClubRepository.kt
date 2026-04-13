@@ -10,7 +10,7 @@ import javax.inject.Singleton
 class ClubRepository @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
-    private val collection = firestore.collection("clubs")
+    private val collection = firestore.collection("Club")
 
     suspend fun getClub(id: String): Club? =
         collection.document(id).get().await().toObject(Club::class.java)
@@ -27,4 +27,9 @@ class ClubRepository @Inject constructor(
     suspend fun deleteClub(id: String) {
         collection.document(id).delete().await()
     }
+
+    suspend fun getClubByAdminId(uid: String): Club? =
+        collection.whereArrayContains("admin_ids", uid).get().await()
+            .toObjects(Club::class.java)
+            .firstOrNull()
 }

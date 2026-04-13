@@ -1,4 +1,4 @@
-package com.kourt.app.viewmodel
+package com.kourt.app.viewmodel.auth
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf

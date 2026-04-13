@@ -10,7 +10,7 @@ import javax.inject.Singleton
 class TeamMemberRepository @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
-    private val collection = firestore.collection("team_members")
+    private val collection = firestore.collection("Team_member")
 
     suspend fun getMembersByTeam(teamId: String): List<TeamMember> =
         collection.whereEqualTo("teamId", teamId).get().await()
