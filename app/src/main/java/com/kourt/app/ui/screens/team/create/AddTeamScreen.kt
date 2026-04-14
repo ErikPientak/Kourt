@@ -28,9 +28,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -38,7 +40,9 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -59,6 +64,7 @@ import com.kourt.app.data.model.User
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.AuthFieldLabel
 import com.kourt.app.ui.components.BaseScreen
+import com.kourt.app.ui.components.CategoryChip
 import com.kourt.app.ui.components.KourtButton
 import com.kourt.app.ui.components.authTextFieldColors
 import com.kourt.app.ui.theme.DarkPlaceholder
@@ -83,8 +89,19 @@ fun AddTeamScreen(
     }
 
     BaseScreen(
-        title = "Add New Team",
+        title = stringResource(if (uiState.isEditMode) R.string.edit_team_title else R.string.add_team_title),
         onBack = { navigation.returnBack() },
+        trailingIcon = if (uiState.isEditMode) {
+            {
+                IconButton(onClick = { viewModel.onDeleteTeam() }) {
+                    Icon(
+                        imageVector = Icons.Filled.Delete,
+                        contentDescription = stringResource(R.string.add_team_delete_button),
+                        tint = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+        } else null,
     ) { padding ->
         Column(
             modifier = Modifier
@@ -111,7 +128,7 @@ fun AddTeamScreen(
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.camera),
-                        contentDescription = "Upload team photo",
+                        contentDescription = stringResource(R.string.add_team_photo_cd),
                         tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                         modifier = Modifier.size(32.dp),
                     )
@@ -120,7 +137,7 @@ fun AddTeamScreen(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    text = "TEAM BRAND & IDENTITY",
+                    text = stringResource(R.string.add_team_brand_label),
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                 )
@@ -129,7 +146,7 @@ fun AddTeamScreen(
             Spacer(modifier = Modifier.height(28.dp))
 
             // ── Team Name ─────────────────────────────────────────────────────
-            AuthFieldLabel(label = "Team Name")
+            AuthFieldLabel(label = stringResource(R.string.add_team_name_label))
             Spacer(modifier = Modifier.height(6.dp))
             OutlinedTextField(
                 value = uiState.teamName,
@@ -137,7 +154,7 @@ fun AddTeamScreen(
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = {
                     Text(
-                        text = "e.g. Los Angeles Lakers",
+                        text = stringResource(R.string.add_team_name_placeholder),
                         style = MaterialTheme.typography.bodyMedium,
                         color = placeholderColor,
                     )
@@ -162,7 +179,7 @@ fun AddTeamScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // ── Head Coach ────────────────────────────────────────────────────
-            AuthFieldLabel(label = "Head Coach")
+            AuthFieldLabel(label = stringResource(R.string.add_team_head_coach_label))
             Spacer(modifier = Modifier.height(6.dp))
             ExposedDropdownMenuBox(
                 expanded = uiState.headCoachSuggestions.isNotEmpty(),
@@ -177,7 +194,7 @@ fun AddTeamScreen(
                         .menuAnchor(),
                     placeholder = {
                         Text(
-                            text = "Coach Name",
+                            text = stringResource(R.string.add_team_head_coach_placeholder),
                             style = MaterialTheme.typography.bodyMedium,
                             color = placeholderColor,
                         )
@@ -230,7 +247,7 @@ fun AddTeamScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // ── Assistant Coach(es) ───────────────────────────────────────────
-            AuthFieldLabel(label = "Assistant Coach(es)")
+            AuthFieldLabel(label = stringResource(R.string.add_team_assistant_label))
             Spacer(modifier = Modifier.height(6.dp))
 
             ExposedDropdownMenuBox(
@@ -251,7 +268,7 @@ fun AddTeamScreen(
                             .menuAnchor(),
                         placeholder = {
                             Text(
-                                text = "Add Assistant",
+                                text = stringResource(R.string.add_team_assistant_placeholder),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = placeholderColor,
                             )
@@ -284,7 +301,7 @@ fun AddTeamScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
-                            contentDescription = "Add assistant",
+                            contentDescription = stringResource(R.string.add_team_add_assistant_cd),
                             tint = Color.White,
                             modifier = Modifier.size(22.dp),
                         )
@@ -338,7 +355,7 @@ fun AddTeamScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // ── Team Category ─────────────────────────────────────────────────
-            AuthFieldLabel(label = "Team Category")
+            AuthFieldLabel(label = stringResource(R.string.add_team_category_label))
             Spacer(modifier = Modifier.height(10.dp))
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(
@@ -346,14 +363,14 @@ fun AddTeamScreen(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     CategoryChip(
-                        label = "Men",
+                        label = stringResource(R.string.add_team_category_men),
                         value = "men",
                         selected = uiState.category == "men",
                         onClick = { viewModel.onCategoryChange("men") },
                         modifier = Modifier.weight(1f),
                     )
                     CategoryChip(
-                        label = "Women",
+                        label = stringResource(R.string.add_team_category_women),
                         value = "women",
                         selected = uiState.category == "women",
                         onClick = { viewModel.onCategoryChange("women") },
@@ -365,14 +382,14 @@ fun AddTeamScreen(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     CategoryChip(
-                        label = "Children",
+                        label = stringResource(R.string.add_team_category_children),
                         value = "children",
                         selected = uiState.category == "children",
                         onClick = { viewModel.onCategoryChange("children") },
                         modifier = Modifier.weight(1f),
                     )
                     CategoryChip(
-                        label = "Seniors",
+                        label = stringResource(R.string.add_team_category_seniors),
                         value = "seniors",
                         selected = uiState.category == "seniors",
                         onClick = { viewModel.onCategoryChange("seniors") },
@@ -406,7 +423,7 @@ fun AddTeamScreen(
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = "Location & Arena",
+                            text = stringResource(R.string.add_team_location_section),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.weight(1f),
@@ -439,11 +456,16 @@ fun AddTeamScreen(
                                 value = uiState.location,
                                 onValueChange = { viewModel.onLocationChange(it) },
                                 modifier = Modifier.fillMaxWidth(),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    focusedLabelColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedBorderColor = placeholderColor,
+                                    unfocusedLabelColor = placeholderColor,
+                                ),
                                 label = {
                                     Text(
-                                        text = "City / Location",
+                                        text = stringResource(R.string.add_team_location_label),
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = placeholderColor,
                                     )
                                 },
                                 keyboardOptions = KeyboardOptions(
@@ -452,18 +474,22 @@ fun AddTeamScreen(
                                     imeAction = ImeAction.Next,
                                 ),
                                 singleLine = true,
-                                shape = RoundedCornerShape(12.dp),
-                                colors = authTextFieldColors(placeholderColor = placeholderColor),
+                                shape = RoundedCornerShape(12.dp)
                             )
                             OutlinedTextField(
                                 value = uiState.arena,
                                 onValueChange = { viewModel.onArenaChange(it) },
                                 modifier = Modifier.fillMaxWidth(),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    focusedLabelColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedBorderColor = placeholderColor,
+                                    unfocusedLabelColor = placeholderColor,
+                                ),
                                 label = {
                                     Text(
-                                        text = "Arena Name",
+                                        text = stringResource(R.string.add_team_arena_label),
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = placeholderColor,
                                     )
                                 },
                                 keyboardOptions = KeyboardOptions(
@@ -473,7 +499,6 @@ fun AddTeamScreen(
                                 ),
                                 singleLine = true,
                                 shape = RoundedCornerShape(12.dp),
-                                colors = authTextFieldColors(placeholderColor = placeholderColor),
                             )
                         }
                     }
@@ -494,14 +519,13 @@ fun AddTeamScreen(
                 )
             }
 
-            // ── Save Team button ──────────────────────────────────────────────
+            // ── Save / Delete buttons ─────────────────────────────────────────
             KourtButton(
-                text = "Save Team",
+                text = stringResource(if (uiState.isEditMode) R.string.add_team_save_changes_button else R.string.add_team_save_button),
                 onClick = { viewModel.onSaveTeam() },
                 enabled = !uiState.isLoading,
                 modifier = Modifier.fillMaxWidth(),
             )
-
             Spacer(modifier = Modifier.height(40.dp))
         }
     }
@@ -509,53 +533,7 @@ fun AddTeamScreen(
 
 // ── Private composables ───────────────────────────────────────────────────────
 
-@Composable
-private fun CategoryChip(
-    label: String,
-    value: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val borderColor = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent
-    val bgColor = MaterialTheme.colorScheme.surface
 
-    Surface(
-        modifier = modifier
-            .height(52.dp)
-            .border(
-                width = if (selected) 1.5.dp else 0.dp,
-                color = borderColor,
-                shape = RoundedCornerShape(12.dp),
-            )
-            .clip(RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        color = bgColor,
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.basketball),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(18.dp),
-            )
-            Text(
-                text = label,
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                ),
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-        }
-    }
-}
 
 @Composable
 private fun AssistantChip(
@@ -582,7 +560,7 @@ private fun AssistantChip(
         ) {
             Icon(
                 imageVector = Icons.Default.Close,
-                contentDescription = "Remove $name",
+                contentDescription = stringResource(R.string.add_team_remove_assistant_cd, name),
                 tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 modifier = Modifier.size(12.dp),
             )

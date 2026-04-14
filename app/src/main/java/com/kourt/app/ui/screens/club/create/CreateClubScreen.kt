@@ -380,7 +380,7 @@ fun CreateClubScreen(
 
             // ── Review & Confirm button ──────────────────────────────────────
             KourtButton(
-                text = "Review & Confirm",
+                text = stringResource(R.string.create_club_review_button),
                 onClick = { viewModel.onCreateClub() },
                 enabled = !uiState.isLoading,
                 modifier = Modifier.fillMaxWidth(),

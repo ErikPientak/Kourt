@@ -35,6 +35,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.navigation.INavigationRouter
@@ -57,7 +58,7 @@ fun ClubManagementScreen(
         uiState = uiState,
         onAddTeam = { navigation.navigateToAddTeamScreen(uiState.clubId)
                     viewModel.onAddTeam() },
-        onTeamClick = viewModel::onTeamClick,
+        onTeamClick = { teamId -> navigation.navigateToEditTeamScreen(teamId) },
         onSettingsTap = viewModel::onSettingsTap,
     )
 }
@@ -72,12 +73,12 @@ private fun ClubManagementScreenContent(
     var selectedTab by rememberSaveable { mutableIntStateOf(TAB_TEAMS) }
 
     BaseScreenWithBottomNav(
-        title = uiState.clubName.ifBlank { "Club Management" },
+        title = uiState.clubName.ifBlank { stringResource(com.kourt.app.R.string.club_management_title) },
         trailingIcon = {
             IconButton(onClick = onSettingsTap) {
                 Icon(
                     imageVector = Icons.Default.Settings,
-                    contentDescription = "Settings",
+                    contentDescription = stringResource(com.kourt.app.R.string.club_management_settings_cd),
                 )
             }
         },
@@ -97,7 +98,7 @@ private fun ClubManagementScreenContent(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
-                        contentDescription = "Add team",
+                        contentDescription = stringResource(com.kourt.app.R.string.club_management_add_team_cd),
                     )
                 }
             }
@@ -135,9 +136,9 @@ private fun ClubManagementBottomNav(
     onTabSelected: (Int) -> Unit,
 ) {
     val items = listOf(
-        BottomNavItem("Teams", painterResource(com.kourt.app.R.drawable.group), TAB_TEAMS),
-        BottomNavItem("Members", painterResource(com.kourt.app.R.drawable.person_edit), TAB_MEMBERS),
-        BottomNavItem("Events", painterResource(com.kourt.app.R.drawable.event), TAB_EVENTS),
+        BottomNavItem(stringResource(com.kourt.app.R.string.club_management_tab_teams), painterResource(com.kourt.app.R.drawable.group), TAB_TEAMS),
+        BottomNavItem(stringResource(com.kourt.app.R.string.club_management_tab_members), painterResource(com.kourt.app.R.drawable.person_edit), TAB_MEMBERS),
+        BottomNavItem(stringResource(com.kourt.app.R.string.club_management_tab_events), painterResource(com.kourt.app.R.drawable.event), TAB_EVENTS),
     )
     val outlineColor = MaterialTheme.colorScheme.surface
 
@@ -224,12 +225,12 @@ private fun TeamsTab(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(
-                        text = "No teams yet",
+                        text = stringResource(com.kourt.app.R.string.club_management_no_teams),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onBackground,
                     )
                     Text(
-                        text = "Tap + to add one",
+                        text = stringResource(com.kourt.app.R.string.club_management_no_teams_hint),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                     )
@@ -243,7 +244,7 @@ private fun TeamsTab(
             ) {
                 item {
                     Text(
-                        text = "ACTIVE TEAMS (${uiState.teams.size})",
+                        text = stringResource(com.kourt.app.R.string.club_management_active_teams, uiState.teams.size),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -275,7 +276,7 @@ private fun ComingSoonTab() {
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = "Coming soon",
+            text = stringResource(com.kourt.app.R.string.coming_soon),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
         )

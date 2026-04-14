@@ -53,6 +53,10 @@ class NavigationRouterImpl(private val navController: NavController) : INavigati
     }
 
     override fun navigateToAddTeamScreen(clubId: String) {
-        navController.navigate("add_team?clubId=${Uri.encode(clubId)}")
+        navController.navigate("add_team?clubId=${Uri.encode(clubId)}&teamId=")
+    }
+
+    override fun navigateToEditTeamScreen(teamId: String) {
+        navController.navigate("add_team?clubId=&teamId=${Uri.encode(teamId)}")
     }
 }

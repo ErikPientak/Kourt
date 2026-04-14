@@ -46,6 +46,60 @@
     <string name="create_club_terms">Vytvořením klubu souhlasíte s </string>
     <string name="create_club_terms_link">Podmínkami služby Kourt</string>
 
+    <string name="review_confirm_title">Kontrola a potvrzení</string>
+    <string name="review_card_club_identity">Identita klubu</string>
+    <string name="review_label_club_name">NÁZEV KLUBU</string>
+    <string name="review_label_short_name">ZKRATKA</string>
+    <string name="review_card_leadership">Vedení</string>
+    <string name="review_label_club_president">PREZIDENT KLUBU</string>
+    <string name="review_label_technical_director">TECHNICKÝ ŘEDITEL</string>
+    <string name="review_card_location">Lokalita</string>
+    <string name="review_label_country">ZEMĚ</string>
+    <string name="review_label_primary_city">DOMOVSKÉ MĚSTO</string>
+    <string name="review_confirm_button">Potvrdit a vytvořit klub</string>
+    <string name="create_club_review_button">Zkontrolovat a potvrdit</string>
+
+    <string name="club_management_title">Správa klubu</string>
+    <string name="club_management_settings_cd">Nastavení</string>
+    <string name="club_management_add_team_cd">Přidat tým</string>
+    <string name="club_management_tab_teams">Týmy</string>
+    <string name="club_management_tab_members">Členové</string>
+    <string name="club_management_tab_events">Události</string>
+    <string name="club_management_active_teams">AKTIVNÍ TÝMY (%1$d)</string>
+    <string name="club_management_no_teams">Zatím žádné týmy</string>
+    <string name="club_management_no_teams_hint">Klepnutím na + přidejte nový</string>
+    <string name="coming_soon">Již brzy</string>
+
+    <string name="add_team_title">Přidat nový tým</string>
+    <string name="edit_team_title">Upravit tým</string>
+    <string name="add_team_photo_cd">Nahrát fotku týmu</string>
+    <string name="add_team_brand_label">IDENTITA A ZNAČKA TÝMU</string>
+    <string name="add_team_name_label">Název týmu</string>
+    <string name="add_team_name_placeholder">např. Los Angeles Lakers</string>
+    <string name="add_team_head_coach_label">Hlavní trenér</string>
+    <string name="add_team_head_coach_placeholder">Jméno trenéra</string>
+    <string name="add_team_assistant_label">Asistent(i) trenéra</string>
+    <string name="add_team_assistant_placeholder">Přidat asistenta</string>
+    <string name="add_team_add_assistant_cd">Přidat asistenta</string>
+    <string name="add_team_remove_assistant_cd">Odebrat %1$s</string>
+    <string name="add_team_category_label">Kategorie týmu</string>
+    <string name="add_team_category_men">Muži</string>
+    <string name="add_team_category_women">Ženy</string>
+    <string name="add_team_category_children">Děti</string>
+    <string name="add_team_category_seniors">Senioři</string>
+    <string name="add_team_location_section">Lokalita a hala</string>
+    <string name="add_team_location_label">Město / Lokalita</string>
+    <string name="add_team_arena_label">Název haly</string>
+    <string name="add_team_save_button">Uložit tým</string>
+    <string name="add_team_save_changes_button">Uložit změny</string>
+    <string name="add_team_delete_button">Smazat tým</string>
+
+    <string name="home_go_login">Přejít na přihlášení</string>
+    <string name="home_go_register">Přejít na registraci</string>
+    <string name="home_go_setup">Přejít na nastavení</string>
+    <string name="home_go_club_management">Přejít na správu klubu</string>
+    <string name="home_delete_user">Smazat uživatele</string>
+
     <string name="auth_forgot_password">Zapomněli jste?</string>
     <string name="auth_login_button">Přihlásit se</string>
     <string name="auth_sign_in_google">Přihlásit se přes Google</string>

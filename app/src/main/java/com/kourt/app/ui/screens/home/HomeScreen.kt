@@ -12,8 +12,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kourt.app.R
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.viewmodel.HomeViewModel
 
@@ -34,7 +36,7 @@ fun HomeScreen(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
-                text = "Go to Login",
+                text = stringResource(R.string.home_go_login),
                 style = MaterialTheme.typography.labelLarge,
             )
         }
@@ -44,7 +46,7 @@ fun HomeScreen(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
-                text = "Go to Register",
+                text = stringResource(R.string.home_go_register),
                 style = MaterialTheme.typography.labelLarge,
             )
         }
@@ -54,7 +56,7 @@ fun HomeScreen(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
-                text = "Go to Setup",
+                text = stringResource(R.string.home_go_setup),
                 style = MaterialTheme.typography.labelLarge,
             )
         }
@@ -64,7 +66,7 @@ fun HomeScreen(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
-                text = "Go to ClubManagement",
+                text = stringResource(R.string.home_go_club_management),
                 style = MaterialTheme.typography.labelLarge,
             )
         }
@@ -81,7 +83,7 @@ fun HomeScreen(
             ),
         ) {
             Text(
-                text = "Delete User",
+                text = stringResource(R.string.home_delete_user),
                 style = MaterialTheme.typography.labelLarge,
             )
         }

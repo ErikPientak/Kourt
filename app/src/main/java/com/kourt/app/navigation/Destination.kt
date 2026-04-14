@@ -11,5 +11,5 @@ sealed class Destination(val route: String) {
             "&technicalDirector={technicalDirector}&country={country}&city={city}"
     )
     object ClubManagementScreen : Destination("club_management")
-    object AddTeamScreen        : Destination("add_team?clubId={clubId}")
+    object AddTeamScreen        : Destination("add_team?clubId={clubId}&teamId={teamId}")
 }

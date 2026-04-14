@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -74,7 +75,7 @@ private fun ReviewConfirmContent(
     onConfirm: () -> Unit,
 ) {
     BaseScreen(
-        title = "Review & Confirm",
+        title = stringResource(R.string.review_confirm_title),
         onBack = onBack,
     ) { padding ->
         Column(
@@ -118,17 +119,17 @@ private fun ReviewConfirmContent(
                     ReviewCard {
                         CardSectionHeader(
                             icon = painterResource(R.drawable.shield),
-                            title = "Club Identity",
+                            title = stringResource(R.string.review_card_club_identity),
                         )
                         CardFieldRow(
                             leadingPainter = painterResource(R.drawable.group),
-                            label = "CLUB NAME",
+                            label = stringResource(R.string.review_label_club_name),
                             value = uiState.clubName,
                         )
                         CardDivider()
                         CardFieldRow(
                             leadingPainter = painterResource(R.drawable.short_text),
-                            label = "SHORT NAME",
+                            label = stringResource(R.string.review_label_short_name),
                             value = uiState.shortName,
                         )
                     }
@@ -137,17 +138,17 @@ private fun ReviewConfirmContent(
                     ReviewCard {
                         CardSectionHeader(
                             icon = painterResource(R.drawable.group),
-                            title = "Leadership",
+                            title = stringResource(R.string.review_card_leadership),
                         )
                         CardFieldRow(
                             leadingIcon = Icons.Default.Person,
-                            label = "CLUB PRESIDENT",
+                            label = stringResource(R.string.review_label_club_president),
                             value = uiState.president,
                         )
                         CardDivider()
                         CardFieldRow(
                             leadingPainter = painterResource(R.drawable.admin),
-                            label = "TECHNICAL DIRECTOR",
+                            label = stringResource(R.string.review_label_technical_director),
                             value = uiState.technicalDirector,
                         )
                     }
@@ -156,17 +157,17 @@ private fun ReviewConfirmContent(
                     ReviewCard {
                         CardSectionHeader(
                             icon = painterResource(R.drawable.globe),
-                            title = "Location",
+                            title = stringResource(R.string.review_card_location),
                         )
                         CardFieldRow(
                             leadingIcon = Icons.Default.LocationOn,
-                            label = "COUNTRY",
+                            label = stringResource(R.string.review_label_country),
                             value = uiState.country,
                         )
                         CardDivider()
                         CardFieldRow(
                             leadingIcon = Icons.Default.Home,
-                            label = "PRIMARY CITY",
+                            label = stringResource(R.string.review_label_primary_city),
                             value = uiState.city,
                         )
                     }
@@ -190,7 +191,7 @@ private fun ReviewConfirmContent(
 
             // ── Fixed bottom CTA ──────────────────────────────────────────────
             KourtButton(
-                text = "Confirm & Create Club",
+                text = stringResource(R.string.review_confirm_button),
                 onClick = onConfirm,
                 enabled = !uiState.isLoading,
                 modifier = Modifier

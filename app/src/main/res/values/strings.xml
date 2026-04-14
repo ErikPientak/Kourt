@@ -54,6 +54,64 @@
     <string name="create_club_terms">By creating a club, you agree to the Kourt </string>
     <string name="create_club_terms_link">Terms of Service</string>
 
+    <!-- Review & Confirm -->
+    <string name="review_confirm_title">Review &amp; Confirm</string>
+    <string name="review_card_club_identity">Club Identity</string>
+    <string name="review_label_club_name">CLUB NAME</string>
+    <string name="review_label_short_name">SHORT NAME</string>
+    <string name="review_card_leadership">Leadership</string>
+    <string name="review_label_club_president">CLUB PRESIDENT</string>
+    <string name="review_label_technical_director">TECHNICAL DIRECTOR</string>
+    <string name="review_card_location">Location</string>
+    <string name="review_label_country">COUNTRY</string>
+    <string name="review_label_primary_city">PRIMARY CITY</string>
+    <string name="review_confirm_button">Confirm &amp; Create Club</string>
+    <string name="create_club_review_button">Review &amp; Confirm</string>
+
+    <!-- Club Management -->
+    <string name="club_management_title">Club Management</string>
+    <string name="club_management_settings_cd">Settings</string>
+    <string name="club_management_add_team_cd">Add team</string>
+    <string name="club_management_tab_teams">Teams</string>
+    <string name="club_management_tab_members">Members</string>
+    <string name="club_management_tab_events">Events</string>
+    <string name="club_management_active_teams">ACTIVE TEAMS (%1$d)</string>
+    <string name="club_management_no_teams">No teams yet</string>
+    <string name="club_management_no_teams_hint">Tap + to add one</string>
+    <string name="coming_soon">Coming soon</string>
+
+    <!-- Add / Edit Team -->
+    <string name="add_team_title">Add New Team</string>
+    <string name="edit_team_title">Edit Team</string>
+    <string name="add_team_photo_cd">Upload team photo</string>
+    <string name="add_team_brand_label">TEAM BRAND &amp; IDENTITY</string>
+    <string name="add_team_name_label">Team Name</string>
+    <string name="add_team_name_placeholder">e.g. Los Angeles Lakers</string>
+    <string name="add_team_head_coach_label">Head Coach</string>
+    <string name="add_team_head_coach_placeholder">Coach Name</string>
+    <string name="add_team_assistant_label">Assistant Coach(es)</string>
+    <string name="add_team_assistant_placeholder">Add Assistant</string>
+    <string name="add_team_add_assistant_cd">Add assistant</string>
+    <string name="add_team_remove_assistant_cd">Remove %1$s</string>
+    <string name="add_team_category_label">Team Category</string>
+    <string name="add_team_category_men">Men</string>
+    <string name="add_team_category_women">Women</string>
+    <string name="add_team_category_children">Children</string>
+    <string name="add_team_category_seniors">Seniors</string>
+    <string name="add_team_location_section">Location &amp; Arena</string>
+    <string name="add_team_location_label">City / Location</string>
+    <string name="add_team_arena_label">Arena Name</string>
+    <string name="add_team_save_button">Save Team</string>
+    <string name="add_team_save_changes_button">Save Changes</string>
+    <string name="add_team_delete_button">Delete Team</string>
+
+    <!-- Home (dev navigation) -->
+    <string name="home_go_login">Go to Login</string>
+    <string name="home_go_register">Go to Register</string>
+    <string name="home_go_setup">Go to Setup</string>
+    <string name="home_go_club_management">Go to ClubManagement</string>
+    <string name="home_delete_user">Delete User</string>
+
     <!-- Auth — Register -->
     <string name="auth_join">Join</string>
     <string name="auth_register_subtitle">Create an account to start managing your court.</string>

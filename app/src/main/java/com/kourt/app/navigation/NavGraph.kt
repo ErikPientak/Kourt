@@ -58,6 +58,7 @@ fun NavGraph(
             route = Destination.AddTeamScreen.route,
             arguments = listOf(
                 navArgument("clubId") { type = NavType.StringType; defaultValue = "" },
+                navArgument("teamId") { type = NavType.StringType; defaultValue = "" },
             ),
         ) {
             AddTeamScreen(navigation = navigation)
