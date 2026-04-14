@@ -24,3 +24,13 @@ val LightOutline = Color(0xFFE6E6E6)
 
 // Shared
 val White = Color(0xFFFFFFFF)
+
+// Role badge colors
+val RoleBadgePlayer = Color(0xFF2563EB)   // Blue
+val RoleBadgeCoach = Color(0xFF7C3AED)   // Purple
+val RoleBadgeCaptain = Color(0xFFD97706)   // Amber
+val RoleBadgeAssistant = Color(0xFF059669)   // Emerald
+val RoleBadgeParent = Color(0xFF0891B2)   // Cyan
+val RoleBadgeAdmin = Color(0xFFD50000)   // Red
+
+
