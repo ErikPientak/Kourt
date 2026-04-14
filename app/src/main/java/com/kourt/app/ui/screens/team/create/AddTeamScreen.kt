@@ -76,7 +76,10 @@ fun AddTeamScreen(
     val placeholderColor = if (isDark) DarkPlaceholder else LightPlaceholder
 
     LaunchedEffect(uiState.isSuccess) {
-        if (uiState.isSuccess) navigation.navigateToClubManagementScreen()
+        if (uiState.isSuccess) {
+            viewModel.onSuccessConsumed()
+            navigation.navigateToClubManagementScreen()
+        }
     }
 
     BaseScreen(

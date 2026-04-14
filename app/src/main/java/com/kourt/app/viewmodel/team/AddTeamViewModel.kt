@@ -193,6 +193,10 @@ class AddTeamViewModel @Inject constructor(
         }
     }
 
+    override fun onSuccessConsumed() {
+        uiState = uiState.copy(isSuccess = false)
+    }
+
     private fun generateJoinCode(): String =
         (1..JOIN_CODE_LENGTH).map { JOIN_CODE_CHARS.random() }.joinToString("")
 }

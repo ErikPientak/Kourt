@@ -16,4 +16,5 @@ interface AddTeamScreenActions {
     fun onArenaChange(value: String)
     fun onLogoUploadTap()
     fun onSaveTeam()
+    fun onSuccessConsumed()
 }
