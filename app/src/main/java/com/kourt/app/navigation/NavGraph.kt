@@ -16,6 +16,7 @@ import com.kourt.app.ui.screens.club.management.ClubManagementScreen
 import com.kourt.app.ui.screens.club.review.ReviewConfirmScreen
 import com.kourt.app.ui.screens.home.HomeScreen
 import com.kourt.app.ui.screens.setup.SetupScreen
+import com.kourt.app.ui.screens.team.create.AddTeamScreen
 
 @Composable
 fun NavGraph(
@@ -51,6 +52,15 @@ fun NavGraph(
 
         composable(route = Destination.ClubManagementScreen.route) {
             ClubManagementScreen(navigation = navigation)
+        }
+
+        composable(
+            route = Destination.AddTeamScreen.route,
+            arguments = listOf(
+                navArgument("clubId") { type = NavType.StringType; defaultValue = "" },
+            ),
+        ) {
+            AddTeamScreen(navigation = navigation)
         }
 
         composable(

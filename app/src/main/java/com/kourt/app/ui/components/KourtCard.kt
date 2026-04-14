@@ -74,7 +74,7 @@ fun KourtCard(
         modifier = modifier
             .fillMaxWidth()
             .then(clickableModifier),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(52.dp),
         color = MaterialTheme.colorScheme.surface,
     ) {
         Row(

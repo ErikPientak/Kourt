@@ -24,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -36,7 +37,6 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.kourt.app.data.model.Team
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.BaseScreenWithBottomNav
 import com.kourt.app.ui.components.TeamCard
@@ -55,7 +55,8 @@ fun ClubManagementScreen(
 
     ClubManagementScreenContent(
         uiState = uiState,
-        onAddTeam = viewModel::onAddTeam,
+        onAddTeam = { navigation.navigateToAddTeamScreen(uiState.clubId)
+                    viewModel.onAddTeam() },
         onTeamClick = viewModel::onTeamClick,
         onSettingsTap = viewModel::onSettingsTap,
     )

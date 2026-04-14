@@ -10,6 +10,8 @@ data class Team(
     val name: String = "",
     val category: String = "",
     val headCoach: String = "",
+    val location: String = "",
+    val arena: String = "",
     @PropertyName("join_code") val joinCode: String = "",
     @PropertyName("created_by") val createdBy: String = "",
     @PropertyName("created_at") val createdAt: Timestamp = Timestamp.now()

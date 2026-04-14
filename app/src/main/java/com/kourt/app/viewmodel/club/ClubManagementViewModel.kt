@@ -51,9 +51,11 @@ class ClubManagementViewModel @Inject constructor(
                 val teams = teamRepository.getTeamsByClub(club.id)
                 uiState = uiState.copy(
                     isLoading = false,
+                    clubId = club.id,
                     clubName = club.name,
                     teams = teams,
                 )
+                Log.d(TAG, "Club data loaded: $club")
             }.onFailure { e ->
                 Log.e(TAG, "Failed to load club data", e)
                 uiState = uiState.copy(
@@ -65,7 +67,7 @@ class ClubManagementViewModel @Inject constructor(
     }
 
     override fun onAddTeam() {
-        Log.d(TAG, "onAddTeam: CreateTeam screen not yet implemented")
+        Log.d(TAG, uiState.clubId)
     }
 
     override fun onTeamClick(teamId: String) {

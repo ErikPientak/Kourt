@@ -19,4 +19,5 @@ interface INavigationRouter {
         city: String,
     )
     fun navigateToClubManagementScreen()
+    fun navigateToAddTeamScreen(clubId: String)
 }

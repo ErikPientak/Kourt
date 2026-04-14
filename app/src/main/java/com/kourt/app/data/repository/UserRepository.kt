@@ -26,4 +26,15 @@ class UserRepository @Inject constructor(
     suspend fun deleteUser(id: String) {
         collection.document(id).delete().await()
     }
+
+    suspend fun searchByDisplayName(query: String): List<User> {
+        if (query.isBlank()) return emptyList()
+        return collection
+            .whereGreaterThanOrEqualTo("displayName", query)
+            .whereLessThan("displayName", query + "\uf8ff")
+            .limit(10)
+            .get()
+            .await()
+            .toObjects(User::class.java)
+    }
 }
