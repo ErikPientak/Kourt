@@ -24,7 +24,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -41,6 +40,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.BaseScreenWithBottomNav
 import com.kourt.app.ui.components.TeamCard
+import com.kourt.app.ui.screens.club.management.Tabs.MembersTab
+import com.kourt.app.ui.screens.club.management.Tabs.TeamsTab
 import com.kourt.app.viewmodel.club.ClubManagementViewModel
 
 private const val TAB_TEAMS = 0
@@ -56,10 +57,16 @@ fun ClubManagementScreen(
 
     ClubManagementScreenContent(
         uiState = uiState,
-        onAddTeam = { navigation.navigateToAddTeamScreen(uiState.clubId)
-                    viewModel.onAddTeam() },
+        onAddTeam = {
+            navigation.navigateToAddTeamScreen(uiState.clubId)
+            viewModel.onAddTeam()
+        },
         onTeamClick = { teamId -> navigation.navigateToEditTeamScreen(teamId) },
         onSettingsTap = viewModel::onSettingsTap,
+        onMemberSearchQueryChange = viewModel::onMemberSearchQueryChange,
+        onMemberFilterChange = viewModel::onMemberFilterChange,
+        onMemberMenuClick = viewModel::onMemberMenuClick,
+        onAddMember = viewModel::onAddMember,
     )
 }
 
@@ -69,6 +76,10 @@ private fun ClubManagementScreenContent(
     onAddTeam: () -> Unit,
     onTeamClick: (String) -> Unit,
     onSettingsTap: () -> Unit,
+    onMemberSearchQueryChange: (String) -> Unit,
+    onMemberFilterChange: (MemberFilter) -> Unit,
+    onMemberMenuClick: (String) -> Unit,
+    onAddMember: () -> Unit,
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(TAB_TEAMS) }
 
@@ -89,8 +100,8 @@ private fun ClubManagementScreenContent(
             )
         },
         floatingActionButton = {
-            if (selectedTab == TAB_TEAMS) {
-                FloatingActionButton(
+            when (selectedTab) {
+                TAB_TEAMS -> FloatingActionButton(
                     onClick = onAddTeam,
                     shape = RoundedCornerShape(16.dp),
                     containerColor = MaterialTheme.colorScheme.primary,
@@ -101,10 +112,20 @@ private fun ClubManagementScreenContent(
                         contentDescription = stringResource(com.kourt.app.R.string.club_management_add_team_cd),
                     )
                 }
+                TAB_MEMBERS -> FloatingActionButton(
+                    onClick = onAddMember,
+                    shape = RoundedCornerShape(16.dp),
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = stringResource(com.kourt.app.R.string.members_add_member_cd),
+                    )
+                }
             }
         },
     ) { padding ->
-        // ── Content area ─────────────────────────────────────────────────
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -115,7 +136,12 @@ private fun ClubManagementScreenContent(
                     uiState = uiState,
                     onTeamClick = onTeamClick,
                 )
-                TAB_MEMBERS -> ComingSoonTab()
+                TAB_MEMBERS -> MembersTab(
+                    uiState = uiState,
+                    onSearchQueryChange = onMemberSearchQueryChange,
+                    onFilterChange = onMemberFilterChange,
+                    onMenuClick = onMemberMenuClick,
+                )
                 TAB_EVENTS -> ComingSoonTab()
             }
         }
@@ -198,77 +224,6 @@ private fun ClubManagementBottomNav(
     }
 }
 
-// ── Teams tab ─────────────────────────────────────────────────────────────────
-
-@Composable
-private fun TeamsTab(
-    uiState: ClubManagementScreenUiState,
-    onTeamClick: (String) -> Unit,
-) {
-    when {
-        uiState.isLoading -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-            }
-        }
-
-        uiState.teams.isEmpty() -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Text(
-                        text = stringResource(com.kourt.app.R.string.club_management_no_teams),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onBackground,
-                    )
-                    Text(
-                        text = stringResource(com.kourt.app.R.string.club_management_no_teams_hint),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-                    )
-                }
-            }
-        }
-
-        else -> {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                item {
-                    Text(
-                        text = stringResource(com.kourt.app.R.string.club_management_active_teams, uiState.teams.size),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                    )
-                }
-
-                items(
-                    items = uiState.teams,
-                    key = { team -> team.id },
-                ) { team ->
-                    TeamCard(
-                        teamName = team.name,
-                        headCoach = team.headCoach,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        onClick = { onTeamClick(team.id) },
-                    )
-                }
-            }
-        }
-    }
-}
-
-// ── Stub tabs ─────────────────────────────────────────────────────────────────
-
 @Composable
 private fun ComingSoonTab() {
     Box(
@@ -282,4 +237,3 @@ private fun ComingSoonTab() {
         )
     }
 }
-

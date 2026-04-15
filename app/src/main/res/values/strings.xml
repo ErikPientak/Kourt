@@ -80,6 +80,21 @@
     <string name="club_management_no_teams_hint">Tap + to add one</string>
     <string name="coming_soon">Coming soon</string>
 
+    <!-- Club Management — Members tab -->
+    <string name="members_search_placeholder">Search players or coaches…</string>
+    <string name="members_filter_all">All</string>
+    <string name="members_filter_coach">Coach</string>
+    <string name="members_filter_player">Player</string>
+    <string name="members_filter_parent">Parent</string>
+    <string name="members_count">MEMBERS (%1$d)</string>
+    <string name="members_no_results">No members found</string>
+    <string name="members_no_results_hint">Try a different search or filter</string>
+    <string name="members_error_retry">Retry</string>
+    <string name="members_more_options_cd">More options for %1$s</string>
+    <string name="members_subtitle_team">Team: %1$s</string>
+    <string name="members_subtitle_athlete">Athlete: %1$s</string>
+    <string name="members_add_member_cd">Add member</string>
+
     <!-- Add / Edit Team -->
     <string name="add_team_title">Add New Team</string>
     <string name="edit_team_title">Edit Team</string>
