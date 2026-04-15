@@ -30,4 +30,6 @@ data class AddTeamScreenUiState(
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
     val error: String? = null,
+    // Delete dialog
+    val showDeleteDialog: Boolean = false,
 )

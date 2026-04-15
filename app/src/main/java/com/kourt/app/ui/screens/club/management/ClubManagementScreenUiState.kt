@@ -52,4 +52,11 @@ data class ClubManagementScreenUiState(
     val memberFilter: MemberFilter = MemberFilter.ALL,
     val isMembersLoading: Boolean = false,
     val membersError: String? = null,
+
+    // ── Member Action bottom sheet ────────────────────────────────────────────
+    /**
+     * The TeamMember document ID of the member whose action sheet is open.
+     * `null` means the sheet is dismissed.
+     */
+    val selectedMemberId: String? = null,
 )

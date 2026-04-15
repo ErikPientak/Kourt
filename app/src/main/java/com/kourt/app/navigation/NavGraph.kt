@@ -23,7 +23,11 @@ fun NavGraph(
     navController: NavHostController = rememberNavController(),
     navigation: INavigationRouter = remember { NavigationRouterImpl(navController) },
     startDestination: String,
-    paddingValues: PaddingValues
+    paddingValues: PaddingValues,
+    isDarkTheme: Boolean = true,
+    currentLanguage: String = "en",
+    onToggleTheme: () -> Unit = {},
+    onSetLanguage: (String) -> Unit = {},
 ) {
 
     NavHost(
@@ -39,7 +43,13 @@ fun NavGraph(
         }
 
         composable(route = Destination.HomeScreen.route) {
-            HomeScreen(navigation = navigation)
+            HomeScreen(
+                navigation = navigation,
+                isDarkTheme = isDarkTheme,
+                currentLanguage = currentLanguage,
+                onToggleTheme = onToggleTheme,
+                onSetLanguage = onSetLanguage,
+            )
         }
 
         composable(route = Destination.SetupScreen.route) {

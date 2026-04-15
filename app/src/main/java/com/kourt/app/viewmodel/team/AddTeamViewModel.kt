@@ -283,11 +283,25 @@ class AddTeamViewModel @Inject constructor(
         }
     }
 
+    // Opens the confirmation dialog — wired to the trash icon in the top bar.
     override fun onDeleteTeam() {
+        onDeleteTeamClick()
+    }
+
+    override fun onDeleteTeamClick() {
+        if (!uiState.isEditMode || uiState.teamId.isBlank()) return
+        uiState = uiState.copy(showDeleteDialog = true)
+    }
+
+    override fun onDeleteTeamDismiss() {
+        uiState = uiState.copy(showDeleteDialog = false)
+    }
+
+    override fun onDeleteTeamConfirm() {
         if (!uiState.isEditMode || uiState.teamId.isBlank()) return
 
         viewModelScope.launch {
-            uiState = uiState.copy(isLoading = true, error = null)
+            uiState = uiState.copy(isLoading = true, showDeleteDialog = false, error = null)
 
             runCatching {
                 teamRepository.deleteTeam(uiState.teamId)

@@ -9,7 +9,17 @@ interface ClubManagementScreenActions {
     // ── Members tab ──────────────────────────────────────────────────────────
     fun onMemberSearchQueryChange(query: String)
     fun onMemberFilterChange(filter: MemberFilter)
-    /** Stub — three-dot menu tapped for the given TeamMember document ID. */
+    /** Three-dot menu tapped — opens the action sheet for [memberId]. */
     fun onMemberMenuClick(memberId: String)
     fun onAddMember()
+
+    // ── Member Action bottom sheet ────────────────────────────────────────────
+    /** Sheet dismissed (drag-down or action tap). */
+    fun onMemberActionDismiss()
+    /** "Edit Member" row tapped. */
+    fun onEditMember(memberId: String)
+    /** "Change Role" row tapped. */
+    fun onChangeRole(memberId: String)
+    /** "Remove from Club" row tapped. */
+    fun onRemoveFromClub(memberId: String)
 }

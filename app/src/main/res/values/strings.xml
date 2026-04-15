@@ -80,6 +80,12 @@
     <string name="club_management_no_teams_hint">Tap + to add one</string>
     <string name="coming_soon">Coming soon</string>
 
+    <!-- Member Action bottom sheet -->
+    <string name="member_action_title">Member Action</string>
+    <string name="member_action_edit">Edit Member</string>
+    <string name="member_action_change_role">Change Role</string>
+    <string name="member_action_remove">Remove from Club</string>
+
     <!-- Club Management — Members tab -->
     <string name="members_search_placeholder">Search players or coaches…</string>
     <string name="members_filter_all">All</string>
@@ -119,8 +125,16 @@
     <string name="add_team_save_button">Save Team</string>
     <string name="add_team_save_changes_button">Save Changes</string>
     <string name="add_team_delete_button">Delete Team</string>
+    <string name="delete_team_title">Delete Team</string>
+    <string name="delete_team_message">Are you sure you want to delete this team? This action cannot be undone.</string>
+    <string name="delete_team_confirm">Delete</string>
+    <string name="action_cancel">Cancel</string>
 
     <!-- Home (dev navigation) -->
+    <string name="home_theme_label">Theme</string>
+    <string name="home_theme_light">Light</string>
+    <string name="home_theme_dark">Dark</string>
+    <string name="home_language_label">Language</string>
     <string name="home_go_login">Go to Login</string>
     <string name="home_go_register">Go to Register</string>
     <string name="home_go_setup">Go to Setup</string>

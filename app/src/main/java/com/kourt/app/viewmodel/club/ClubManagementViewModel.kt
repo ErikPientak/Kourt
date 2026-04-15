@@ -208,13 +208,35 @@ class ClubManagementViewModel @Inject constructor(
     }
 
     override fun onMemberMenuClick(memberId: String) {
-        // Stub — menu actions not yet implemented
-        Log.d(TAG, "onMemberMenuClick: memberId=$memberId")
+        Log.d(TAG, "onMemberMenuClick: memberId=$memberId — opening action sheet")
+        uiState = uiState.copy(selectedMemberId = memberId)
     }
 
     override fun onAddMember() {
         // Stub — add-member flow not yet implemented
         Log.d(TAG, "onAddMember")
+    }
+
+    // ── Member Action bottom sheet ────────────────────────────────────────────
+
+    override fun onMemberActionDismiss() {
+        Log.d(TAG, "onMemberActionDismiss")
+        uiState = uiState.copy(selectedMemberId = null)
+    }
+
+    override fun onEditMember(memberId: String) {
+        Log.d(TAG, "onEditMember: memberId=$memberId")
+        uiState = uiState.copy(selectedMemberId = null)
+    }
+
+    override fun onChangeRole(memberId: String) {
+        Log.d(TAG, "onChangeRole: memberId=$memberId")
+        uiState = uiState.copy(selectedMemberId = null)
+    }
+
+    override fun onRemoveFromClub(memberId: String) {
+        Log.d(TAG, "onRemoveFromClub: memberId=$memberId")
+        uiState = uiState.copy(selectedMemberId = null)
     }
 
     // ── Teams tab ─────────────────────────────────────────────────────────────

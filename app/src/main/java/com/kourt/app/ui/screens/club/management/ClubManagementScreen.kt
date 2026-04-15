@@ -10,13 +10,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,7 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.BaseScreenWithBottomNav
-import com.kourt.app.ui.components.TeamCard
+import com.kourt.app.ui.components.MemberActionBottomSheet
 import com.kourt.app.ui.screens.club.management.Tabs.MembersTab
 import com.kourt.app.ui.screens.club.management.Tabs.TeamsTab
 import com.kourt.app.viewmodel.club.ClubManagementViewModel
@@ -67,9 +65,14 @@ fun ClubManagementScreen(
         onMemberFilterChange = viewModel::onMemberFilterChange,
         onMemberMenuClick = viewModel::onMemberMenuClick,
         onAddMember = viewModel::onAddMember,
+        onMemberActionDismiss = viewModel::onMemberActionDismiss,
+        onEditMember = viewModel::onEditMember,
+        onChangeRole = viewModel::onChangeRole,
+        onRemoveFromClub = viewModel::onRemoveFromClub,
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ClubManagementScreenContent(
     uiState: ClubManagementScreenUiState,
@@ -80,8 +83,24 @@ private fun ClubManagementScreenContent(
     onMemberFilterChange: (MemberFilter) -> Unit,
     onMemberMenuClick: (String) -> Unit,
     onAddMember: () -> Unit,
+    onMemberActionDismiss: () -> Unit,
+    onEditMember: (String) -> Unit,
+    onChangeRole: (String) -> Unit,
+    onRemoveFromClub: (String) -> Unit,
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(TAB_TEAMS) }
+
+    // Member Action bottom sheet — driven entirely by uiState.selectedMemberId
+    val selectedMemberId = uiState.selectedMemberId
+    if (selectedMemberId != null) {
+        MemberActionBottomSheet(
+            memberId = selectedMemberId,
+            onDismiss = onMemberActionDismiss,
+            onEditMember = onEditMember,
+            onChangeRole = onChangeRole,
+            onRemoveFromClub = onRemoveFromClub,
+        )
+    }
 
     BaseScreenWithBottomNav(
         title = uiState.clubName.ifBlank { stringResource(com.kourt.app.R.string.club_management_title) },

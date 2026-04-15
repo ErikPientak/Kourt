@@ -33,6 +33,9 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -45,10 +48,12 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -68,6 +73,7 @@ import com.kourt.app.ui.components.CategoryChip
 import com.kourt.app.ui.components.KourtButton
 import com.kourt.app.ui.components.authTextFieldColors
 import com.kourt.app.ui.theme.DarkPlaceholder
+import com.kourt.app.ui.theme.KourtTheme
 import com.kourt.app.ui.theme.LightPlaceholder
 import com.kourt.app.viewmodel.team.AddTeamViewModel
 
@@ -88,12 +94,22 @@ fun AddTeamScreen(
         }
     }
 
+    if (uiState.showDeleteDialog) {
+        DeleteTeamDialog(
+            onDismiss = { viewModel.onDeleteTeamDismiss() },
+            onConfirm = { viewModel.onDeleteTeamConfirm() },
+        )
+    }
+
     BaseScreen(
         title = stringResource(if (uiState.isEditMode) R.string.edit_team_title else R.string.add_team_title),
         onBack = { navigation.returnBack() },
         trailingIcon = if (uiState.isEditMode) {
             {
-                IconButton(onClick = { viewModel.onDeleteTeam() }) {
+                IconButton(
+                    onClick = { viewModel.onDeleteTeamClick() },
+                    enabled = !uiState.isLoading,
+                ) {
                     Icon(
                         imageVector = Icons.Filled.Delete,
                         contentDescription = stringResource(R.string.add_team_delete_button),
@@ -533,7 +549,68 @@ fun AddTeamScreen(
 
 // ── Private composables ───────────────────────────────────────────────────────
 
+@Composable
+private fun DeleteTeamDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(R.string.delete_team_title),
+                style = MaterialTheme.typography.titleLarge,
+            )
+        },
+        text = {
+            Text(
+                text = stringResource(R.string.delete_team_message),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    text = stringResource(R.string.action_cancel),
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError,
+                ),
+            ) {
+                Text(text = stringResource(R.string.delete_team_confirm))
+            }
+        },
+    )
+}
 
+@Preview(name = "Delete Team Dialog — Light", showBackground = true)
+@Composable
+private fun DeleteTeamDialogLightPreview() {
+    KourtTheme(darkTheme = false) {
+        DeleteTeamDialog(
+            onDismiss = {},
+            onConfirm = {},
+        )
+    }
+}
+
+@Preview(name = "Delete Team Dialog — Dark", showBackground = true, backgroundColor = 0xFF131212)
+@Composable
+private fun DeleteTeamDialogDarkPreview() {
+    KourtTheme(darkTheme = true) {
+        DeleteTeamDialog(
+            onDismiss = {},
+            onConfirm = {},
+        )
+    }
+}
 
 @Composable
 private fun AssistantChip(
