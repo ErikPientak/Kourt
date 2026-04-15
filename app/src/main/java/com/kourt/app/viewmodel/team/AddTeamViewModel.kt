@@ -1,5 +1,6 @@
 package com.kourt.app.viewmodel.team
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -7,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kourt.app.R
 import com.kourt.app.data.model.Team
 import com.kourt.app.data.model.TeamMember
 import com.kourt.app.data.model.User
@@ -17,6 +19,7 @@ import com.kourt.app.data.repository.UserRepository
 import com.kourt.app.ui.screens.team.create.AddTeamScreenActions
 import com.kourt.app.ui.screens.team.create.AddTeamScreenUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -28,6 +31,7 @@ private val JOIN_CODE_CHARS = ('A'..'Z') + ('0'..'9')
 
 @HiltViewModel
 class AddTeamViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val teamRepository: TeamRepository,
     private val teamMemberRepository: TeamMemberRepository,
     private val userRepository: UserRepository,
@@ -55,7 +59,7 @@ class AddTeamViewModel @Inject constructor(
             runCatching {
                 val team = teamRepository.getTeam(id)
                 if (team == null) {
-                    uiState = uiState.copy(isLoading = false, error = "Team not found")
+                    uiState = uiState.copy(isLoading = false, error = context.getString(R.string.error_team_not_found))
                     return@launch
                 }
                 uiState = uiState.copy(
@@ -181,17 +185,17 @@ class AddTeamViewModel @Inject constructor(
 
     override fun onSaveTeam() {
         if (uiState.teamName.isBlank()) {
-            uiState = uiState.copy(error = "Team name is required")
+            uiState = uiState.copy(error = context.getString(R.string.error_team_name_required))
             return
         }
         val headCoachResolved = uiState.selectedHeadCoach
         if (headCoachResolved == null && !uiState.isHeadCoachPreloaded) {
-            uiState = uiState.copy(error = "Please select a head coach from the search results")
+            uiState = uiState.copy(error = context.getString(R.string.error_select_head_coach))
             return
         }
         if (uiState.location.isBlank() || uiState.arena.isBlank()) {
             uiState = uiState.copy(
-                error = if (uiState.location.isBlank()) "Location is required" else "Arena name is required",
+                error = context.getString(if (uiState.location.isBlank()) R.string.error_location_required else R.string.error_arena_required),
                 isLocationExpanded = true,
             )
             return
@@ -206,7 +210,7 @@ class AddTeamViewModel @Inject constructor(
 
     private fun createTeam() {
         val uid = authRepository.currentUser?.uid ?: run {
-            uiState = uiState.copy(error = "You must be signed in")
+            uiState = uiState.copy(error = context.getString(R.string.error_not_signed_in))
             return
         }
 

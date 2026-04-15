@@ -150,4 +150,15 @@
     <string name="auth_confirm_password_placeholder">Re-enter your password</string>
     <string name="auth_signup_button">Sign Up</string>
     <string name="auth_have_account">Already have an account?</string>
+
+    <!-- Validation errors -->
+    <string name="error_passwords_do_not_match">Passwords do not match</string>
+    <string name="error_club_name_required">Club name is required</string>
+    <string name="error_not_signed_in">You must be signed in</string>
+    <string name="error_no_club_found">No club found</string>
+    <string name="error_team_not_found">Team not found</string>
+    <string name="error_team_name_required">Team name is required</string>
+    <string name="error_select_head_coach">Please select a head coach from the search results</string>
+    <string name="error_location_required">Location is required</string>
+    <string name="error_arena_required">Arena name is required</string>
 </resources>

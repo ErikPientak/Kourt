@@ -1,5 +1,6 @@
 package com.kourt.app.viewmodel.club
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -8,12 +9,14 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
+import com.kourt.app.R
 import com.kourt.app.data.model.Club
 import com.kourt.app.data.repository.AuthRepository
 import com.kourt.app.data.repository.ClubRepository
 import com.kourt.app.ui.screens.club.review.ReviewConfirmScreenActions
 import com.kourt.app.ui.screens.club.review.ReviewConfirmScreenUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,6 +26,7 @@ private val JOIN_CODE_CHARS = ('A'..'Z') + ('0'..'9')
 
 @HiltViewModel
 class ReviewConfirmViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     savedStateHandle: SavedStateHandle,
     private val clubRepository: ClubRepository,
     private val authRepository: AuthRepository,
@@ -43,7 +47,7 @@ class ReviewConfirmViewModel @Inject constructor(
     override fun onConfirm() {
         val uid = authRepository.currentUser?.uid
         if (uid == null) {
-            uiState = uiState.copy(error = "You must be signed in to create a club")
+            uiState = uiState.copy(error = context.getString(R.string.error_not_signed_in))
             return
         }
 

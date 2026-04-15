@@ -1,11 +1,13 @@
 package com.kourt.app.viewmodel.club
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kourt.app.R
 import com.kourt.app.data.model.Team
 import com.kourt.app.data.repository.AuthRepository
 import com.kourt.app.data.repository.ClubRepository
@@ -17,6 +19,7 @@ import com.kourt.app.ui.screens.club.management.ClubManagementScreenActions
 import com.kourt.app.ui.screens.club.management.ClubManagementScreenUiState
 import com.kourt.app.ui.screens.club.management.MemberFilter
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
@@ -26,6 +29,7 @@ private const val TAG = "ClubManagementViewModel"
 
 @HiltViewModel
 class ClubManagementViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val clubRepository: ClubRepository,
     private val teamRepository: TeamRepository,
     private val teamMemberRepository: TeamMemberRepository,
@@ -48,14 +52,14 @@ class ClubManagementViewModel @Inject constructor(
 
             val uid = authRepository.currentUser?.uid
             if (uid == null) {
-                uiState = uiState.copy(isLoading = false, error = "You must be signed in")
+                uiState = uiState.copy(isLoading = false, error = context.getString(R.string.error_not_signed_in))
                 return@launch
             }
 
             runCatching {
                 val club = clubRepository.getClubByAdminId(uid)
                 if (club == null) {
-                    uiState = uiState.copy(isLoading = false, error = "No club found")
+                    uiState = uiState.copy(isLoading = false, error = context.getString(R.string.error_no_club_found))
                     return@launch
                 }
 

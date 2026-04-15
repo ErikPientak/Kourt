@@ -1,19 +1,24 @@
 package com.kourt.app.viewmodel.club
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.kourt.app.R
 import com.kourt.app.ui.screens.club.create.CreateClubScreenActions
 import com.kourt.app.ui.screens.club.create.CreateClubScreenUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 private const val TAG = "CreateClubViewModel"
 
 @HiltViewModel
-class CreateClubViewModel @Inject constructor() : ViewModel(), CreateClubScreenActions {
+class CreateClubViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
+) : ViewModel(), CreateClubScreenActions {
 
     var uiState by mutableStateOf(CreateClubScreenUiState())
         private set
@@ -44,7 +49,7 @@ class CreateClubViewModel @Inject constructor() : ViewModel(), CreateClubScreenA
 
     override fun onCreateClub() {
         if (uiState.clubName.isBlank()) {
-            uiState = uiState.copy(error = "Club name is required")
+            uiState = uiState.copy(error = context.getString(R.string.error_club_name_required))
             return
         }
         // Validation passed — signal success so the screen navigates to ReviewConfirmScreen.

@@ -1,5 +1,6 @@
 package com.kourt.app.viewmodel.auth
 
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -7,11 +8,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kourt.app.data.model.User
 import android.util.Log
+import com.kourt.app.R
 import com.kourt.app.data.repository.AuthRepository
 import com.kourt.app.data.repository.UserRepository
 import com.kourt.app.ui.screens.auth.register.RegisterScreenActions
 import com.kourt.app.ui.screens.auth.register.RegisterScreenUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,6 +22,7 @@ private const val TAG = "RegisterViewModel"
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
 ) : ViewModel(), RegisterScreenActions {
@@ -29,7 +33,7 @@ class RegisterViewModel @Inject constructor(
     override fun onRegister(fullName: String, email: String, password: String, confirmPassword: String) {
         if (password != confirmPassword) {
             Log.w(TAG, "Registration failed: passwords do not match")
-            uiState = uiState.copy(error = "Passwords do not match")
+            uiState = uiState.copy(error = context.getString(R.string.error_passwords_do_not_match))
             return
         }
         viewModelScope.launch {

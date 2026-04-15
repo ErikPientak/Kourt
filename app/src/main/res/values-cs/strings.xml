@@ -70,6 +70,25 @@
     <string name="club_management_no_teams_hint">Klepnutím na + přidejte nový</string>
     <string name="coming_soon">Již brzy</string>
 
+    <string name="member_action_title">Akce se členem</string>
+    <string name="member_action_edit">Upravit člena</string>
+    <string name="member_action_change_role">Změnit roli</string>
+    <string name="member_action_remove">Odebrat z klubu</string>
+
+    <string name="members_search_placeholder">Hledat hráče nebo trenéry…</string>
+    <string name="members_filter_all">Vše</string>
+    <string name="members_filter_coach">Trenér</string>
+    <string name="members_filter_player">Hráč</string>
+    <string name="members_filter_parent">Rodič</string>
+    <string name="members_count">ČLENOVÉ (%1$d)</string>
+    <string name="members_no_results">Nenalezeni žádní členové</string>
+    <string name="members_no_results_hint">Zkuste jiné vyhledávání nebo filtr</string>
+    <string name="members_error_retry">Zkusit znovu</string>
+    <string name="members_more_options_cd">Další možnosti pro: %1$s</string>
+    <string name="members_subtitle_team">Tým: %1$s</string>
+    <string name="members_subtitle_athlete">Sportovec: %1$s</string>
+    <string name="members_add_member_cd">Přidat člena</string>
+
     <string name="add_team_title">Přidat nový tým</string>
     <string name="edit_team_title">Upravit tým</string>
     <string name="add_team_photo_cd">Nahrát fotku týmu</string>
@@ -93,6 +112,15 @@
     <string name="add_team_save_button">Uložit tým</string>
     <string name="add_team_save_changes_button">Uložit změny</string>
     <string name="add_team_delete_button">Smazat tým</string>
+    <string name="delete_team_title">Smazat tým</string>
+    <string name="delete_team_message">Opravdu chcete tento tým smazat? Tuto akci nelze vzít zpět.</string>
+    <string name="delete_team_confirm">Smazat</string>
+    <string name="action_cancel">Zrušit</string>
+
+    <string name="home_theme_label">Motiv</string>
+    <string name="home_theme_light">Světlý</string>
+    <string name="home_theme_dark">Tmavý</string>
+    <string name="home_language_label">Jazyk</string>
 
     <string name="home_go_login">Přejít na přihlášení</string>
     <string name="home_go_register">Přejít na registraci</string>
@@ -114,4 +142,15 @@
     <string name="auth_confirm_password_placeholder">Znovu zadejte heslo</string>
     <string name="auth_signup_button">Zaregistrovat se</string>
     <string name="auth_have_account">Už máte účet?</string>
+
+    <!-- Validation errors -->
+    <string name="error_passwords_do_not_match">Hesla se neshodují</string>
+    <string name="error_club_name_required">Název klubu je povinný</string>
+    <string name="error_not_signed_in">Musíte být přihlášeni</string>
+    <string name="error_no_club_found">Žádný klub nebyl nalezen</string>
+    <string name="error_team_not_found">Tým nebyl nalezen</string>
+    <string name="error_team_name_required">Název týmu je povinný</string>
+    <string name="error_select_head_coach">Vyberte hlavního trenéra z výsledků vyhledávání</string>
+    <string name="error_location_required">Lokalita je povinná</string>
+    <string name="error_arena_required">Název haly je povinný</string>
 </resources>
