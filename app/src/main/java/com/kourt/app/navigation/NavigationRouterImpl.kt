@@ -63,4 +63,16 @@ class NavigationRouterImpl(private val navController: NavController) : INavigati
     override fun navigateToSettingsScreen() {
         navController.navigate(Destination.SettingsScreen.route)
     }
+
+    override fun navigateToProfileScreen() {
+        navController.navigate(Destination.ProfileScreen.route)
+    }
+
+    override fun navigateToEditProfile() {
+        // TODO: implement edit profile navigation
+    }
+
+    override fun navigateToDashboard() {
+        // TODO: implement dashboard navigation
+    }
 }

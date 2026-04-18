@@ -70,7 +70,7 @@ fun SettingsScreen(
         isDarkTheme = isDarkTheme,
         onBack = navigation::returnBack,
         onToggleTheme = onToggleTheme,
-        onProfileClick = { /* TODO: navigate to Profile screen */ },
+        onProfileClick = navigation::navigateToProfileScreen,
         onLanguageClick = { /* TODO: navigate to Language picker screen */ },
         onLogOut = viewModel::onLogOut,
         onDeleteAccountClick = viewModel::onDeleteAccountClick,

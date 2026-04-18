@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -36,6 +37,10 @@ fun SetupOptionCard(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val isDark = MaterialTheme.colorScheme.background.blue < 0.5f
+    val iconContainerColor = if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent
+
+
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(52.dp))
@@ -49,13 +54,13 @@ fun SetupOptionCard(
                 modifier = Modifier
                     .size(52.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                    .background(iconContainerColor),
             ) {
                 Icon(
                     painter = icon,
                     contentDescription = iconContentDescription,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(28.dp),
+                    modifier = Modifier.size(42.dp),
                 )
             }
 

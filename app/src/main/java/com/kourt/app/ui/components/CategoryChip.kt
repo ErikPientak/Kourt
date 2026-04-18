@@ -33,6 +33,7 @@ fun CategoryChip(
 ) {
     val borderColor = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent
     val bgColor = MaterialTheme.colorScheme.surface
+    val iconTintColor = MaterialTheme.colorScheme.onBackground
 
     Surface(
         modifier = modifier
@@ -57,7 +58,7 @@ fun CategoryChip(
             Icon(
                 painter = painterResource(R.drawable.basketball),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = iconTintColor,
                 modifier = Modifier.size(18.dp),
             )
             Text(

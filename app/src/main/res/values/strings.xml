@@ -165,6 +165,13 @@
     <string name="settings_delete_account_message">Are you sure you want to delete your account? This action cannot be undone.</string>
     <string name="settings_delete_account_confirm">Delete</string>
 
+    <!-- Profile -->
+    <string name="profile_title">Profile</string>
+    <string name="profile_edit_avatar_cd">Edit profile picture</string>
+    <string name="profile_my_teams">My Teams</string>
+    <string name="profile_subtitle_club">Club</string>
+    <string name="profile_error_load_failed">Failed to load profile data</string>
+
     <!-- Validation errors -->
     <string name="error_passwords_do_not_match">Passwords do not match</string>
     <string name="error_club_name_required">Club name is required</string>

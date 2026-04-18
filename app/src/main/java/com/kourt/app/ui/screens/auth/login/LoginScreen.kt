@@ -39,6 +39,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -66,8 +67,10 @@ fun LoginScreen(
     var password by rememberSaveable { mutableStateOf("") }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
 
+    val isDark = MaterialTheme.colorScheme.background.blue < 0.5f
+
     val placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
-    val iconContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+    val iconContainerColor = if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent
     val iconTintColor = MaterialTheme.colorScheme.onBackground
 
     LaunchedEffect(uiState.isSuccess) {

@@ -72,6 +72,7 @@ fun CreateClubScreen(
 ) {
     val uiState = viewModel.uiState
     val placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
+    val iconTintColor = MaterialTheme.colorScheme.onBackground
 
     var countryDropdownExpanded by remember { mutableStateOf(false) }
 
@@ -85,6 +86,7 @@ fun CreateClubScreen(
                 country = uiState.country,
                 city = uiState.city,
             )
+            viewModel.onSuccessConsumed()
         }
     }
 
@@ -118,7 +120,7 @@ fun CreateClubScreen(
                     Icon(
                         painter = painterResource(R.drawable.camera),
                         contentDescription = stringResource(R.string.create_club_upload_logo),
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        tint = iconTintColor,
                         modifier = Modifier.size(36.dp),
                     )
                 }
@@ -161,7 +163,7 @@ fun CreateClubScreen(
                     Icon(
                         painter = painterResource(R.drawable.group),
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = iconTintColor,
                     )
                 },
                 keyboardOptions = KeyboardOptions(
@@ -194,7 +196,7 @@ fun CreateClubScreen(
                     Icon(
                         painter = painterResource(R.drawable.short_text),
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = iconTintColor,
                     )
                 },
                 keyboardOptions = KeyboardOptions(
@@ -227,7 +229,7 @@ fun CreateClubScreen(
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = iconTintColor,
                     )
                 },
                 keyboardOptions = KeyboardOptions(
@@ -260,7 +262,7 @@ fun CreateClubScreen(
                     Icon(
                         painter = painterResource(R.drawable.admin),
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = iconTintColor,
                     )
                 },
                 keyboardOptions = KeyboardOptions(

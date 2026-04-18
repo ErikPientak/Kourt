@@ -85,6 +85,7 @@ fun AddTeamScreen(
 ) {
     val uiState = viewModel.uiState
     val placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
+    val iconTintColor = MaterialTheme.colorScheme.onBackground
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
@@ -144,7 +145,7 @@ fun AddTeamScreen(
                     Icon(
                         painter = painterResource(R.drawable.camera),
                         contentDescription = stringResource(R.string.add_team_photo_cd),
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        tint = iconTintColor,
                         modifier = Modifier.size(32.dp),
                     )
                 }
@@ -178,7 +179,7 @@ fun AddTeamScreen(
                     Icon(
                         painter = painterResource(R.drawable.group),
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = iconTintColor,
                     )
                 },
                 keyboardOptions = KeyboardOptions(
@@ -218,7 +219,7 @@ fun AddTeamScreen(
                         Icon(
                             imageVector = Icons.Default.Person,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = iconTintColor,
                         )
                     },
                     keyboardOptions = KeyboardOptions(
@@ -250,7 +251,7 @@ fun AddTeamScreen(
                                 Icon(
                                     imageVector = Icons.Default.Person,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                    tint = iconTintColor,
                                     modifier = Modifier.size(16.dp),
                                 )
                             },
@@ -292,7 +293,7 @@ fun AddTeamScreen(
                             Icon(
                                 imageVector = Icons.Default.Person,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
+                                tint = iconTintColor,
                             )
                         },
                         keyboardOptions = KeyboardOptions(
@@ -317,7 +318,7 @@ fun AddTeamScreen(
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = stringResource(R.string.add_team_add_assistant_cd),
-                            tint = Color.White,
+                            tint = iconTintColor,
                             modifier = Modifier.size(22.dp),
                         )
                     }
@@ -342,7 +343,7 @@ fun AddTeamScreen(
                                 Icon(
                                     imageVector = Icons.Default.Person,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                    tint = iconTintColor,
                                     modifier = Modifier.size(16.dp),
                                 )
                             },
@@ -362,6 +363,7 @@ fun AddTeamScreen(
                         AssistantChip(
                             name = user.displayName,
                             onRemove = { viewModel.onAssistantRemoved(user) },
+                            iconTintColor = iconTintColor,
                         )
                     }
                 }
@@ -433,7 +435,7 @@ fun AddTeamScreen(
                         Icon(
                             painter = painterResource(R.drawable.city),
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = iconTintColor,
                             modifier = Modifier.size(20.dp),
                         )
                         Spacer(modifier = Modifier.width(12.dp))
@@ -449,7 +451,7 @@ fun AddTeamScreen(
                             else
                                 Icons.Default.KeyboardArrowDown,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                            tint = iconTintColor,
                         )
                     }
 
@@ -616,6 +618,7 @@ private fun AssistantChip(
     name: String,
     onRemove: () -> Unit,
     modifier: Modifier = Modifier,
+    iconTintColor: Color,
 ) {
     Row(
         modifier = modifier
@@ -637,7 +640,7 @@ private fun AssistantChip(
             Icon(
                 imageVector = Icons.Default.Close,
                 contentDescription = stringResource(R.string.add_team_remove_assistant_cd, name),
-                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                tint = iconTintColor,
                 modifier = Modifier.size(12.dp),
             )
         }

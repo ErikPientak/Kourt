@@ -17,6 +17,7 @@ import com.kourt.app.ui.screens.club.review.ReviewConfirmScreen
 import com.kourt.app.ui.screens.home.HomeScreen
 import com.kourt.app.ui.screens.setup.SetupScreen
 import com.kourt.app.ui.screens.settings.SettingsScreen
+import com.kourt.app.ui.screens.settings.profile.ProfileScreen
 import com.kourt.app.ui.screens.team.create.AddTeamScreen
 
 @Composable
@@ -81,6 +82,10 @@ fun NavGraph(
                 isDarkTheme = isDarkTheme,
                 onToggleTheme = onToggleTheme,
             )
+        }
+
+        composable(route = Destination.ProfileScreen.route) {
+            ProfileScreen(navigation = navigation)
         }
 
         composable(

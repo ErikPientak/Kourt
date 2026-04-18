@@ -185,16 +185,6 @@ private fun KourtBadgePill(label: String, color: Color) {
     }
 }
 
-private fun roleBadgeColor(role: String): Color = when (role.lowercase()) {
-    "player"    -> RoleBadgePlayer
-    "coach"     -> RoleBadgeCoach
-    "captain"   -> RoleBadgeCaptain
-    "assistant" -> RoleBadgeAssistant
-    "parent"    -> RoleBadgeParent
-    "admin"    -> RoleBadgeAdmin
-    else        -> RoleBadgePlayer
-}
-
 private fun eventTypeColor(type: String): Color = when (type.lowercase()) {
     "match"    -> Color(0xFFFF5A25)
     "practice" -> Color(0xFF2563EB)

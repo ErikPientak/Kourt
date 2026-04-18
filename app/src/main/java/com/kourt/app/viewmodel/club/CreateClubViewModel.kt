@@ -59,6 +59,10 @@ class CreateClubViewModel @Inject constructor(
         Log.d(TAG, "Validation passed, navigating to review screen")
     }
 
+    override fun onSuccessConsumed() {
+        uiState = uiState.copy(isSuccess = false)
+    }
+
     override fun onLogoUploadTap() {
         Log.d(TAG, "Logo upload tapped")
     }

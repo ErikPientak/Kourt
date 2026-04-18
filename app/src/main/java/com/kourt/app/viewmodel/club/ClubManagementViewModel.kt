@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kourt.app.R
 import com.kourt.app.data.model.Team
+import com.kourt.app.data.repository.AppPreferencesRepository
 import com.kourt.app.data.repository.AuthRepository
 import com.kourt.app.data.repository.ClubRepository
 import com.kourt.app.data.repository.TeamMemberRepository
@@ -35,6 +36,7 @@ class ClubManagementViewModel @Inject constructor(
     private val teamMemberRepository: TeamMemberRepository,
     private val userRepository: UserRepository,
     private val authRepository: AuthRepository,
+    private val appPreferencesRepository: AppPreferencesRepository,
 ) : ViewModel(), ClubManagementScreenActions {
 
     var uiState by mutableStateOf(ClubManagementScreenUiState())
@@ -57,7 +59,12 @@ class ClubManagementViewModel @Inject constructor(
             }
 
             runCatching {
-                val club = clubRepository.getClubByAdminId(uid)
+                val activeClubId = appPreferencesRepository.activeClubId
+                val club = if (activeClubId.isNotEmpty()) {
+                    clubRepository.getClub(activeClubId)
+                } else {
+                    clubRepository.getClubByAdminId(uid)
+                }
                 if (club == null) {
                     uiState = uiState.copy(isLoading = false, error = context.getString(R.string.error_no_club_found))
                     return@launch

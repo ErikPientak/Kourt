@@ -45,7 +45,8 @@ fun SetupScreen(
     viewModel: SetupViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
-    val enterCodeTextFieldColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
+    val enterCodeTextFieldColor = White
+
 
     Column(
         modifier = Modifier

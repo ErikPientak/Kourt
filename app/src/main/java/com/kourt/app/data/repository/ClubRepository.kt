@@ -32,4 +32,8 @@ class ClubRepository @Inject constructor(
         collection.whereArrayContains("admin_ids", uid).get().await()
             .toObjects(Club::class.java)
             .firstOrNull()
+
+    suspend fun getClubsByAdminId(uid: String): List<Club> =
+        collection.whereArrayContains("admin_ids", uid).get().await()
+            .toObjects(Club::class.java)
 }
