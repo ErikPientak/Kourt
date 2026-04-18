@@ -2,7 +2,6 @@ package com.kourt.app.ui.screens.auth.login
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,7 +39,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -54,8 +52,6 @@ import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.AuthFieldLabel
 import com.kourt.app.ui.components.KourtButton
 import com.kourt.app.ui.components.authTextFieldColors
-import com.kourt.app.ui.theme.DarkPlaceholder
-import com.kourt.app.ui.theme.LightPlaceholder
 import com.kourt.app.viewmodel.auth.LoginViewModel
 
 @Composable
@@ -70,11 +66,9 @@ fun LoginScreen(
     var password by rememberSaveable { mutableStateOf("") }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
 
-    val isDark = isSystemInDarkTheme()
-    val placeholderColor = if (isDark) DarkPlaceholder else LightPlaceholder
-
-    // A slightly lighter tone for the icon container background
-    val iconContainerColor = if (isDark) Color(0x003A3633) else Color(0x774B2500)
+    val placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
+    val iconContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+    val iconTintColor = MaterialTheme.colorScheme.onBackground
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) navigation.navigateToHome()
@@ -102,7 +96,7 @@ fun LoginScreen(
             Icon(
                 painter = painterResource(R.drawable.basketball),
                 contentDescription = stringResource(R.string.app_icon_content_desc),
-                tint = MaterialTheme.colorScheme.primary,
+                tint = iconTintColor,
                 modifier = Modifier.size(66.dp)
             )
         }
@@ -122,7 +116,7 @@ fun LoginScreen(
         Text(
             text = stringResource(R.string.app_tagline),
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onBackground,
+            color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center,
         )
 
@@ -146,7 +140,7 @@ fun LoginScreen(
                 Icon(
                     imageVector = Icons.Default.Email,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = iconTintColor,
                 )
             },
             keyboardOptions = KeyboardOptions(
@@ -169,7 +163,7 @@ fun LoginScreen(
             Text(
                 text = stringResource(R.string.auth_password_label),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground,
+                color = MaterialTheme.colorScheme.onSurface,
             )
             // Forgot password — tappable text
             Text(
@@ -197,7 +191,7 @@ fun LoginScreen(
                 Icon(
                     imageVector = Icons.Default.Lock,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = iconTintColor,
                 )
             },
             trailingIcon = {
@@ -209,7 +203,7 @@ fun LoginScreen(
                         contentDescription = stringResource(
                             if (passwordVisible) R.string.auth_password_hide else R.string.auth_password_show
                         ),
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = iconTintColor,
                     )
                 }
             },
@@ -281,7 +275,7 @@ fun LoginScreen(
             Text(
                 text = stringResource(R.string.auth_no_account),
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onBackground,
+                color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
                 text = stringResource(R.string.auth_create_account),

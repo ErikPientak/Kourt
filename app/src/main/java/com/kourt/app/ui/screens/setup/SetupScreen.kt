@@ -45,8 +45,7 @@ fun SetupScreen(
     viewModel: SetupViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
-    val isDark = isSystemInDarkTheme()
-    val enterCodeTextFieldColor = if (isDark) White else LightPlaceholder
+    val enterCodeTextFieldColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
 
     Column(
         modifier = Modifier
@@ -59,7 +58,7 @@ fun SetupScreen(
         Text(
             text = stringResource(R.string.setup_greeting),
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
         )
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -75,7 +74,7 @@ fun SetupScreen(
         Text(
             text = stringResource(R.string.setup_subtitle),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.onBackground,
+            color = MaterialTheme.colorScheme.onSurface,
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -83,7 +82,7 @@ fun SetupScreen(
         Text(
             text = stringResource(R.string.setup_description),
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
         )
 
         Spacer(modifier = Modifier.height(32.dp))

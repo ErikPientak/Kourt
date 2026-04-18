@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -64,8 +65,9 @@ fun RegisterScreen(
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
     var confirmPasswordVisible by rememberSaveable { mutableStateOf(false) }
 
-    val isDark = isSystemInDarkTheme()
-    val placeholderColor = if (isDark) DarkPlaceholder else LightPlaceholder
+    val placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
+    val iconTintColor = MaterialTheme.colorScheme.onBackground
+
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) navigation.navigateToHome()
@@ -102,7 +104,7 @@ fun RegisterScreen(
         Text(
             text = stringResource(R.string.auth_register_subtitle),
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onBackground,
+            color = MaterialTheme.colorScheme.onSurface,
         )
 
         Spacer(modifier = Modifier.height(36.dp))
@@ -125,7 +127,7 @@ fun RegisterScreen(
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = iconTintColor,
                 )
             },
             keyboardOptions = KeyboardOptions(
@@ -158,7 +160,7 @@ fun RegisterScreen(
                 Icon(
                     imageVector = Icons.Default.Email,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = iconTintColor,
                 )
             },
             keyboardOptions = KeyboardOptions(
@@ -190,7 +192,7 @@ fun RegisterScreen(
                 Icon(
                     imageVector = Icons.Default.Lock,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = iconTintColor,
                 )
             },
             trailingIcon = {
@@ -202,7 +204,7 @@ fun RegisterScreen(
                         contentDescription = stringResource(
                             if (passwordVisible) R.string.auth_password_hide else R.string.auth_password_show
                         ),
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = iconTintColor,
                     )
                 }
             },
@@ -236,7 +238,7 @@ fun RegisterScreen(
                 Icon(
                     imageVector = Icons.Default.Lock,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = iconTintColor,
                 )
             },
             trailingIcon = {
@@ -248,7 +250,7 @@ fun RegisterScreen(
                         contentDescription = stringResource(
                             if (confirmPasswordVisible) R.string.auth_password_hide else R.string.auth_password_show
                         ),
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = iconTintColor,
                     )
                 }
             },
@@ -294,7 +296,7 @@ fun RegisterScreen(
             Text(
                 text = stringResource(R.string.auth_have_account),
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onBackground,
+                color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
                 text = stringResource(R.string.auth_login_button),

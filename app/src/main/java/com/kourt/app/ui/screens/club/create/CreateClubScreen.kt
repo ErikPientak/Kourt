@@ -71,8 +71,7 @@ fun CreateClubScreen(
     viewModel: CreateClubViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
-    val isDark = isSystemInDarkTheme()
-    val placeholderColor = if (isDark) DarkPlaceholder else LightPlaceholder
+    val placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
 
     var countryDropdownExpanded by remember { mutableStateOf(false) }
 
@@ -137,7 +136,7 @@ fun CreateClubScreen(
                 Text(
                     text = stringResource(R.string.create_club_upload_logo_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     textAlign = TextAlign.Center,
                 )
             }
@@ -396,7 +395,7 @@ fun CreateClubScreen(
                 Text(
                     text = stringResource(R.string.create_club_terms),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 )
                 Text(
                     text = stringResource(R.string.create_club_terms_link),

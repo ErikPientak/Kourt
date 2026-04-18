@@ -35,7 +35,6 @@ fun KourtButton(
     enabled: Boolean = true,
 ) {
     val primaryColor = MaterialTheme.colorScheme.primary
-    val isDark = isSystemInDarkTheme()
 
     Box(
         contentAlignment = Alignment.Center,

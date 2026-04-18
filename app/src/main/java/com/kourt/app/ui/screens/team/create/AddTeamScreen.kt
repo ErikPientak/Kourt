@@ -84,8 +84,7 @@ fun AddTeamScreen(
     viewModel: AddTeamViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
-    val isDark = isSystemInDarkTheme()
-    val placeholderColor = if (isDark) DarkPlaceholder else LightPlaceholder
+    val placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
@@ -155,7 +154,7 @@ fun AddTeamScreen(
                 Text(
                     text = stringResource(R.string.add_team_brand_label),
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                 )
             }
 

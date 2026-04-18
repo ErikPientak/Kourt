@@ -16,6 +16,7 @@ import com.kourt.app.ui.screens.club.management.ClubManagementScreen
 import com.kourt.app.ui.screens.club.review.ReviewConfirmScreen
 import com.kourt.app.ui.screens.home.HomeScreen
 import com.kourt.app.ui.screens.setup.SetupScreen
+import com.kourt.app.ui.screens.settings.SettingsScreen
 import com.kourt.app.ui.screens.team.create.AddTeamScreen
 
 @Composable
@@ -72,6 +73,14 @@ fun NavGraph(
             ),
         ) {
             AddTeamScreen(navigation = navigation)
+        }
+
+        composable(route = Destination.SettingsScreen.route) {
+            SettingsScreen(
+                navigation = navigation,
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme,
+            )
         }
 
         composable(

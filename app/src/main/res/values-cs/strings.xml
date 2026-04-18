@@ -143,6 +143,20 @@
     <string name="auth_signup_button">Zaregistrovat se</string>
     <string name="auth_have_account">Už máte účet?</string>
 
+    <!-- Settings -->
+    <string name="settings_title">Nastavení</string>
+    <string name="settings_profile">Profil</string>
+    <string name="settings_app_theme">Téma aplikace</string>
+    <string name="settings_dark_mode_on">Tmavý režim ZAPNUT</string>
+    <string name="settings_dark_mode_off">Tmavý režim VYPNUT</string>
+    <string name="settings_language">Jazyk</string>
+    <string name="settings_log_out">Odhlásit se</string>
+    <string name="settings_delete_account">SMAZAT ÚČET</string>
+    <string name="settings_version">VERZE %1$s</string>
+    <string name="settings_delete_account_title">Smazat účet</string>
+    <string name="settings_delete_account_message">Opravdu chcete smazat svůj účet? Tuto akci nelze vrátit.</string>
+    <string name="settings_delete_account_confirm">Smazat</string>
+
     <!-- Validation errors -->
     <string name="error_passwords_do_not_match">Hesla se neshodují</string>
     <string name="error_club_name_required">Název klubu je povinný</string>

@@ -21,4 +21,5 @@ interface INavigationRouter {
     fun navigateToClubManagementScreen()
     fun navigateToAddTeamScreen(clubId: String)
     fun navigateToEditTeamScreen(teamId: String)
+    fun navigateToSettingsScreen()
 }

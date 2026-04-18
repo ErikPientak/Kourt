@@ -60,7 +60,7 @@ fun ClubManagementScreen(
             viewModel.onAddTeam()
         },
         onTeamClick = { teamId -> navigation.navigateToEditTeamScreen(teamId) },
-        onSettingsTap = viewModel::onSettingsTap,
+        onSettingsTap = { navigation.navigateToSettingsScreen() },
         onMemberSearchQueryChange = viewModel::onMemberSearchQueryChange,
         onMemberFilterChange = viewModel::onMemberFilterChange,
         onMemberMenuClick = viewModel::onMemberMenuClick,
@@ -215,7 +215,7 @@ private fun ClubManagementBottomNav(
                 val tint = if (isSelected) {
                     MaterialTheme.colorScheme.primary
                 } else {
-                    MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                 }
 
                 Column(
@@ -252,7 +252,7 @@ private fun ComingSoonTab() {
         Text(
             text = stringResource(com.kourt.app.R.string.coming_soon),
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
         )
     }
 }

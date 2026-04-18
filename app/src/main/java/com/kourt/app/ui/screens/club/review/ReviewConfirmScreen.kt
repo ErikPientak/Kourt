@@ -227,8 +227,7 @@ private fun CardSectionHeader(
     modifier: Modifier = Modifier,
 ) {
     val primary = MaterialTheme.colorScheme.primary
-    val isDarkTheme = isSystemInDarkTheme()
-    val iconColor = if (isDarkTheme) primary else Color.Black
+    val iconColor = MaterialTheme.colorScheme.onBackground
 
     Row(
         modifier = modifier
@@ -253,7 +252,7 @@ private fun CardSectionHeader(
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onBackground,
+            color = MaterialTheme.colorScheme.onSurface,
         )
     }
 }
@@ -269,8 +268,7 @@ private fun CardFieldRow(
     modifier: Modifier = Modifier,
 ) {
     val primary = MaterialTheme.colorScheme.primary
-    val isDarkTheme = isSystemInDarkTheme()
-    val iconColor = if (isDarkTheme) primary else Color.Black
+    val iconColor = MaterialTheme.colorScheme.onBackground
 
     Row(
         modifier = modifier
@@ -291,13 +289,13 @@ private fun CardFieldRow(
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = value.ifBlank { "—" },
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onBackground,
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
     }
@@ -314,8 +312,7 @@ private fun CardFieldRow(
     modifier: Modifier = Modifier,
 ) {
     val primary = MaterialTheme.colorScheme.primary
-    val isDarkTheme = isSystemInDarkTheme()
-    val iconColor = if (isDarkTheme) primary else Color.Black
+    val iconColor = MaterialTheme.colorScheme.onBackground
 
     Row(
         modifier = modifier
@@ -336,13 +333,13 @@ private fun CardFieldRow(
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = value.ifBlank { "—" },
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onBackground,
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
     }
