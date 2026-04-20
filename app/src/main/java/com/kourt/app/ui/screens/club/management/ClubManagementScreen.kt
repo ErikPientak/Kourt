@@ -38,8 +38,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.BaseScreenWithBottomNav
 import com.kourt.app.ui.components.MemberActionBottomSheet
-import com.kourt.app.ui.screens.club.management.Tabs.MembersTab
-import com.kourt.app.ui.screens.club.management.Tabs.TeamsTab
+import com.kourt.app.ui.Tabs.MembersTab
+import com.kourt.app.ui.Tabs.TeamsTab
 import com.kourt.app.viewmodel.club.ClubManagementViewModel
 
 private const val TAB_TEAMS = 0
@@ -182,7 +182,7 @@ private fun ClubManagementBottomNav(
 ) {
     val items = listOf(
         BottomNavItem(stringResource(com.kourt.app.R.string.club_management_tab_teams), painterResource(com.kourt.app.R.drawable.group), TAB_TEAMS),
-        BottomNavItem(stringResource(com.kourt.app.R.string.club_management_tab_members), painterResource(com.kourt.app.R.drawable.person_edit), TAB_MEMBERS),
+        BottomNavItem(stringResource(com.kourt.app.R.string.club_management_tab_members), painterResource(com.kourt.app.R.drawable.person_search), TAB_MEMBERS),
         BottomNavItem(stringResource(com.kourt.app.R.string.club_management_tab_events), painterResource(com.kourt.app.R.drawable.event), TAB_EVENTS),
     )
     val outlineColor = MaterialTheme.colorScheme.surface

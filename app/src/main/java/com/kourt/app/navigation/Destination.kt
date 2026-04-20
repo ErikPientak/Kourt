@@ -10,7 +10,8 @@ sealed class Destination(val route: String) {
         "review_confirm?clubName={clubName}&shortName={shortName}&president={president}" +
             "&technicalDirector={technicalDirector}&country={country}&city={city}"
     )
-    object ClubManagementScreen : Destination("club_management")
+    object ClubManagementScreen  : Destination("club_management")
+    object CoachDashboardScreen  : Destination("coach_dashboard")
     object AddTeamScreen        : Destination("add_team?clubId={clubId}&teamId={teamId}")
     object SettingsScreen       : Destination("settings")
     object ProfileScreen        : Destination("profile")

@@ -1,4 +1,4 @@
-package com.kourt.app.ui.screens.club.management.Tabs
+package com.kourt.app.ui.Tabs
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.kourt.app.R
 import com.kourt.app.ui.components.TeamCard
 import com.kourt.app.ui.screens.club.management.ClubManagementScreenUiState
 
@@ -43,12 +44,12 @@ fun TeamsTab(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(
-                        text = stringResource(com.kourt.app.R.string.club_management_no_teams),
+                        text = stringResource(R.string.club_management_no_teams),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onBackground,
                     )
                     Text(
-                        text = stringResource(com.kourt.app.R.string.club_management_no_teams_hint),
+                        text = stringResource(R.string.club_management_no_teams_hint),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                     )
@@ -62,7 +63,7 @@ fun TeamsTab(
             ) {
                 item {
                     Text(
-                        text = stringResource(com.kourt.app.R.string.club_management_active_teams, uiState.teams.size),
+                        text = stringResource(R.string.club_management_active_teams, uiState.teams.size),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),

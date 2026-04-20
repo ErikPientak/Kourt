@@ -186,5 +186,18 @@
     <string name="error_join_code_required">Please enter a join code</string>
     <string name="error_invalid_join_code">No team found with this code</string>
     <string name="error_already_member">You are already a member of this team</string>
+    <string name="error_load_failed">Failed to load data. Please try again.</string>
 
+    <!-- Coach Dashboard -->
+    <string name="coach_dashboard_managing_label">Managing</string>
+    <string name="coach_dashboard_no_team">No team</string>
+    <string name="coach_dashboard_up_next">Up Next</string>
+    <string name="coach_dashboard_upcoming">Upcoming</string>
+    <string name="coach_dashboard_no_events">No upcoming events</string>
+    <string name="coach_dashboard_update_lineup">Update Lineup</string>
+    <string name="coach_dashboard_tab_home">Home</string>
+    <string name="coach_dashboard_tab_schedule">Schedule</string>
+    <string name="coach_dashboard_tab_roster">Roster</string>
+    <string name="coach_dashboard_settings_cd">Settings</string>
+    <string name="coach_dashboard_location_tbd">TBD</string>
 </resources>

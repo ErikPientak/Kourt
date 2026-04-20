@@ -178,4 +178,18 @@
     <string name="error_join_code_required">Zadejte kód pro vstup</string>
     <string name="error_invalid_join_code">Tým s tímto kódem nebyl nalezen</string>
     <string name="error_already_member">Již jste členem tohoto týmu</string>
+    <string name="error_load_failed">Načtení se nezdařilo. Zkuste to prosím znovu.</string>
+
+    <!-- Coach Dashboard -->
+    <string name="coach_dashboard_managing_label">Spravuji</string>
+    <string name="coach_dashboard_no_team">Žádný tým</string>
+    <string name="coach_dashboard_up_next">Nejbližší</string>
+    <string name="coach_dashboard_upcoming">Nadcházející</string>
+    <string name="coach_dashboard_no_events">Žádné nadcházející události</string>
+    <string name="coach_dashboard_update_lineup">Aktualizovat sestavu</string>
+    <string name="coach_dashboard_tab_home">Hlavní</string>
+    <string name="coach_dashboard_tab_schedule">Rozvrh</string>
+    <string name="coach_dashboard_tab_roster">Soupiska</string>
+    <string name="coach_dashboard_settings_cd">Nastavení</string>
+    <string name="coach_dashboard_location_tbd">Místo TBD</string>
 </resources>

@@ -73,6 +73,8 @@ class NavigationRouterImpl(private val navController: NavController) : INavigati
     }
 
     override fun navigateToDashboard() {
-        // TODO: implement dashboard navigation
+        navController.navigate(Destination.CoachDashboardScreen.route) {
+            popUpTo(0) { inclusive = true }
+        }
     }
 }

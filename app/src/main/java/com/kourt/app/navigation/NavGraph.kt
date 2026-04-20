@@ -18,6 +18,7 @@ import com.kourt.app.ui.screens.home.HomeScreen
 import com.kourt.app.ui.screens.setup.SetupScreen
 import com.kourt.app.ui.screens.settings.SettingsScreen
 import com.kourt.app.ui.screens.settings.profile.ProfileScreen
+import com.kourt.app.ui.screens.dashboard.coach.CoachDashboardScreen
 import com.kourt.app.ui.screens.team.create.AddTeamScreen
 
 @Composable
@@ -86,6 +87,10 @@ fun NavGraph(
 
         composable(route = Destination.ProfileScreen.route) {
             ProfileScreen(navigation = navigation)
+        }
+
+        composable(route = Destination.CoachDashboardScreen.route) {
+            CoachDashboardScreen(navigation = navigation)
         }
 
         composable(

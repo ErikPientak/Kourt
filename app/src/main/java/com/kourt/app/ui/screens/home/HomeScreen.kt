@@ -163,6 +163,26 @@ fun HomeScreen(
         }
 
         Button(
+            onClick = { navigation.navigateToSettingsScreen() },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                text = "Go to Settings",
+                style = MaterialTheme.typography.labelLarge,
+            )
+        }
+
+        Button(
+            onClick = { navigation.navigateToDashboard() },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                text = "Go to DashBoard",
+                style = MaterialTheme.typography.labelLarge,
+            )
+        }
+
+        Button(
             onClick = {
                 viewModel.deleteUser {
                     navigation.navigateToLoginScreen()

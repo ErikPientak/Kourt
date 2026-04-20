@@ -9,6 +9,7 @@ private const val PREFS_NAME = "app_preferences"
 private const val KEY_DARK_THEME = "is_dark_theme"
 private const val KEY_LANGUAGE = "language"
 private const val KEY_ACTIVE_CLUB_ID = "active_club_id"
+private const val KEY_ACTIVE_TEAM_ID = "active_team_id"
 
 @Singleton
 class AppPreferencesRepository @Inject constructor(
@@ -27,4 +28,8 @@ class AppPreferencesRepository @Inject constructor(
     var activeClubId: String
         get() = prefs.getString(KEY_ACTIVE_CLUB_ID, "") ?: ""
         set(value) = prefs.edit().putString(KEY_ACTIVE_CLUB_ID, value).apply()
+
+    var activeTeamId: String
+        get() = prefs.getString(KEY_ACTIVE_TEAM_ID, "") ?: ""
+        set(value) = prefs.edit().putString(KEY_ACTIVE_TEAM_ID, value).apply()
 }

@@ -28,6 +28,8 @@ import javax.inject.Inject
 
 private const val TAG = "ClubManagementViewModel"
 
+private val ROLE_ORDER = mapOf("admin" to 0, "coach" to 1, "assistant" to 2, "player" to 3, "parent" to 4)
+
 @HiltViewModel
 class ClubManagementViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -206,7 +208,7 @@ class ClubManagementViewModel @Inject constructor(
                 MemberFilter.ASSISTANT -> item.role == "assistant"
             }
             matchesQuery && matchesFilter
-        }
+        }.sortedBy { ROLE_ORDER[it.role] ?: Int.MAX_VALUE }
     }
 
     override fun onMemberSearchQueryChange(query: String) {
