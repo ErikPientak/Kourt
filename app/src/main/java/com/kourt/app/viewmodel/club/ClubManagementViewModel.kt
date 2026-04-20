@@ -203,6 +203,7 @@ class ClubManagementViewModel @Inject constructor(
                 MemberFilter.COACH -> item.role == "coach"
                 MemberFilter.PLAYER -> item.role == "player"
                 MemberFilter.PARENT -> item.role == "parent"
+                MemberFilter.ASSISTANT -> item.role == "assistant"
             }
             matchesQuery && matchesFilter
         }

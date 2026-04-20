@@ -28,4 +28,11 @@ class TeamMemberRepository @Inject constructor(
     suspend fun removeMember(id: String) {
         collection.document(id).delete().await()
     }
+
+    suspend fun isMember(userId: String, teamId: String): Boolean =
+        collection
+            .whereEqualTo("userId", userId)
+            .whereEqualTo("teamId", teamId)
+            .get().await()
+            .isEmpty.not()
 }

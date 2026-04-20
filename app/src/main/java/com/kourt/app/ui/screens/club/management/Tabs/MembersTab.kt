@@ -157,6 +157,7 @@ private fun MembersFilterRow(
         FilterOption(MemberFilter.ALL, stringResource(R.string.members_filter_all)),
         FilterOption(MemberFilter.COACH, stringResource(R.string.members_filter_coach)),
         FilterOption(MemberFilter.PLAYER, stringResource(R.string.members_filter_player)),
+        FilterOption(MemberFilter.ASSISTANT, stringResource(R.string.members_filter_assistant)),
         FilterOption(MemberFilter.PARENT, stringResource(R.string.members_filter_parent)),
     )
 

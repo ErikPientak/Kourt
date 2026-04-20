@@ -1,7 +1,6 @@
 package com.kourt.app.ui.screens.setup
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -19,6 +18,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,6 +26,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -34,8 +35,6 @@ import com.kourt.app.R
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.KourtButton
 import com.kourt.app.ui.components.SetupOptionCard
-import com.kourt.app.ui.theme.DarkPlaceholder
-import com.kourt.app.ui.theme.LightPlaceholder
 import com.kourt.app.ui.theme.White
 import com.kourt.app.viewmodel.SetupViewModel
 
@@ -45,8 +44,12 @@ fun SetupScreen(
     viewModel: SetupViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
-    val enterCodeTextFieldColor = White
 
+    LaunchedEffect(uiState.isSuccess) {
+        if (uiState.isSuccess) {
+            navigation.navigateToSettingsScreen()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -123,9 +126,12 @@ fun SetupScreen(
                     .fillMaxWidth()
                     .height(52.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = enterCodeTextFieldColor,
-                    unfocusedContainerColor = enterCodeTextFieldColor,
+                    focusedContainerColor = White,
+                    unfocusedContainerColor = White,
                     focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black,
+                    focusedBorderColor = if (uiState.error != null) MaterialTheme.colorScheme.error else Color.Transparent,
+                    unfocusedBorderColor = if (uiState.error != null) MaterialTheme.colorScheme.error else Color.Transparent,
                 ),
                 placeholder = {
                     Text(
@@ -133,22 +139,39 @@ fun SetupScreen(
                         style = MaterialTheme.typography.labelLarge,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth(),
+                        color = Color.Black.copy(alpha = 0.4f),
                     )
                 },
-                textStyle = MaterialTheme.typography.labelLarge.copy(textAlign = TextAlign.Center),
+                textStyle = MaterialTheme.typography.labelLarge.copy(
+                    textAlign = TextAlign.Center,
+                    color = Color.Black,
+                ),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
+                    capitalization = KeyboardCapitalization.Characters,
                     imeAction = ImeAction.Done,
                 ),
                 singleLine = true,
                 shape = RoundedCornerShape(50.dp),
+                enabled = !uiState.isLoading,
             )
+
+            if (uiState.error != null) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(uiState.error),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(start = 68.dp),
+                )
+            }
 
             Spacer(modifier = Modifier.height(2.dp))
 
             KourtButton(
                 text = stringResource(R.string.setup_join_button),
                 onClick = { viewModel.onJoinTeam() },
+                enabled = !uiState.isLoading,
                 modifier = Modifier
                     .padding(start = 68.dp)
                     .fillMaxWidth(),

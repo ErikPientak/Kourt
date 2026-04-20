@@ -289,7 +289,7 @@ private fun SettingsTileBase(
             // Icon circle — visible in dark mode only
             Box(
                 modifier = Modifier
-                    .size(42.dp)
+                    .size(56.dp)
                     .background(iconContainerColor, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {

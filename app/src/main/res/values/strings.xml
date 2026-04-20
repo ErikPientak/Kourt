@@ -92,6 +92,7 @@
     <string name="members_filter_coach">Coach</string>
     <string name="members_filter_player">Player</string>
     <string name="members_filter_parent">Parent</string>
+    <string name="members_filter_assistant">Assistant</string>
     <string name="members_count">MEMBERS (%1$d)</string>
     <string name="members_no_results">No members found</string>
     <string name="members_no_results_hint">Try a different search or filter</string>
@@ -182,4 +183,8 @@
     <string name="error_select_head_coach">Please select a head coach from the search results</string>
     <string name="error_location_required">Location is required</string>
     <string name="error_arena_required">Arena name is required</string>
+    <string name="error_join_code_required">Please enter a join code</string>
+    <string name="error_invalid_join_code">No team found with this code</string>
+    <string name="error_already_member">You are already a member of this team</string>
+
 </resources>

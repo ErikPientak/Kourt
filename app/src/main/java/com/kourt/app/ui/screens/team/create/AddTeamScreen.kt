@@ -6,7 +6,6 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,14 +35,12 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
@@ -51,6 +48,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -72,9 +70,8 @@ import com.kourt.app.ui.components.BaseScreen
 import com.kourt.app.ui.components.CategoryChip
 import com.kourt.app.ui.components.KourtButton
 import com.kourt.app.ui.components.authTextFieldColors
-import com.kourt.app.ui.theme.DarkPlaceholder
 import com.kourt.app.ui.theme.KourtTheme
-import com.kourt.app.ui.theme.LightPlaceholder
+import com.kourt.app.ui.theme.White
 import com.kourt.app.viewmodel.team.AddTeamViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -197,17 +194,11 @@ fun AddTeamScreen(
             // ── Head Coach ────────────────────────────────────────────────────
             AuthFieldLabel(label = stringResource(R.string.add_team_head_coach_label))
             Spacer(modifier = Modifier.height(6.dp))
-            ExposedDropdownMenuBox(
-                expanded = uiState.headCoachSuggestions.isNotEmpty(),
-                onExpandedChange = {},
-                modifier = Modifier.fillMaxWidth(),
-            ) {
+            Box(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     value = uiState.headCoachQuery,
                     onValueChange = { viewModel.onHeadCoachQueryChange(it) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor(),
+                    modifier = Modifier.fillMaxWidth(),
                     placeholder = {
                         Text(
                             text = stringResource(R.string.add_team_head_coach_placeholder),
@@ -231,11 +222,13 @@ fun AddTeamScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = authTextFieldColors(placeholderColor = placeholderColor),
                 )
-
-                ExposedDropdownMenu(
+                DropdownMenu(
                     expanded = uiState.headCoachSuggestions.isNotEmpty(),
                     onDismissRequest = {},
-                    modifier = Modifier.background(MaterialTheme.colorScheme.surface),
+                    properties = PopupProperties(focusable = false),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surface),
                 ) {
                     uiState.headCoachSuggestions.forEach { user ->
                         DropdownMenuItem(
@@ -265,69 +258,46 @@ fun AddTeamScreen(
             // ── Assistant Coach(es) ───────────────────────────────────────────
             AuthFieldLabel(label = stringResource(R.string.add_team_assistant_label))
             Spacer(modifier = Modifier.height(6.dp))
-
-            ExposedDropdownMenuBox(
-                expanded = uiState.assistantSuggestions.isNotEmpty(),
-                onExpandedChange = {},
+            Row(
                 modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Row(
+                Box(modifier = Modifier.weight(1f)) {
+                OutlinedTextField(
+                    value = uiState.assistantQuery,
+                    onValueChange = { viewModel.onAssistantQueryChange(it) },
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    OutlinedTextField(
-                        value = uiState.assistantQuery,
-                        onValueChange = { viewModel.onAssistantQueryChange(it) },
-                        modifier = Modifier
-                            .weight(1f)
-                            .menuAnchor(),
-                        placeholder = {
-                            Text(
-                                text = stringResource(R.string.add_team_assistant_placeholder),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = placeholderColor,
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = null,
-                                tint = iconTintColor,
-                            )
-                        },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text,
-                            capitalization = KeyboardCapitalization.Words,
-                            imeAction = ImeAction.Done,
-                        ),
-                        singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
-                        colors = authTextFieldColors(placeholderColor = placeholderColor),
-                    )
-
-                    // Orange + button
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .size(52.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(MaterialTheme.colorScheme.primary)
-                            .clickable { viewModel.onAssistantAdd() },
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = stringResource(R.string.add_team_add_assistant_cd),
-                            tint = iconTintColor,
-                            modifier = Modifier.size(22.dp),
+                    placeholder = {
+                        Text(
+                            text = stringResource(R.string.add_team_assistant_placeholder),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = placeholderColor,
                         )
-                    }
-                }
-
-                ExposedDropdownMenu(
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = null,
+                            tint = iconTintColor,
+                        )
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        capitalization = KeyboardCapitalization.Words,
+                        imeAction = ImeAction.Done,
+                    ),
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = authTextFieldColors(placeholderColor = placeholderColor),
+                )
+                DropdownMenu(
                     expanded = uiState.assistantSuggestions.isNotEmpty(),
                     onDismissRequest = {},
-                    modifier = Modifier.background(MaterialTheme.colorScheme.surface),
+                    properties = PopupProperties(focusable = false),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surface),
                 ) {
                     uiState.assistantSuggestions.forEach { user ->
                         DropdownMenuItem(
@@ -350,8 +320,23 @@ fun AddTeamScreen(
                         )
                     }
                 }
+                }
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(52.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.primary)
+                        .clickable { viewModel.onAssistantAdd() },
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = stringResource(R.string.add_team_add_assistant_cd),
+                        tint = White,
+                        modifier = Modifier.size(22.dp),
+                    )
+                }
             }
-
             // Selected assistant chips
             if (uiState.selectedAssistants.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(10.dp))
@@ -527,7 +512,7 @@ fun AddTeamScreen(
             // ── Error ─────────────────────────────────────────────────────────
             if (uiState.error != null) {
                 Text(
-                    text = uiState.error,
+                    text = stringResource(uiState.error),
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier

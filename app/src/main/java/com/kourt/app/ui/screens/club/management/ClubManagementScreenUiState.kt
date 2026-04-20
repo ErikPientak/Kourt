@@ -6,7 +6,7 @@ import com.kourt.app.data.model.Team
 
 // ── Members tab — filter options ──────────────────────────────────────────────
 
-enum class MemberFilter { ALL, COACH, PLAYER, PARENT }
+enum class MemberFilter { ALL, COACH, PLAYER, PARENT, ASSISTANT }
 
 // ── Members tab — UI projection ───────────────────────────────────────────────
 

@@ -80,6 +80,7 @@
     <string name="members_filter_coach">Trenér</string>
     <string name="members_filter_player">Hráč</string>
     <string name="members_filter_parent">Rodič</string>
+    <string name="members_filter_assistant">Asistent</string>
     <string name="members_count">ČLENOVÉ (%1$d)</string>
     <string name="members_no_results">Nenalezeni žádní členové</string>
     <string name="members_no_results_hint">Zkuste jiné vyhledávání nebo filtr</string>
@@ -157,6 +158,13 @@
     <string name="settings_delete_account_message">Opravdu chcete smazat svůj účet? Tuto akci nelze vrátit.</string>
     <string name="settings_delete_account_confirm">Smazat</string>
 
+    <!-- Profile -->
+    <string name="profile_title">Profil</string>
+    <string name="profile_edit_avatar_cd">Upravit Profilovou Fotku</string>
+    <string name="profile_my_teams">Moje týmy</string>
+    <string name="profile_subtitle_club">Klub</string>
+    <string name="profile_error_load_failed">Chyba při nahrávání dat profilu</string>
+
     <!-- Validation errors -->
     <string name="error_passwords_do_not_match">Hesla se neshodují</string>
     <string name="error_club_name_required">Název klubu je povinný</string>
@@ -167,4 +175,7 @@
     <string name="error_select_head_coach">Vyberte hlavního trenéra z výsledků vyhledávání</string>
     <string name="error_location_required">Lokalita je povinná</string>
     <string name="error_arena_required">Název haly je povinný</string>
+    <string name="error_join_code_required">Zadejte kód pro vstup</string>
+    <string name="error_invalid_join_code">Tým s tímto kódem nebyl nalezen</string>
+    <string name="error_already_member">Již jste členem tohoto týmu</string>
 </resources>

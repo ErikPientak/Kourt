@@ -31,4 +31,9 @@ class TeamRepository @Inject constructor(
     suspend fun deleteTeam(id: String) {
         collection.document(id).delete().await()
     }
+
+    suspend fun getTeamByJoinCode(joinCode: String): Team? =
+        collection.whereEqualTo("joinCode", joinCode.uppercase()).get().await()
+            .toObjects(Team::class.java)
+            .firstOrNull()
 }

@@ -74,7 +74,7 @@ fun LoginScreen(
     val iconTintColor = MaterialTheme.colorScheme.onBackground
 
     LaunchedEffect(uiState.isSuccess) {
-        if (uiState.isSuccess) navigation.navigateToHome()
+        if (uiState.isSuccess) navigation.navigateToSetupScreen()
     }
 
     Column(

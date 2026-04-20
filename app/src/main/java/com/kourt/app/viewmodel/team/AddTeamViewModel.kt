@@ -1,6 +1,5 @@
 package com.kourt.app.viewmodel.team
 
-import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -19,7 +18,6 @@ import com.kourt.app.data.repository.UserRepository
 import com.kourt.app.ui.screens.team.create.AddTeamScreenActions
 import com.kourt.app.ui.screens.team.create.AddTeamScreenUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -31,7 +29,6 @@ private val JOIN_CODE_CHARS = ('A'..'Z') + ('0'..'9')
 
 @HiltViewModel
 class AddTeamViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val teamRepository: TeamRepository,
     private val teamMemberRepository: TeamMemberRepository,
     private val userRepository: UserRepository,
@@ -46,10 +43,29 @@ class AddTeamViewModel @Inject constructor(
     private val teamId: String = savedStateHandle["teamId"] ?: ""
     private var headCoachSearchJob: Job? = null
     private var assistantSearchJob: Job? = null
+    private var clubMembers: List<User> = emptyList()
 
     init {
         if (teamId.isNotBlank()) {
             loadTeamForEdit(teamId)
+        } else {
+            loadClubMembers()
+        }
+    }
+
+    private fun loadClubMembers() {
+        viewModelScope.launch {
+            runCatching {
+                val teams = teamRepository.getTeamsByClub(clubId)
+                val memberIds = teams
+                    .flatMap { team -> teamMemberRepository.getMembersByTeam(team.id) }
+                    .map { it.userId }
+                    .toSet()
+                clubMembers = userRepository.getUsersByIds(memberIds.toList())
+                Log.d(TAG, "Loaded ${clubMembers.size} club members for search")
+            }.onFailure { e ->
+                Log.e(TAG, "Failed to load club members", e)
+            }
         }
     }
 
@@ -59,9 +75,10 @@ class AddTeamViewModel @Inject constructor(
             runCatching {
                 val team = teamRepository.getTeam(id)
                 if (team == null) {
-                    uiState = uiState.copy(isLoading = false, error = context.getString(R.string.error_team_not_found))
+                    uiState = uiState.copy(isLoading = false, error = R.string.error_team_not_found)
                     return@launch
                 }
+                loadClubMembersForClub(team.clubId)
                 uiState = uiState.copy(
                     isLoading = false,
                     isEditMode = true,
@@ -75,16 +92,27 @@ class AddTeamViewModel @Inject constructor(
                     arena = team.arena,
                     isLocationExpanded = team.location.isNotBlank() || team.arena.isNotBlank(),
                     headCoachQuery = team.headCoach,
-                    // Placeholder User preserves the display name; TeamMember records
-                    // are not modified on edit (known limitation).
                     selectedHeadCoach = User(displayName = team.headCoach),
                     isHeadCoachPreloaded = true,
                 )
                 Log.d(TAG, "Loaded team for edit: ${team.id}")
             }.onFailure { e ->
                 Log.e(TAG, "Failed to load team", e)
-                uiState = uiState.copy(isLoading = false, error = e.message ?: "Failed to load team")
+                uiState = uiState.copy(isLoading = false, error = R.string.error_team_not_found)
             }
+        }
+    }
+
+    private suspend fun loadClubMembersForClub(id: String) {
+        runCatching {
+            val teams = teamRepository.getTeamsByClub(id)
+            val memberIds = teams
+                .flatMap { team -> teamMemberRepository.getMembersByTeam(team.id) }
+                .map { it.userId }
+                .toSet()
+            clubMembers = userRepository.getUsersByIds(memberIds.toList())
+        }.onFailure { e ->
+            Log.e(TAG, "Failed to load club members", e)
         }
     }
 
@@ -105,12 +133,11 @@ class AddTeamViewModel @Inject constructor(
         }
         headCoachSearchJob = viewModelScope.launch {
             delay(300)
-            runCatching {
-                val results = userRepository.searchByDisplayName(value)
-                uiState = uiState.copy(headCoachSuggestions = results)
-            }.onFailure { e ->
-                Log.e(TAG, "Head coach search failed", e)
-            }
+            val query = value.lowercase()
+            val results = clubMembers
+                .filter { it.displayName.lowercase().contains(query) }
+                .take(10)
+            uiState = uiState.copy(headCoachSuggestions = results)
         }
     }
 
@@ -132,14 +159,12 @@ class AddTeamViewModel @Inject constructor(
         }
         assistantSearchJob = viewModelScope.launch {
             delay(300)
-            runCatching {
-                val alreadySelected = uiState.selectedAssistants.map { it.id }.toSet()
-                val results = userRepository.searchByDisplayName(value)
-                    .filter { it.id !in alreadySelected }
-                uiState = uiState.copy(assistantSuggestions = results)
-            }.onFailure { e ->
-                Log.e(TAG, "Assistant search failed", e)
-            }
+            val query = value.lowercase()
+            val alreadySelected = uiState.selectedAssistants.map { it.id }.toSet()
+            val results = clubMembers
+                .filter { it.displayName.lowercase().contains(query) && it.id !in alreadySelected }
+                .take(10)
+            uiState = uiState.copy(assistantSuggestions = results)
         }
     }
 
@@ -185,32 +210,28 @@ class AddTeamViewModel @Inject constructor(
 
     override fun onSaveTeam() {
         if (uiState.teamName.isBlank()) {
-            uiState = uiState.copy(error = context.getString(R.string.error_team_name_required))
+            uiState = uiState.copy(error = R.string.error_team_name_required)
             return
         }
         val headCoachResolved = uiState.selectedHeadCoach
         if (headCoachResolved == null && !uiState.isHeadCoachPreloaded) {
-            uiState = uiState.copy(error = context.getString(R.string.error_select_head_coach))
+            uiState = uiState.copy(error = R.string.error_select_head_coach)
             return
         }
         if (uiState.location.isBlank() || uiState.arena.isBlank()) {
             uiState = uiState.copy(
-                error = context.getString(if (uiState.location.isBlank()) R.string.error_location_required else R.string.error_arena_required),
+                error = if (uiState.location.isBlank()) R.string.error_location_required else R.string.error_arena_required,
                 isLocationExpanded = true,
             )
             return
         }
 
-        if (uiState.isEditMode) {
-            updateTeam()
-        } else {
-            createTeam()
-        }
+        if (uiState.isEditMode) updateTeam() else createTeam()
     }
 
     private fun createTeam() {
         val uid = authRepository.currentUser?.uid ?: run {
-            uiState = uiState.copy(error = context.getString(R.string.error_not_signed_in))
+            uiState = uiState.copy(error = R.string.error_not_signed_in)
             return
         }
 
@@ -249,10 +270,7 @@ class AddTeamViewModel @Inject constructor(
                 Log.d(TAG, "Team created: $newTeamId")
             }.onFailure { e ->
                 Log.e(TAG, "Failed to create team", e)
-                uiState = uiState.copy(
-                    isLoading = false,
-                    error = e.message ?: "Failed to create team",
-                )
+                uiState = uiState.copy(isLoading = false, error = R.string.error_team_not_found)
             }
         }
     }
@@ -279,15 +297,11 @@ class AddTeamViewModel @Inject constructor(
                 Log.d(TAG, "Team updated: ${uiState.teamId}")
             }.onFailure { e ->
                 Log.e(TAG, "Failed to update team", e)
-                uiState = uiState.copy(
-                    isLoading = false,
-                    error = e.message ?: "Failed to update team",
-                )
+                uiState = uiState.copy(isLoading = false, error = R.string.error_team_not_found)
             }
         }
     }
 
-    // Opens the confirmation dialog — wired to the trash icon in the top bar.
     override fun onDeleteTeam() {
         onDeleteTeamClick()
     }
@@ -313,10 +327,7 @@ class AddTeamViewModel @Inject constructor(
                 Log.d(TAG, "Team deleted: ${uiState.teamId}")
             }.onFailure { e ->
                 Log.e(TAG, "Failed to delete team", e)
-                uiState = uiState.copy(
-                    isLoading = false,
-                    error = e.message ?: "Failed to delete team",
-                )
+                uiState = uiState.copy(isLoading = false, error = R.string.error_team_not_found)
             }
         }
     }

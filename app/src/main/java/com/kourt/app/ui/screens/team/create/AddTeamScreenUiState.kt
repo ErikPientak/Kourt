@@ -1,5 +1,6 @@
 package com.kourt.app.ui.screens.team.create
 
+import androidx.annotation.StringRes
 import com.kourt.app.data.model.User
 
 data class AddTeamScreenUiState(
@@ -29,7 +30,7 @@ data class AddTeamScreenUiState(
     // Status
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
-    val error: String? = null,
+    @StringRes val error: Int? = null,
     // Delete dialog
     val showDeleteDialog: Boolean = false,
 )
