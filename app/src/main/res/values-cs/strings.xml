@@ -157,6 +157,7 @@
     <string name="settings_delete_account_title">Smazat účet</string>
     <string name="settings_delete_account_message">Opravdu chcete smazat svůj účet? Tuto akci nelze vrátit.</string>
     <string name="settings_delete_account_confirm">Smazat</string>
+    <string name="settings_log_out_account_message">Opravdu se chcete odhlásit?</string>
 
     <!-- Profile -->
     <string name="profile_title">Profil</string>

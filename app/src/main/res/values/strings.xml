@@ -165,6 +165,7 @@
     <string name="settings_delete_account_title">Delete Account</string>
     <string name="settings_delete_account_message">Are you sure you want to delete your account? This action cannot be undone.</string>
     <string name="settings_delete_account_confirm">Delete</string>
+    <string name="settings_log_out_account_message">Are you sure you want to Log Out?</string>
 
     <!-- Profile -->
     <string name="profile_title">Profile</string>

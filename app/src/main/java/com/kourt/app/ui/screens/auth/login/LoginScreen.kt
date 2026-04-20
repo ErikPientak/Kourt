@@ -73,8 +73,13 @@ fun LoginScreen(
     val iconContainerColor = if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent
     val iconTintColor = MaterialTheme.colorScheme.onBackground
 
-    LaunchedEffect(uiState.isSuccess) {
-        if (uiState.isSuccess) navigation.navigateToSetupScreen()
+    LaunchedEffect(uiState.destination) {
+        when (uiState.destination) {
+            LoginDestination.SETUP -> navigation.navigateToSetupScreen()
+            LoginDestination.SETTINGS -> navigation.navigateToSettingsScreen()
+            LoginDestination.CLUB_MANAGEMENT -> navigation.navigateToClubManagementScreen()
+            LoginDestination.NONE -> Unit
+        }
     }
 
     Column(

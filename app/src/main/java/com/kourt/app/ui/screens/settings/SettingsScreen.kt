@@ -18,8 +18,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -40,13 +41,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.R
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.BaseScreen
-import com.kourt.app.ui.theme.KourtTheme
 import com.kourt.app.viewmodel.settings.SettingsViewModel
 
 @Composable
@@ -72,10 +71,12 @@ fun SettingsScreen(
         onToggleTheme = onToggleTheme,
         onProfileClick = navigation::navigateToProfileScreen,
         onLanguageClick = { /* TODO: navigate to Language picker screen */ },
-        onLogOut = viewModel::onLogOut,
         onDeleteAccountClick = viewModel::onDeleteAccountClick,
         onConfirmDeleteAccount = viewModel::onConfirmDeleteAccount,
         onDismissDeleteDialog = viewModel::onDismissDeleteDialog,
+        onLogOutClick = viewModel::onLogOutClick,
+        onConfirmLogOut = viewModel::onConfirmLogOut,
+        onDismissLogOutDialog = viewModel::onDismissLogOutDialog,
     )
 }
 
@@ -87,11 +88,13 @@ private fun SettingsScreenContent(
     onToggleTheme: () -> Unit,
     onProfileClick: () -> Unit,
     onLanguageClick: () -> Unit,
-    onLogOut: () -> Unit,
     onDeleteAccountClick: () -> Unit,
     onConfirmDeleteAccount: () -> Unit,
     onDismissDeleteDialog: () -> Unit,
-) {
+    onConfirmLogOut: () -> Unit,
+    onDismissLogOutDialog: () -> Unit,
+    onLogOutClick: () -> Unit,
+    ) {
     if (uiState.showDeleteDialog) {
         AlertDialog(
             onDismissRequest = onDismissDeleteDialog,
@@ -107,6 +110,30 @@ private fun SettingsScreenContent(
             },
             dismissButton = {
                 TextButton(onClick = onDismissDeleteDialog) {
+                    Text(
+                        text = stringResource(R.string.action_cancel),
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            },
+        )
+    }
+
+    if (uiState.showLogOutDialog) {
+        AlertDialog(
+            onDismissRequest = onDismissLogOutDialog,
+            title = { Text(stringResource(R.string.settings_log_out)) },
+            text = { Text(stringResource(R.string.settings_log_out_account_message)) },
+            confirmButton = {
+                TextButton(onClick = onConfirmLogOut) {
+                    Text(
+                        text = stringResource(R.string.settings_log_out),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismissLogOutDialog) {
                     Text(
                         text = stringResource(R.string.action_cancel),
                         color = MaterialTheme.colorScheme.onSurface,
@@ -176,7 +203,7 @@ private fun SettingsScreenContent(
                     Spacer(modifier = Modifier.weight(1f))
 
                     // Log Out button
-                    LogOutButton(onClick = onLogOut)
+                    LogOutButton(onClick = onLogOutClick)
 
                     Spacer(modifier = Modifier.height(12.dp))
 
@@ -335,17 +362,17 @@ private fun LogOutButton(
         contentAlignment = Alignment.Center,
         modifier = modifier.height(80.dp),
     ) {
-        androidx.compose.material3.Button(
+        Button(
             onClick = onClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
             shape = RoundedCornerShape(50.dp),
-            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+            colors = ButtonDefaults.buttonColors(
                 containerColor = primaryColor,
                 contentColor = Color.White,
             ),
-            elevation = androidx.compose.material3.ButtonDefaults.buttonElevation(
+            elevation = ButtonDefaults.buttonElevation(
                 defaultElevation = 0.dp,
                 pressedElevation = 0.dp,
             ),
@@ -361,64 +388,5 @@ private fun LogOutButton(
                 style = MaterialTheme.typography.labelLarge,
             )
         }
-    }
-}
-
-// ── Previews ──────────────────────────────────────────────────────────────────
-
-@Preview(name = "SettingsScreen — dark", showBackground = true)
-@Composable
-private fun SettingsScreenDarkPreview() {
-    KourtTheme(darkTheme = true) {
-        SettingsScreenContent(
-            uiState = SettingsScreenUiState(),
-            isDarkTheme = true,
-            onBack = {},
-            onToggleTheme = {},
-            onProfileClick = {},
-            onLanguageClick = {},
-            onLogOut = {},
-            onDeleteAccountClick = {},
-            onConfirmDeleteAccount = {},
-            onDismissDeleteDialog = {},
-        )
-    }
-}
-
-@Preview(name = "SettingsScreen — light", showBackground = true)
-@Composable
-private fun SettingsScreenLightPreview() {
-    KourtTheme(darkTheme = false) {
-        SettingsScreenContent(
-            uiState = SettingsScreenUiState(),
-            isDarkTheme = false,
-            onBack = {},
-            onToggleTheme = {},
-            onProfileClick = {},
-            onLanguageClick = {},
-            onLogOut = {},
-            onDeleteAccountClick = {},
-            onConfirmDeleteAccount = {},
-            onDismissDeleteDialog = {},
-        )
-    }
-}
-
-@Preview(name = "SettingsScreen — delete dialog", showBackground = true)
-@Composable
-private fun SettingsScreenDeleteDialogPreview() {
-    KourtTheme(darkTheme = true) {
-        SettingsScreenContent(
-            uiState = SettingsScreenUiState(showDeleteDialog = true),
-            isDarkTheme = true,
-            onBack = {},
-            onToggleTheme = {},
-            onProfileClick = {},
-            onLanguageClick = {},
-            onLogOut = {},
-            onDeleteAccountClick = {},
-            onConfirmDeleteAccount = {},
-            onDismissDeleteDialog = {},
-        )
     }
 }

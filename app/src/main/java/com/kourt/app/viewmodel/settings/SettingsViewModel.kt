@@ -23,7 +23,11 @@ class SettingsViewModel @Inject constructor(
     var uiState by mutableStateOf(SettingsScreenUiState())
         private set
 
-    override fun onLogOut() {
+    override fun onLogOutClick() {
+        uiState = uiState.copy(showLogOutDialog = true)
+    }
+
+    override fun onConfirmLogOut() {
         authRepository.signOut()
         uiState = uiState.copy(isLoggedOut = true)
         Log.d(TAG, "User signed out")
@@ -50,6 +54,10 @@ class SettingsViewModel @Inject constructor(
 
     override fun onDismissDeleteDialog() {
         uiState = uiState.copy(showDeleteDialog = false)
+    }
+
+    override fun onDismissLogOutDialog() {
+        uiState = uiState.copy(showLogOutDialog = false)
     }
 
     override fun onSuccessConsumed() {
