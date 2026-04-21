@@ -70,10 +70,25 @@
     <string name="club_management_no_teams_hint">Klepnutím na + přidejte nový</string>
     <string name="coming_soon">Již brzy</string>
 
+    <!-- Member Action bottom sheet -->
     <string name="member_action_title">Akce se členem</string>
-    <string name="member_action_edit">Upravit člena</string>
-    <string name="member_action_change_role">Změnit roli</string>
-    <string name="member_action_remove">Odebrat z klubu</string>
+    <string name="member_action_view_profile">Zobrazit profil</string>
+    <string name="member_action_assign_team">Přiřadit k týmu</string>
+    <string name="member_action_make_admin">Udělit práva administrátora</string>
+    <string name="member_action_remove">Odebrat uživatele</string>
+
+    <!-- Assign Team dialog -->
+    <string name="assign_team_title">Přiřadit k týmu</string>
+
+    <!-- Make Admin confirmation dialog -->
+    <string name="make_admin_title">Udělit práva administrátora</string>
+    <string name="make_admin_message">Tímto získá %1$s plný administrátorský přístup ke klubu. Chcete pokračovat?</string>
+    <string name="make_admin_confirm">Potvrdit</string>
+
+    <!-- Remove Member confirmation dialog -->
+    <string name="remove_member_title">Odebrat uživatele</string>
+    <string name="remove_member_message">Opravdu chcete tohoto člena z klubu odebrat?</string>
+    <string name="remove_member_confirm">Odebrat</string>
 
     <string name="members_search_placeholder">Hledat hráče nebo trenéry…</string>
     <string name="members_filter_all">Vše</string>
@@ -180,6 +195,48 @@
     <string name="error_invalid_join_code">Tým s tímto kódem nebyl nalezen</string>
     <string name="error_already_member">Již jste členem tohoto týmu</string>
     <string name="error_load_failed">Načtení se nezdařilo. Zkuste to prosím znovu.</string>
+
+    <!-- Schedule tab -->
+    <string name="schedule_upcoming_events">NÁSLEDUJÍCÍ UDÁLOSTI</string>
+    <string name="schedule_no_events">Na tento den nejsou naplánovány žádné události</string>
+    <string name="schedule_log_attendance">Zapsat docházku</string>
+    <string name="schedule_log_statistics">Zapsat statistiky</string>
+    <string name="schedule_add_event_cd">Přidat událost</string>
+
+    <!-- Add / Edit Event -->
+    <string name="add_event_title">Přidat novou událost</string>
+    <string name="edit_event_title">Upravit událost</string>
+    <string name="event_type_label">TYP UDÁLOSTI</string>
+    <string name="event_type_practice">Trénink</string>
+    <string name="event_type_match">Zápas</string>
+    <string name="event_session_name_label">Název aktivity</string>
+    <string name="event_session_name_placeholder_practice">např. Nácvik střelby</string>
+    <string name="event_session_name_placeholder_match">např. Přátelské utkání</string>
+    <string name="event_date_label">Datum</string>
+    <string name="event_start_time_label">Čas zahájení</string>
+    <string name="event_end_time_label">Čas ukončení</string>
+    <string name="event_repeat_weekly_label">Opakovat týdně</string>
+    <string name="event_repeat_on_title">Opakovat v</string>
+    <string name="event_repeat_summary">Každé %1$s</string>
+    <string name="event_location_label">Lokalita</string>
+    <string name="event_location_placeholder">Hledat adresu tělocvičny nebo haly</string>
+    <string name="event_notes_label">Poznámky trenéra</string>
+    <string name="event_notes_placeholder_practice">Zaměřit se na přechod do obrany a trestné hody…</string>
+    <string name="event_notes_placeholder_match">Zde zadejte pokyny pro tým</string>
+    <string name="event_create_button">Vytvořit událost</string>
+    <string name="event_save_button">Uložit změny</string>
+    <string name="event_cancel">Zrušit</string>
+    <string name="event_opponent_label">Soupeř</string>
+    <string name="event_opponent_placeholder">např. Lakers</string>
+    <string name="event_venue_type_label">TYP ZÁPASU</string>
+    <string name="event_venue_home">Domácí</string>
+    <string name="event_venue_away">Venkovní</string>
+    <string name="event_nomination_row">Nominovat hráče nyní</string>
+    <string name="error_event_name_required">Název aktivity je povinný</string>
+    <string name="error_event_date_required">Vyberte prosím datum</string>
+    <string name="error_event_time_required">Čas začátku a konce je povinný</string>
+    <string name="event_repeat_occurs_summary">Probíhá každé %1$s</string>
+    <string name="dialog_done">Hotovo</string>
 
     <!-- Coach Dashboard -->
     <string name="coach_dashboard_managing_label">Spravuji</string>

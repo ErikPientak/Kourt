@@ -23,6 +23,7 @@ room = "2.6.1"
 workManager = "2.9.1"
 hiltWork = "1.2.0"
 coreKtxVersion = "1.18.0"
+identityJvm = "202411.1"
 
 [libraries]
 # AndroidX
@@ -81,6 +82,7 @@ hilt-androidx-compiler = { group = "androidx.hilt", name = "hilt-compiler", vers
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+identity-jvm = { group = "com.android.identity", name = "identity-jvm", version.ref = "identityJvm" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.identity.util.UUID
 import com.google.firebase.Timestamp
 import com.kourt.app.R
 import com.kourt.app.data.model.Event
@@ -16,6 +17,7 @@ import com.kourt.app.ui.screens.event.AddEditEventScreenActions
 import com.kourt.app.ui.screens.event.AddEditEventScreenUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.util.Date
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -143,9 +145,18 @@ class AddEditEventViewModel @Inject constructor(
 
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true, error = null)
+
+            val seriesId = if (state.repeatDays.isNotEmpty()) UUID.randomUUID().toString() else ""
+            val occurenceDays = if(state.repeatDays.isNotEmpty()) {
+                calculateOccurrenceDates(state.selectedEpochDay, state.repeatDays)
+            } else {
+                listOf(state.selectedEpochDay)
+            }
+
             runCatching {
                 val event = Event(
                     id = if (state.isEditMode) eventId else "",
+                    seriesId = seriesId,
                     teamId = teamId,
                     title = state.sessionName.trim(),
                     type = state.eventType,
@@ -163,8 +174,10 @@ class AddEditEventViewModel @Inject constructor(
                     eventRepository.updateEvent(event)
                     Log.d(TAG, "Event updated: $eventId")
                 } else {
-                    val newId = eventRepository.createEvent(event)
-                    Log.d(TAG, "Event created: $newId")
+                    occurenceDays.forEach { day ->
+                        val newId = eventRepository.createEvent(event.copy(date = epochDayToTimestamp(day)))
+                        Log.d(TAG, "Event created: $newId")
+                    }
                 }
                 uiState = uiState.copy(isLoading = false, isSaved = true)
             }.onFailure { e ->
@@ -180,4 +193,32 @@ class AddEditEventViewModel @Inject constructor(
 
     private fun epochDayToTimestamp(epochDay: Long): Timestamp =
         Timestamp(Date(TimeUnit.DAYS.toMillis(epochDay)))
+
+    private fun calculateOccurrenceDates(
+        startEpochDay: Long,
+        repeatDays: Set<Int>,
+        weeksToCreate: Int = 12
+    ): List<Long> {
+        val dates = mutableListOf<Long>()
+        val startDate = LocalDate.ofEpochDay(startEpochDay)
+        val endLimit = startDate.plusWeeks(weeksToCreate.toLong())
+
+        var currentDate = startDate
+
+        // We loop day-by-day until we hit the 12-week limit
+        while (currentDate.isBefore(endLimit) || currentDate.isEqual(endLimit)) {
+
+            // java.time.DayOfWeek: 1 (Mon) ... 7 (Sun)
+            // Ensure your UI/Picker also uses 1-7!
+            val currentDayOfWeek = currentDate.dayOfWeek.value
+
+            if (repeatDays.contains(currentDayOfWeek)) {
+                dates.add(currentDate.toEpochDay())
+            }
+
+            // Increment by exactly 1 day every time
+            currentDate = currentDate.plusDays(1)
+        }
+        return dates
+    }
 }

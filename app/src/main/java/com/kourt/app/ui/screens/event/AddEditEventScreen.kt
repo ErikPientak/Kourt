@@ -221,6 +221,7 @@ private fun AddEditEventContent(
                     onToggle = { enabled ->
                         if (enabled) actions.onRepeatSheetOpen() else actions.onRepeatToggle(false)
                     },
+                    iconTintColor = iconTintColor,
                 )
             }
 
@@ -573,6 +574,7 @@ private fun RepeatRow(
     repeatDays: Set<Int>,
     onRowClick: () -> Unit,
     onToggle: (Boolean) -> Unit,
+    iconTintColor: Color
 ) {
     val locale = Locale.getDefault()
     val subtitle = remember(repeatDays, locale) {
@@ -580,7 +582,7 @@ private fun RepeatRow(
         val ordered = (Calendar.MONDAY..Calendar.SATURDAY).toList() + listOf(Calendar.SUNDAY)
         repeatDays
             .sortedBy { ordered.indexOf(it) }
-            .joinToString(" and ") { dayConst ->
+            .joinToString(" , ") { dayConst ->
                 Calendar.getInstance().apply { set(Calendar.DAY_OF_WEEK, dayConst) }
                     .getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, locale)
                     ?: ""
@@ -604,7 +606,7 @@ private fun RepeatRow(
             Icon(
                 painter = painterResource(R.drawable.event_repeat),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = iconTintColor,
                 modifier = Modifier.size(20.dp),
             )
             Column(modifier = Modifier.weight(1f)) {
@@ -700,7 +702,7 @@ private fun RepeatOnBottomSheet(
         val ordered = (Calendar.MONDAY..Calendar.SATURDAY).toList() + listOf(Calendar.SUNDAY)
         tempDays
             .sortedBy { ordered.indexOf(it) }
-            .joinToString(" and ") { dayConst ->
+            .joinToString(" , ") { dayConst ->
                 Calendar.getInstance().apply { set(Calendar.DAY_OF_WEEK, dayConst) }
                     .getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, locale)
                     ?: ""

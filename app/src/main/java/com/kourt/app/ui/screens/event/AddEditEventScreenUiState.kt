@@ -24,27 +24,4 @@ data class AddEditEventScreenUiState(
     @StringRes val error: Int? = null,
 )
 
-interface AddEditEventScreenActions {
-    fun onEventTypeChange(type: String)
-    fun onSessionNameChange(name: String)
-    fun onDateSelected(epochDay: Long)
-    fun onDatePickerOpen()
-    fun onDatePickerDismiss()
-    fun onStartTimeSelected(time: String)
-    fun onStartTimePickerOpen()
-    fun onStartTimePickerDismiss()
-    fun onEndTimeSelected(time: String)
-    fun onEndTimePickerOpen()
-    fun onEndTimePickerDismiss()
-    fun onRepeatToggle(enabled: Boolean)
-    fun onRepeatSheetOpen()
-    fun onRepeatSheetDismiss()
-    fun onRepeatDaysChanged(days: Set<Int>)
-    fun onLocationChange(location: String)
-    fun onNotesChange(notes: String)
-    fun onOpponentChange(opponent: String)
-    fun onVenueTypeChange(type: String)
-    fun onNominationClick()
-    fun onSave()
-    fun onSaveConsumed()
-}
+
