@@ -4,6 +4,8 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import com.kourt.app.ui.screens.club.management.ClubMemberUiItem
 import com.kourt.app.ui.screens.club.management.MemberFilter
+import java.util.Calendar
+import java.util.concurrent.TimeUnit
 
 @Immutable
 data class TeamUiItem(
@@ -24,6 +26,8 @@ data class EventUiItem(
     val location: String,
     val isToday: Boolean,
     val dateLabel: String,
+    val epochDay: Long,
+    val subtitle: String,
 )
 
 data class CoachDashboardScreenUiState(
@@ -41,4 +45,8 @@ data class CoachDashboardScreenUiState(
     val memberFilter: MemberFilter = MemberFilter.ALL,
     val isMembersLoading: Boolean = false,
     @StringRes val error: Int? = null,
+    val calendarYear: Int = Calendar.getInstance().get(Calendar.YEAR),
+    val calendarMonth: Int = Calendar.getInstance().get(Calendar.MONTH),
+    val selectedEpochDay: Long = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis()),
+    val eventDaysInView: Set<Long> = emptySet(),
 )

@@ -203,6 +203,13 @@
     <string name="error_already_member">You are already a member of this team</string>
     <string name="error_load_failed">Failed to load data. Please try again.</string>
 
+    <!-- Schedule tab -->
+    <string name="schedule_upcoming_events">UPCOMING EVENTS</string>
+    <string name="schedule_no_events">No events on this date</string>
+    <string name="schedule_log_attendance">Log Attendance</string>
+    <string name="schedule_log_statistics">Log Statistics</string>
+    <string name="schedule_add_event_cd">Add event</string>
+
     <!-- Coach Dashboard -->
     <string name="coach_dashboard_managing_label">Managing</string>
     <string name="coach_dashboard_no_team">No team</string>

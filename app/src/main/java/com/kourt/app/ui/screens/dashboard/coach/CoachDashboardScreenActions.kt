@@ -8,4 +8,12 @@ interface CoachDashboardScreenActions {
     fun onUpdateLineup()
     fun onRosterSearchQueryChange(query: String)
     fun onRosterFilterChange(filter: MemberFilter)
+
+    // Schedule tab
+    fun onPreviousMonth()
+    fun onNextMonth()
+    fun onDateSelected(epochDay: Long)
+    fun onLogAttendance(eventId: String)
+    fun onLogStatistics(eventId: String)
+    fun onAddEvent()
 }

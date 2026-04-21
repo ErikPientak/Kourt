@@ -29,6 +29,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 private const val TAG = "CoachDashboardViewModel"
@@ -112,6 +113,12 @@ class CoachDashboardViewModel @Inject constructor(
                     val upcoming = futureEvents.drop(1).take(5).map { it.toEventUiItem() }
                     val allEvents = sortedEvents.map { it.toEventUiItem() }
 
+                    val today = Calendar.getInstance()
+                    val todayYear = today.get(Calendar.YEAR)
+                    val todayMonth = today.get(Calendar.MONTH)
+                    val todayEpochDay = TimeUnit.MILLISECONDS.toDays(today.timeInMillis)
+                    val eventDaysInView = computeEventDaysInView(allEvents, todayYear, todayMonth)
+
                     val teamMembers = membersDeferred.await()
                     val userIds = teamMembers.map { it.userId }.filter { it.isNotBlank() }
                     val users = userRepository.getUsersByIds(userIds)
@@ -143,6 +150,10 @@ class CoachDashboardViewModel @Inject constructor(
                         filteredMembers = applyFilter(members, "", MemberFilter.ALL),
                         memberSearchQuery = "",
                         memberFilter = MemberFilter.ALL,
+                        calendarYear = todayYear,
+                        calendarMonth = todayMonth,
+                        selectedEpochDay = todayEpochDay,
+                        eventDaysInView = eventDaysInView,
                     )
                     Log.d(TAG, "Team data loaded: upNext=${upNext?.title}, upcoming=${upcoming.size}, roster=${members.size}")
                 }
@@ -183,6 +194,63 @@ class CoachDashboardViewModel @Inject constructor(
         )
     }
 
+    override fun onPreviousMonth() {
+        val cal = Calendar.getInstance().apply {
+            set(uiState.calendarYear, uiState.calendarMonth, 1)
+            add(Calendar.MONTH, -1)
+        }
+        val newYear = cal.get(Calendar.YEAR)
+        val newMonth = cal.get(Calendar.MONTH)
+        uiState = uiState.copy(
+            calendarYear = newYear,
+            calendarMonth = newMonth,
+            eventDaysInView = computeEventDaysInView(uiState.allEvents, newYear, newMonth),
+        )
+    }
+
+    override fun onNextMonth() {
+        val cal = Calendar.getInstance().apply {
+            set(uiState.calendarYear, uiState.calendarMonth, 1)
+            add(Calendar.MONTH, 1)
+        }
+        val newYear = cal.get(Calendar.YEAR)
+        val newMonth = cal.get(Calendar.MONTH)
+        uiState = uiState.copy(
+            calendarYear = newYear,
+            calendarMonth = newMonth,
+            eventDaysInView = computeEventDaysInView(uiState.allEvents, newYear, newMonth),
+        )
+    }
+
+    override fun onDateSelected(epochDay: Long) {
+        uiState = uiState.copy(selectedEpochDay = epochDay)
+    }
+
+    override fun onLogAttendance(eventId: String) {
+        Log.d(TAG, "onLogAttendance: $eventId — not yet implemented")
+    }
+
+    override fun onLogStatistics(eventId: String) {
+        Log.d(TAG, "onLogStatistics: $eventId — not yet implemented")
+    }
+
+    override fun onAddEvent() {
+        Log.d(TAG, "onAddEvent — not yet implemented")
+    }
+
+    private fun computeEventDaysInView(events: List<EventUiItem>, year: Int, month: Int): Set<Long> {
+        val start = Calendar.getInstance().apply {
+            set(year, month, 1, 0, 0, 0); set(Calendar.MILLISECOND, 0)
+        }
+        val end = Calendar.getInstance().apply {
+            set(year, month, getActualMaximum(Calendar.DAY_OF_MONTH), 23, 59, 59)
+            set(Calendar.MILLISECOND, 999)
+        }
+        val startDay = TimeUnit.MILLISECONDS.toDays(start.timeInMillis)
+        val endDay = TimeUnit.MILLISECONDS.toDays(end.timeInMillis)
+        return events.filter { it.epochDay in startDay..endDay }.map { it.epochDay }.toSet()
+    }
+
     private fun applyFilter(
         members: List<ClubMemberUiItem>,
         query: String,
@@ -213,12 +281,15 @@ class CoachDashboardViewModel @Inject constructor(
         val isTomorrow = cal.get(Calendar.YEAR) == tomorrow.get(Calendar.YEAR) &&
                 cal.get(Calendar.DAY_OF_YEAR) == tomorrow.get(Calendar.DAY_OF_YEAR)
 
+        val locale = Locale.getDefault()
+        val shortDatePattern = android.text.format.DateFormat.getBestDateTimePattern(locale, "MMMd")
+
         return EventUiItem(
             eventId = id,
             title = title,
             type = type,
             status = status,
-            dayOfWeek = SimpleDateFormat("EEE", Locale.getDefault()).format(eventDate).uppercase(),
+            dayOfWeek = SimpleDateFormat("EEE", locale).format(eventDate).uppercase(locale),
             dayOfMonth = cal.get(Calendar.DAY_OF_MONTH),
             startTime = startTime,
             location = location,
@@ -226,8 +297,10 @@ class CoachDashboardViewModel @Inject constructor(
             dateLabel = when {
                 isToday -> "Today"
                 isTomorrow -> "Tomorrow"
-                else -> SimpleDateFormat("MMM d", Locale.getDefault()).format(eventDate)
+                else -> SimpleDateFormat(shortDatePattern, locale).format(eventDate)
             },
+            epochDay = TimeUnit.MILLISECONDS.toDays(eventDate.time),
+            subtitle = notes,
         )
     }
 }

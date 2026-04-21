@@ -1,5 +1,6 @@
 package com.kourt.app.ui.screens.dashboard.coach
 
+import android.text.format.DateFormat
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,6 +22,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.LocationOn
@@ -28,6 +30,8 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +41,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -57,10 +62,17 @@ import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.EventCard
 import com.kourt.app.ui.components.KourtAvatarLeading
 import com.kourt.app.ui.components.KourtButton
+import com.kourt.app.ui.components.KourtCalendar
+import com.kourt.app.ui.components.ScheduleEventCard
 import com.kourt.app.ui.screens.club.management.ClubManagementScreenUiState
 import com.kourt.app.ui.screens.club.management.MemberFilter
 import com.kourt.app.ui.Tabs.MembersTab
+import com.kourt.app.ui.Tabs.ScheduleTab
 import com.kourt.app.viewmodel.dashboard.CoachDashboardViewModel
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 private const val TAB_HOME = 0
 private const val TAB_SCHEDULE = 1
@@ -81,6 +93,12 @@ fun CoachDashboardScreen(
         onUpdateLineup = viewModel::onUpdateLineup,
         onRosterSearchQueryChange = viewModel::onRosterSearchQueryChange,
         onRosterFilterChange = viewModel::onRosterFilterChange,
+        onPreviousMonth = viewModel::onPreviousMonth,
+        onNextMonth = viewModel::onNextMonth,
+        onDateSelected = viewModel::onDateSelected,
+        onLogAttendance = viewModel::onLogAttendance,
+        onLogStatistics = viewModel::onLogStatistics,
+        onAddEvent = viewModel::onAddEvent,
     )
 }
 
@@ -93,6 +111,12 @@ private fun CoachDashboardContent(
     onUpdateLineup: () -> Unit,
     onRosterSearchQueryChange: (String) -> Unit,
     onRosterFilterChange: (MemberFilter) -> Unit,
+    onPreviousMonth: () -> Unit,
+    onNextMonth: () -> Unit,
+    onDateSelected: (Long) -> Unit,
+    onLogAttendance: (String) -> Unit,
+    onLogStatistics: (String) -> Unit,
+    onAddEvent: () -> Unit,
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(TAB_HOME) }
 
@@ -115,6 +139,21 @@ private fun CoachDashboardContent(
                 onTabSelected = { selectedTab = it },
             )
         },
+        floatingActionButton = {
+            if (selectedTab == TAB_SCHEDULE) {
+                FloatingActionButton(
+                    onClick = onAddEvent,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    shape = RoundedCornerShape(16.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = stringResource(R.string.schedule_add_event_cd),
+                    )
+                }
+            }
+        },
     ) { padding ->
         if (uiState.isLoading) {
             Box(
@@ -127,7 +166,14 @@ private fun CoachDashboardContent(
             Box(modifier = Modifier.fillMaxSize().padding(padding)) {
                 when (selectedTab) {
                     TAB_HOME -> HomeTab(uiState = uiState, onUpdateLineup = onUpdateLineup)
-                    TAB_SCHEDULE -> ScheduleTab(uiState = uiState)
+                    TAB_SCHEDULE -> ScheduleTab(
+                        uiState = uiState,
+                        onPreviousMonth = onPreviousMonth,
+                        onNextMonth = onNextMonth,
+                        onDateSelected = onDateSelected,
+                        onLogAttendance = onLogAttendance,
+                        onLogStatistics = onLogStatistics,
+                    )
                     TAB_ROSTER -> MembersTab(
                         uiState = ClubManagementScreenUiState(
                             filteredMembers = uiState.filteredMembers,
@@ -394,39 +440,6 @@ private fun HomeTab(
         }
     }
 }
-
-@Composable
-private fun ScheduleTab(uiState: CoachDashboardScreenUiState) {
-    if (uiState.allEvents.isEmpty()) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(
-                text = stringResource(R.string.coming_soon),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-            )
-        }
-    } else {
-        LazyColumn(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            items(items = uiState.allEvents, key = { it.eventId }) { event ->
-                EventCard(
-                    title = event.title,
-                    eventType = event.type,
-                    status = event.status,
-                    dayOfWeek = event.dayOfWeek,
-                    dayOfMonth = event.dayOfMonth,
-                    startTime = event.startTime,
-                    location = event.location,
-                    showChevron = false,
-                )
-            }
-        }
-    }
-}
-
-
 // ── Up Next card ──────────────────────────────────────────────────────────────
 
 @Composable
