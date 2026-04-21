@@ -210,6 +210,41 @@
     <string name="schedule_log_statistics">Log Statistics</string>
     <string name="schedule_add_event_cd">Add event</string>
 
+    <!-- Add / Edit Event -->
+    <string name="add_event_title">Add New Event</string>
+    <string name="edit_event_title">Edit Event</string>
+    <string name="event_type_label">EVENT TYPE</string>
+    <string name="event_type_practice">Practice</string>
+    <string name="event_type_match">Match</string>
+    <string name="event_session_name_label">Session Name</string>
+    <string name="event_session_name_placeholder_practice">e.g., Shooting Drills</string>
+    <string name="event_session_name_placeholder_match">e.g., Friendly Match</string>
+    <string name="event_date_label">Date</string>
+    <string name="event_start_time_label">Start Time</string>
+    <string name="event_end_time_label">End Time</string>
+    <string name="event_repeat_weekly_label">Repeat weekly</string>
+    <string name="event_repeat_on_title">Repeat on</string>
+    <string name="event_repeat_summary">Every %1$s</string>
+    <string name="event_location_label">Location</string>
+    <string name="event_location_placeholder">Search gym or arena address</string>
+    <string name="event_notes_label">Coach\'s Notes</string>
+    <string name="event_notes_placeholder_practice">Focus on defensive transitions and free throws…</string>
+    <string name="event_notes_placeholder_match">Enter team instructions here</string>
+    <string name="event_create_button">Create Event</string>
+    <string name="event_save_button">Save Changes</string>
+    <string name="event_cancel">Cancel</string>
+    <string name="event_opponent_label">Opponent</string>
+    <string name="event_opponent_placeholder">e.g., Lakers</string>
+    <string name="event_venue_type_label">VENUE TYPE</string>
+    <string name="event_venue_home">Home</string>
+    <string name="event_venue_away">Away</string>
+    <string name="event_nomination_row">Nominate Players Now</string>
+    <string name="error_event_name_required">Session name is required</string>
+    <string name="error_event_date_required">Please select a date</string>
+    <string name="error_event_time_required">Start and end time are required</string>
+    <string name="event_repeat_occurs_summary">Occurs every %1$s</string>
+    <string name="dialog_done">Done</string>
+
     <!-- Coach Dashboard -->
     <string name="coach_dashboard_managing_label">Managing</string>
     <string name="coach_dashboard_no_team">No team</string>

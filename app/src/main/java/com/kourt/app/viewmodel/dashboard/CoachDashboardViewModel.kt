@@ -235,7 +235,16 @@ class CoachDashboardViewModel @Inject constructor(
     }
 
     override fun onAddEvent() {
-        Log.d(TAG, "onAddEvent — not yet implemented")
+        uiState = uiState.copy(navigateToAddEvent = true)
+    }
+
+    fun onAddEventNavigated() {
+        uiState = uiState.copy(navigateToAddEvent = false)
+    }
+
+    fun refreshEvents() {
+        val teamId = uiState.activeTeam?.teamId ?: return
+        loadTeamData(teamId)
     }
 
     private fun computeEventDaysInView(events: List<EventUiItem>, year: Int, month: Int): Set<Long> {

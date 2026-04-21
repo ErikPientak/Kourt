@@ -8,7 +8,7 @@ val OrangeLight = Color(0xFFF2800E)
 
 // Dark theme
 val DarkBackground = Color(0xFF131212)
-val DarkSurface = Color(0xFF292524)
+val DarkSurface = Color(0xFF1A1918)
 val DarkOnBackground = Color(0xFFFF5A25)
 val DarkOnSurface = Color(0xFFFFFFFF)
 val DarkPlaceholder = Color(0xFF6B7280)

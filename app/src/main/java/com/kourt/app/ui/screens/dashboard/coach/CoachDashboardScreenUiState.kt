@@ -49,4 +49,5 @@ data class CoachDashboardScreenUiState(
     val calendarMonth: Int = Calendar.getInstance().get(Calendar.MONTH),
     val selectedEpochDay: Long = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis()),
     val eventDaysInView: Set<Long> = emptySet(),
+    val navigateToAddEvent: Boolean = false,
 )

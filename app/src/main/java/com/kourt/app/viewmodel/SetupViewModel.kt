@@ -85,4 +85,8 @@ class SetupViewModel @Inject constructor(
             }
         }
     }
+
+    override fun onSaveConsumed() {
+        uiState = uiState.copy(isSuccess = false)
+    }
 }

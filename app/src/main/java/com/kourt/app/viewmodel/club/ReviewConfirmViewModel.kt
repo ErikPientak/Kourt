@@ -85,6 +85,10 @@ class ReviewConfirmViewModel @Inject constructor(
         }
     }
 
+    override fun onSaveConsumed() {
+        uiState = uiState.copy(isSuccess = false)
+    }
+
     private fun generateJoinCode(): String =
         (1..JOIN_CODE_LENGTH).map { JOIN_CODE_CHARS.random() }.joinToString("")
 }

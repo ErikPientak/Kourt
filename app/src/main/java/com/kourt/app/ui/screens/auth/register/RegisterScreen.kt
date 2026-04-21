@@ -70,7 +70,10 @@ fun RegisterScreen(
 
 
     LaunchedEffect(uiState.isSuccess) {
-        if (uiState.isSuccess) navigation.navigateToHome()
+        if (uiState.isSuccess) {
+            viewModel.onSaveConsumed()
+            navigation.navigateToHome()
+        }
     }
 
     Column(

@@ -86,7 +86,7 @@ fun AddTeamScreen(
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
-            viewModel.onSuccessConsumed()
+            viewModel.onSaveConsumed()
             navigation.navigateToClubManagementScreen()
         }
     }

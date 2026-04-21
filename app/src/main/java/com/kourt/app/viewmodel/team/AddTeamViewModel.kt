@@ -327,7 +327,7 @@ class AddTeamViewModel @Inject constructor(
         }
     }
 
-    override fun onSuccessConsumed() {
+    override fun onSaveConsumed() {
         uiState = uiState.copy(isSuccess = false)
     }
 

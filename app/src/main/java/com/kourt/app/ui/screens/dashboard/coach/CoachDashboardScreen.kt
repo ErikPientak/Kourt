@@ -39,7 +39,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.kourt.app.navigation.Destination
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -84,6 +87,21 @@ fun CoachDashboardScreen(
     viewModel: CoachDashboardViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
+
+    val navBackStackEntry by navigation.getNavController().currentBackStackEntryAsState()
+    LaunchedEffect(navBackStackEntry) {
+        if (navBackStackEntry?.destination?.route == Destination.CoachDashboardScreen.route) {
+            viewModel.refreshEvents()
+        }
+    }
+
+    LaunchedEffect(uiState.navigateToAddEvent) {
+        if (uiState.navigateToAddEvent) {
+            val teamId = uiState.activeTeam?.teamId ?: return@LaunchedEffect
+            navigation.navigateToAddEvent(teamId)
+            viewModel.onAddEventNavigated()
+        }
+    }
 
     CoachDashboardContent(
         uiState = uiState,

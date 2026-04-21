@@ -67,4 +67,8 @@ class RegisterViewModel @Inject constructor(
     override fun onClearError() {
         uiState = uiState.copy(error = null)
     }
+
+    override fun onSaveConsumed() {
+        uiState = uiState.copy(isSuccess = false)
+    }
 }

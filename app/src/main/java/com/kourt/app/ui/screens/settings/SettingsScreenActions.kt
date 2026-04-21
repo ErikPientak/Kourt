@@ -7,5 +7,5 @@ interface SettingsScreenActions {
     fun onLogOutClick()
     fun onConfirmLogOut()
     fun onDismissLogOutDialog()
-    fun onSuccessConsumed()
+    fun onSaveConsumed()
 }

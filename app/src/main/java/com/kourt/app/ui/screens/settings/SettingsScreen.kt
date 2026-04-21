@@ -59,7 +59,7 @@ fun SettingsScreen(
 
     LaunchedEffect(uiState.isLoggedOut) {
         if (uiState.isLoggedOut) {
-            viewModel.onSuccessConsumed()
+            viewModel.onSaveConsumed()
             navigation.navigateToLoginScreen()
         }
     }

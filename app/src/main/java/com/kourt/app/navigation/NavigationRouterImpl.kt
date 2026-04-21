@@ -81,4 +81,14 @@ class NavigationRouterImpl(private val navController: NavController) : INavigati
             popUpTo(0) { inclusive = true }
         }
     }
+
+    override fun navigateToAddEvent(teamId: String) {
+        navController.navigate("add_edit_event?teamId=${Uri.encode(teamId)}&eventId=")
+    }
+
+    override fun navigateToEditEvent(eventId: String, teamId: String) {
+        navController.navigate(
+            "add_edit_event?teamId=${Uri.encode(teamId)}&eventId=${Uri.encode(eventId)}"
+        )
+    }
 }

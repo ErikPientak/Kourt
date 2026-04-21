@@ -20,6 +20,7 @@ import com.kourt.app.ui.screens.settings.SettingsScreen
 import com.kourt.app.ui.screens.settings.profile.ProfileScreen
 import com.kourt.app.ui.screens.dashboard.coach.CoachDashboardScreen
 import com.kourt.app.ui.screens.team.create.AddTeamScreen
+import com.kourt.app.ui.screens.event.AddEditEventScreen
 
 @Composable
 fun NavGraph(
@@ -100,6 +101,16 @@ fun NavGraph(
 
         composable(route = Destination.CoachDashboardScreen.route) {
             CoachDashboardScreen(navigation = navigation)
+        }
+
+        composable(
+            route = Destination.AddEditEventScreen.route,
+            arguments = listOf(
+                navArgument("teamId") { type = NavType.StringType; defaultValue = "" },
+                navArgument("eventId") { type = NavType.StringType; defaultValue = "" },
+            ),
+        ) {
+            AddEditEventScreen(navigation = navigation)
         }
 
         composable(

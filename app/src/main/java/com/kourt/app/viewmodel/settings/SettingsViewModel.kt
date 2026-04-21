@@ -60,7 +60,7 @@ class SettingsViewModel @Inject constructor(
         uiState = uiState.copy(showLogOutDialog = false)
     }
 
-    override fun onSuccessConsumed() {
+    override fun onSaveConsumed() {
         uiState = uiState.copy(isLoggedOut = false)
     }
 }

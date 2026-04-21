@@ -20,5 +20,5 @@ interface AddTeamScreenActions {
     fun onDeleteTeamClick()
     fun onDeleteTeamDismiss()
     fun onDeleteTeamConfirm()
-    fun onSuccessConsumed()
+    fun onSaveConsumed()
 }

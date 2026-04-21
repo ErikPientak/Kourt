@@ -8,6 +8,6 @@ interface CreateClubScreenActions {
     fun onCountryChange(value: String)
     fun onCityChange(value: String)
     fun onCreateClub()
-    fun onSuccessConsumed()
+    fun onSaveConsumed()
     fun onLogoUploadTap()
 }

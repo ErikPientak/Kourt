@@ -86,7 +86,7 @@ fun CreateClubScreen(
                 country = uiState.country,
                 city = uiState.city,
             )
-            viewModel.onSuccessConsumed()
+            viewModel.onSaveConsumed()
         }
     }
 
