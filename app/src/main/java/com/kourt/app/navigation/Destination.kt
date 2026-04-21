@@ -15,4 +15,5 @@ sealed class Destination(val route: String) {
     object AddTeamScreen        : Destination("add_team?clubId={clubId}&teamId={teamId}")
     object SettingsScreen       : Destination("settings")
     object ProfileScreen        : Destination("profile")
+    object UserProfileScreen    : Destination("user_profile/{userId}")
 }

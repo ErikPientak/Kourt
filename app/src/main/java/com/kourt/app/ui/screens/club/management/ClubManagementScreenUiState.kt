@@ -54,9 +54,11 @@ data class ClubManagementScreenUiState(
     val membersError: String? = null,
 
     // ── Member Action bottom sheet ────────────────────────────────────────────
-    /**
-     * The TeamMember document ID of the member whose action sheet is open.
-     * `null` means the sheet is dismissed.
-     */
-    val selectedMemberId: String? = null,
+    /** The member whose action sheet is open. `null` means the sheet is dismissed. */
+    val selectedMember: ClubMemberUiItem? = null,
+
+    // ── Action dialogs ────────────────────────────────────────────────────────
+    val memberForAssignTeam: ClubMemberUiItem? = null,
+    val memberForMakeAdmin: ClubMemberUiItem? = null,
+    val memberForRemove: ClubMemberUiItem? = null,
 )

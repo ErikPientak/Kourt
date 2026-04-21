@@ -68,6 +68,10 @@ class NavigationRouterImpl(private val navController: NavController) : INavigati
         navController.navigate(Destination.ProfileScreen.route)
     }
 
+    override fun navigateToUserProfile(userId: String) {
+        navController.navigate("user_profile/${Uri.encode(userId)}")
+    }
+
     override fun navigateToEditProfile() {
         // TODO: implement edit profile navigation
     }

@@ -89,6 +89,15 @@ fun NavGraph(
             ProfileScreen(navigation = navigation)
         }
 
+        composable(
+            route = Destination.UserProfileScreen.route,
+            arguments = listOf(
+                navArgument("userId") { type = NavType.StringType; defaultValue = "" },
+            ),
+        ) {
+            ProfileScreen(navigation = navigation)
+        }
+
         composable(route = Destination.CoachDashboardScreen.route) {
             CoachDashboardScreen(navigation = navigation)
         }

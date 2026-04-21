@@ -117,40 +117,35 @@ class ClubManagementViewModel @Inject constructor(
                     async { team to teamMemberRepository.getMembersByTeam(team.id) }
                 }.awaitAll()
 
-                // 2. Build a map of userId → (TeamMember, teamName), de-duplicated
-                //    by userId so each person appears once. First occurrence wins.
-                val userIdToEntry = linkedMapOf<String, Pair<com.kourt.app.data.model.TeamMember, String>>()
+                // 2. Group all (TeamMember, teamName) entries per userId — keeps every membership.
+                val userIdToEntries = linkedMapOf<String, MutableList<Pair<com.kourt.app.data.model.TeamMember, String>>>()
                 for ((team, members) in teamMembersByTeam) {
                     for (member in members) {
-                        if (member.userId.isNotEmpty() && !userIdToEntry.containsKey(member.userId)) {
-                            userIdToEntry[member.userId] = member to team.name
+                        if (member.userId.isNotEmpty()) {
+                            userIdToEntries.getOrPut(member.userId) { mutableListOf() }
+                                .add(member to team.name)
                         }
                     }
                 }
 
                 // 3. Resolve user display names in parallel
-                val userMap = userIdToEntry.keys
+                val userMap = userIdToEntries.keys
                     .map { uid -> async { uid to userRepository.getUser(uid) } }
                     .awaitAll()
                     .toMap()
 
                 // 4. Build UI projections
-                val items = userIdToEntry.entries.mapNotNull { (userId, pair) ->
-                    val (teamMember, teamName) = pair
+                val items = userIdToEntries.entries.mapNotNull { (userId, entries) ->
+                    val (primaryMember, _) = entries.first()
                     val user = userMap[userId] ?: return@mapNotNull null
-
-                    val subtitle = buildSubtitle(
-                        role = teamMember.role,
-                        teamName = teamName,
-                        athleteName = user.displayName,
-                    )
+                    val teamNames = entries.map { it.second }
 
                     ClubMemberUiItem(
-                        memberId = teamMember.id,
+                        memberId = primaryMember.id,
                         userId = userId,
                         displayName = user.displayName.ifBlank { user.email },
-                        role = teamMember.role.lowercase(),
-                        subtitle = subtitle,
+                        role = primaryMember.role.lowercase(),
+                        subtitle = buildSubtitle(primaryMember.role, teamNames, user.displayName),
                         avatarUrl = user.photoURL,
                     )
                 }
@@ -179,11 +174,11 @@ class ClubManagementViewModel @Inject constructor(
      * linking is implemented; falls back to the team name in the interim).
      * All other roles see "Team: <teamName>".
      */
-    private fun buildSubtitle(role: String, teamName: String, athleteName: String): String {
+    private fun buildSubtitle(role: String, teamNames: List<String>, athleteName: String): String {
         return if (role.lowercase() == "parent") {
             "Athlete: $athleteName"
         } else {
-            "Team: $teamName"
+            teamNames.joinToString(" · ")
         }
     }
 
@@ -222,35 +217,98 @@ class ClubManagementViewModel @Inject constructor(
     }
 
     override fun onMemberMenuClick(memberId: String) {
-        Log.d(TAG, "onMemberMenuClick: memberId=$memberId — opening action sheet")
-        uiState = uiState.copy(selectedMemberId = memberId)
+        val member = uiState.members.find { it.memberId == memberId } ?: return
+        uiState = uiState.copy(selectedMember = member)
     }
 
     override fun onAddMember() {
-        // Stub — add-member flow not yet implemented
-        Log.d(TAG, "onAddMember")
+        Log.d(TAG, "onAddMember: stub")
     }
 
     // ── Member Action bottom sheet ────────────────────────────────────────────
 
     override fun onMemberActionDismiss() {
-        Log.d(TAG, "onMemberActionDismiss")
-        uiState = uiState.copy(selectedMemberId = null)
+        uiState = uiState.copy(selectedMember = null)
     }
 
-    override fun onEditMember(memberId: String) {
-        Log.d(TAG, "onEditMember: memberId=$memberId")
-        uiState = uiState.copy(selectedMemberId = null)
+    // ── Assign to Team ────────────────────────────────────────────────────────
+
+    override fun onAssignToTeam(memberId: String) {
+        val member = uiState.members.find { it.memberId == memberId } ?: return
+        uiState = uiState.copy(memberForAssignTeam = member)
     }
 
-    override fun onChangeRole(memberId: String) {
-        Log.d(TAG, "onChangeRole: memberId=$memberId")
-        uiState = uiState.copy(selectedMemberId = null)
+    override fun onAssignTeamSelected(memberId: String, teamId: String) {
+        val member = uiState.memberForAssignTeam ?: return
+        uiState = uiState.copy(memberForAssignTeam = null)
+        viewModelScope.launch {
+            runCatching {
+                teamMemberRepository.addMember(
+                    com.kourt.app.data.model.TeamMember(
+                        userId = member.userId,
+                        teamId = teamId,
+                        role = member.role,
+                    )
+                )
+                Log.d(TAG, "Assigned userId=${member.userId} to teamId=$teamId")
+            }.onFailure { e ->
+                Log.e(TAG, "Failed to assign member to team", e)
+            }
+        }
     }
 
-    override fun onRemoveFromClub(memberId: String) {
-        Log.d(TAG, "onRemoveFromClub: memberId=$memberId")
-        uiState = uiState.copy(selectedMemberId = null)
+    override fun onAssignTeamDismiss() {
+        uiState = uiState.copy(memberForAssignTeam = null)
+    }
+
+    // ── Make Admin ────────────────────────────────────────────────────────────
+
+    override fun onMakeAdmin(memberId: String) {
+        val member = uiState.members.find { it.memberId == memberId } ?: return
+        uiState = uiState.copy(memberForMakeAdmin = member)
+    }
+
+    override fun onMakeAdminConfirm(memberId: String) {
+        val member = uiState.memberForMakeAdmin ?: return
+        uiState = uiState.copy(memberForMakeAdmin = null)
+        viewModelScope.launch {
+            runCatching {
+                clubRepository.addAdmin(uiState.clubId, member.userId)
+                Log.d(TAG, "Made admin: userId=${member.userId}, clubId=${uiState.clubId}")
+            }.onFailure { e ->
+                Log.e(TAG, "Failed to make admin", e)
+            }
+        }
+    }
+
+    override fun onMakeAdminDismiss() {
+        uiState = uiState.copy(memberForMakeAdmin = null)
+    }
+
+    // ── Remove Member ─────────────────────────────────────────────────────────
+
+    override fun onRemoveMember(memberId: String) {
+        val member = uiState.members.find { it.memberId == memberId } ?: return
+        uiState = uiState.copy(memberForRemove = member)
+    }
+
+    override fun onRemoveConfirm(memberId: String) {
+        uiState = uiState.copy(memberForRemove = null)
+        viewModelScope.launch {
+            runCatching {
+                teamMemberRepository.removeMember(memberId)
+                val updated = uiState.members.filter { it.memberId != memberId }
+                val filtered = applyFilter(updated, uiState.memberSearchQuery, uiState.memberFilter)
+                uiState = uiState.copy(members = updated, filteredMembers = filtered)
+                Log.d(TAG, "Removed member: memberId=$memberId")
+            }.onFailure { e ->
+                Log.e(TAG, "Failed to remove member", e)
+            }
+        }
+    }
+
+    override fun onRemoveDismiss() {
+        uiState = uiState.copy(memberForRemove = null)
     }
 
     // ── Teams tab ─────────────────────────────────────────────────────────────

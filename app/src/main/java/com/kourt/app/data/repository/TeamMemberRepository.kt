@@ -29,6 +29,11 @@ class TeamMemberRepository @Inject constructor(
         collection.document(id).delete().await()
     }
 
+    suspend fun deleteMembersByTeam(teamId: String) {
+        val docs = collection.whereEqualTo("teamId", teamId).get().await()
+        docs.forEach { it.reference.delete().await() }
+    }
+
     suspend fun isMember(userId: String, teamId: String): Boolean =
         collection
             .whereEqualTo("userId", userId)

@@ -8,10 +8,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -24,34 +20,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kourt.app.R
 import com.kourt.app.ui.theme.KourtTheme
 
-/**
- * Modal bottom sheet that appears when the three-dot menu on a [MemberCard] is tapped.
- *
- * All action callbacks include the [memberId] so the ViewModel can act on the correct
- * TeamMember document without any local state in this composable.
- *
- * @param memberId  The TeamMember document ID of the member being acted on.
- * @param onDismiss Called when the sheet is dragged down or an action is tapped.
- *                  The ViewModel sets `selectedMemberId = null` in response.
- * @param onEditMember        "Edit Member" row tapped.
- * @param onChangeRole        "Change Role" row tapped.
- * @param onRemoveFromClub    "Remove from Club" row tapped (destructive).
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MemberActionBottomSheet(
     memberId: String,
+    userId: String,
     onDismiss: () -> Unit,
-    onEditMember: (String) -> Unit,
-    onChangeRole: (String) -> Unit,
-    onRemoveFromClub: (String) -> Unit,
+    onViewProfile: (String) -> Unit,
+    onAssignToTeam: (String) -> Unit,
+    onMakeAdmin: (String) -> Unit,
+    onRemoveMember: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -65,10 +51,12 @@ fun MemberActionBottomSheet(
     ) {
         MemberActionSheetContent(
             memberId = memberId,
+            userId = userId,
             onDismiss = onDismiss,
-            onEditMember = onEditMember,
-            onChangeRole = onChangeRole,
-            onRemoveFromClub = onRemoveFromClub,
+            onViewProfile = onViewProfile,
+            onAssignToTeam = onAssignToTeam,
+            onMakeAdmin = onMakeAdmin,
+            onRemoveMember = onRemoveMember,
         )
     }
 }
@@ -76,10 +64,12 @@ fun MemberActionBottomSheet(
 @Composable
 private fun MemberActionSheetContent(
     memberId: String,
+    userId: String,
     onDismiss: () -> Unit,
-    onEditMember: (String) -> Unit,
-    onChangeRole: (String) -> Unit,
-    onRemoveFromClub: (String) -> Unit,
+    onViewProfile: (String) -> Unit,
+    onAssignToTeam: (String) -> Unit,
+    onMakeAdmin: (String) -> Unit,
+    onRemoveMember: (String) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -87,7 +77,6 @@ private fun MemberActionSheetContent(
             .navigationBarsPadding()
             .padding(bottom = 8.dp),
     ) {
-        // Title
         Text(
             text = stringResource(R.string.member_action_title),
             style = MaterialTheme.typography.titleMedium,
@@ -97,48 +86,39 @@ private fun MemberActionSheetContent(
                 .padding(horizontal = 24.dp, vertical = 16.dp),
         )
 
-        // Edit Member
         MemberActionRow(
-            icon = Icons.Default.Edit,
-            label = stringResource(R.string.member_action_edit),
+            icon = painterResource(R.drawable.person_search),
+            label = stringResource(R.string.member_action_view_profile),
             contentColor = MaterialTheme.colorScheme.onSurface,
-            onClick = {
-                onEditMember(memberId)
-                onDismiss()
-            },
+            onClick = { onViewProfile(userId); onDismiss() },
         )
 
-        // Change Role
         MemberActionRow(
-            icon = Icons.Default.Person,
-            label = stringResource(R.string.member_action_change_role),
+            icon = painterResource(R.drawable.group),
+            label = stringResource(R.string.member_action_assign_team),
             contentColor = MaterialTheme.colorScheme.onSurface,
-            onClick = {
-                onChangeRole(memberId)
-                onDismiss()
-            },
+            onClick = { onAssignToTeam(memberId); onDismiss() },
         )
 
-        // Remove from Club — destructive
         MemberActionRow(
-            icon = Icons.Default.Delete,
+            icon = painterResource(R.drawable.admin),
+            label = stringResource(R.string.member_action_make_admin),
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            onClick = { onMakeAdmin(memberId); onDismiss() },
+        )
+
+        MemberActionRow(
+            icon = painterResource(R.drawable.shield),
             label = stringResource(R.string.member_action_remove),
             contentColor = MaterialTheme.colorScheme.error,
-            onClick = {
-                onRemoveFromClub(memberId)
-                onDismiss()
-            },
+            onClick = { onRemoveMember(memberId); onDismiss() },
         )
     }
 }
 
-/**
- * A single full-width action row: leading icon + label text, themed with [contentColor].
- * Uses [TextButton] for correct ripple and minimum touch target (48dp height).
- */
 @Composable
 private fun MemberActionRow(
-    icon: ImageVector,
+    icon: Painter,
     label: String,
     contentColor: Color,
     onClick: () -> Unit,
@@ -157,7 +137,7 @@ private fun MemberActionRow(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                imageVector = icon,
+                painter = icon,
                 contentDescription = null,
                 tint = contentColor,
                 modifier = Modifier.size(22.dp),
@@ -181,10 +161,12 @@ private fun MemberActionBottomSheetDarkPreview() {
         Surface(color = MaterialTheme.colorScheme.surface) {
             MemberActionSheetContent(
                 memberId = "preview_member_id",
+                userId = "preview_user_id",
                 onDismiss = {},
-                onEditMember = {},
-                onChangeRole = {},
-                onRemoveFromClub = {},
+                onViewProfile = {},
+                onAssignToTeam = {},
+                onMakeAdmin = {},
+                onRemoveMember = {},
             )
         }
     }
@@ -197,10 +179,12 @@ private fun MemberActionBottomSheetLightPreview() {
         Surface(color = MaterialTheme.colorScheme.surface) {
             MemberActionSheetContent(
                 memberId = "preview_member_id",
+                userId = "preview_user_id",
                 onDismiss = {},
-                onEditMember = {},
-                onChangeRole = {},
-                onRemoveFromClub = {},
+                onViewProfile = {},
+                onAssignToTeam = {},
+                onMakeAdmin = {},
+                onRemoveMember = {},
             )
         }
     }

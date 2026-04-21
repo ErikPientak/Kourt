@@ -16,6 +16,7 @@ import com.kourt.app.data.repository.UserRepository
 import com.kourt.app.ui.screens.settings.profile.MembershipRowUiItem
 import com.kourt.app.ui.screens.settings.profile.ProfileScreenActions
 import com.kourt.app.ui.screens.settings.profile.ProfileScreenUiState
+import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -33,10 +34,13 @@ class ProfileViewModel @Inject constructor(
     private val teamRepository: TeamRepository,
     private val clubRepository: ClubRepository,
     private val appPreferencesRepository: AppPreferencesRepository,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel(), ProfileScreenActions {
 
     var uiState by mutableStateOf(ProfileScreenUiState())
         private set
+
+    private val targetUserId: String = savedStateHandle["userId"] ?: ""
 
     init {
         loadProfile()
@@ -51,7 +55,9 @@ class ProfileViewModel @Inject constructor(
                 return@launch
             }
 
-            val uid = firebaseUser.uid
+            val uid = targetUserId.ifBlank { firebaseUser.uid }
+            val isReadOnly = targetUserId.isNotBlank() && targetUserId != firebaseUser.uid
+            uiState = uiState.copy(isReadOnly = isReadOnly)
 
             // Load Firestore User document for display name + email
             val user = userRepository.getUser(uid)
@@ -125,6 +131,7 @@ class ProfileViewModel @Inject constructor(
     }
 
     override fun onMembershipClick(item: MembershipRowUiItem) {
+        if (uiState.isReadOnly) return
         appPreferencesRepository.activeClubId = item.clubId
         Log.d(TAG, "onMembershipClick: clubId=${item.clubId}, role=${item.role}")
         if (item.role.lowercase() == "admin") {

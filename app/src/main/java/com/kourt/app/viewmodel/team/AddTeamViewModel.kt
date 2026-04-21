@@ -12,6 +12,7 @@ import com.kourt.app.data.model.Team
 import com.kourt.app.data.model.TeamMember
 import com.kourt.app.data.model.User
 import com.kourt.app.data.repository.AuthRepository
+import com.kourt.app.data.repository.ClubRepository
 import com.kourt.app.data.repository.TeamMemberRepository
 import com.kourt.app.data.repository.TeamRepository
 import com.kourt.app.data.repository.UserRepository
@@ -33,6 +34,7 @@ class AddTeamViewModel @Inject constructor(
     private val teamMemberRepository: TeamMemberRepository,
     private val userRepository: UserRepository,
     private val authRepository: AuthRepository,
+    private val clubRepository: ClubRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel(), AddTeamScreenActions {
 
@@ -60,9 +62,11 @@ class AddTeamViewModel @Inject constructor(
                 val memberIds = teams
                     .flatMap { team -> teamMemberRepository.getMembersByTeam(team.id) }
                     .map { it.userId }
-                    .toSet()
+                    .toMutableSet()
+                val adminIds = clubRepository.getClub(clubId)?.adminIds ?: emptyList()
+                memberIds.addAll(adminIds)
                 clubMembers = userRepository.getUsersByIds(memberIds.toList())
-                Log.d(TAG, "Loaded ${clubMembers.size} club members for search")
+                Log.d(TAG, "Loaded ${clubMembers.size} club members (incl. admins) for search")
             }.onFailure { e ->
                 Log.e(TAG, "Failed to load club members", e)
             }
@@ -109,7 +113,9 @@ class AddTeamViewModel @Inject constructor(
             val memberIds = teams
                 .flatMap { team -> teamMemberRepository.getMembersByTeam(team.id) }
                 .map { it.userId }
-                .toSet()
+                .toMutableSet()
+            val adminIds = clubRepository.getClub(id)?.adminIds ?: emptyList()
+            memberIds.addAll(adminIds)
             clubMembers = userRepository.getUsersByIds(memberIds.toList())
         }.onFailure { e ->
             Log.e(TAG, "Failed to load club members", e)
@@ -213,18 +219,6 @@ class AddTeamViewModel @Inject constructor(
             uiState = uiState.copy(error = R.string.error_team_name_required)
             return
         }
-        val headCoachResolved = uiState.selectedHeadCoach
-        if (headCoachResolved == null && !uiState.isHeadCoachPreloaded) {
-            uiState = uiState.copy(error = R.string.error_select_head_coach)
-            return
-        }
-        if (uiState.location.isBlank() || uiState.arena.isBlank()) {
-            uiState = uiState.copy(
-                error = if (uiState.location.isBlank()) R.string.error_location_required else R.string.error_arena_required,
-                isLocationExpanded = true,
-            )
-            return
-        }
 
         if (uiState.isEditMode) updateTeam() else createTeam()
     }
@@ -322,6 +316,7 @@ class AddTeamViewModel @Inject constructor(
             uiState = uiState.copy(isLoading = true, showDeleteDialog = false, error = null)
 
             runCatching {
+                teamMemberRepository.deleteMembersByTeam(uiState.teamId)
                 teamRepository.deleteTeam(uiState.teamId)
                 uiState = uiState.copy(isLoading = false, isSuccess = true)
                 Log.d(TAG, "Team deleted: ${uiState.teamId}")

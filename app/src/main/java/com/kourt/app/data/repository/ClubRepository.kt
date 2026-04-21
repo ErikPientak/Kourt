@@ -1,5 +1,6 @@
 package com.kourt.app.data.repository
 
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.kourt.app.data.model.Club
 import kotlinx.coroutines.tasks.await
@@ -36,4 +37,8 @@ class ClubRepository @Inject constructor(
     suspend fun getClubsByAdminId(uid: String): List<Club> =
         collection.whereArrayContains("admin_ids", uid).get().await()
             .toObjects(Club::class.java)
+
+    suspend fun addAdmin(clubId: String, userId: String) {
+        collection.document(clubId).update("admin_ids", FieldValue.arrayUnion(userId)).await()
+    }
 }

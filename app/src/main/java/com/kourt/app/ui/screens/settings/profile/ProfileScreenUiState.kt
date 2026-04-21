@@ -10,6 +10,7 @@ data class ProfileScreenUiState(
     @StringRes val error: Int? = null,
     val navigateToClubManagement: Boolean = false,
     val navigateToDashboard: Boolean = false,
+    val isReadOnly: Boolean = false,
 )
 
 data class MembershipRowUiItem(

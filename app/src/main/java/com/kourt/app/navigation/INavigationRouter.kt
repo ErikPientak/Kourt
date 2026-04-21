@@ -23,6 +23,7 @@ interface INavigationRouter {
     fun navigateToEditTeamScreen(teamId: String)
     fun navigateToSettingsScreen()
     fun navigateToProfileScreen()
+    fun navigateToUserProfile(userId: String)
     fun navigateToEditProfile()
     fun navigateToDashboard()
 }
