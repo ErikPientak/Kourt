@@ -15,8 +15,8 @@ data class Event(
     val status: String = "",
     val date: Timestamp = Timestamp.now(),
     val location: String = "",
-    @PropertyName("start_time") val startTime: String = "",
-    @PropertyName("end_time") val endTime: String = "",
+    val startTime: String = "",
+    val endTime: String = "",
     val notes: String = "",
-    @PropertyName("created_by") val createdBy: String = ""
+    val createdBy: String = ""
 )

@@ -3,6 +3,7 @@ package com.kourt.app.ui.screens.dashboard.coach
 import android.text.format.DateFormat
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,19 +14,21 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -52,13 +55,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.R
 import com.kourt.app.navigation.INavigationRouter
@@ -71,6 +78,7 @@ import com.kourt.app.ui.screens.club.management.ClubManagementScreenUiState
 import com.kourt.app.ui.screens.club.management.MemberFilter
 import com.kourt.app.ui.Tabs.MembersTab
 import com.kourt.app.ui.Tabs.ScheduleTab
+import com.kourt.app.ui.components.UpNextCard
 import com.kourt.app.viewmodel.dashboard.CoachDashboardViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -420,7 +428,12 @@ private fun HomeTab(
 
         val upNext = uiState.upNextEvent
         if (upNext != null) {
-            UpNextCard(event = upNext, onUpdateLineup = onUpdateLineup)
+            UpNextCard(
+                event = upNext,
+                rosterSize = uiState.members.size,
+                attendeeNames = emptyList(), // TODO: pass yes-RSVP names once RSVP is implemented
+                onUpdateLineup = onUpdateLineup,
+            )
         } else {
             Box(
                 modifier = Modifier
@@ -458,92 +471,4 @@ private fun HomeTab(
         }
     }
 }
-// ── Up Next card ──────────────────────────────────────────────────────────────
 
-@Composable
-private fun UpNextCard(
-    event: EventUiItem,
-    onUpdateLineup: () -> Unit,
-) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surface,
-    ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            Canvas(modifier = Modifier.matchParentSize()) {
-                drawDiagonalAccent()
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(50.dp))
-                            .background(MaterialTheme.colorScheme.primary)
-                            .padding(horizontal = 10.dp, vertical = 4.dp),
-                    ) {
-                        Text(
-                            text = event.type.uppercase(),
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.onPrimary,
-                        )
-                    }
-                    Text(
-                        text = "${event.dateLabel}  ${event.startTime}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                    )
-                }
-
-                Text(
-                    text = event.title,
-                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.LocationOn,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                        modifier = Modifier.size(14.dp),
-                    )
-                    Text(
-                        text = event.location.ifBlank { stringResource(R.string.coach_dashboard_location_tbd) },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    )
-                }
-
-                KourtButton(
-                    text = stringResource(R.string.coach_dashboard_update_lineup),
-                    onClick = onUpdateLineup,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-        }
-    }
-}
-
-private fun DrawScope.drawDiagonalAccent() {
-    val accentColor = Color(0xFFFF5A25)
-    drawLine(
-        color = accentColor,
-        start = Offset(x = size.width * 0.72f, y = 0f),
-        end = Offset(x = size.width * 0.88f, y = size.height),
-        strokeWidth = 40.dp.toPx(),
-    )
-}

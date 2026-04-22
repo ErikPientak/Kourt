@@ -28,6 +28,9 @@ data class EventUiItem(
     val dateLabel: String,
     val epochDay: Long,
     val subtitle: String,
+    val rsvpYes: Int = 0,
+    val rsvpMaybe: Int = 0,
+    val rsvpNo: Int = 0,
 )
 
 data class CoachDashboardScreenUiState(

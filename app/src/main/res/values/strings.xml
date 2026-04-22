@@ -257,4 +257,8 @@
     <string name="coach_dashboard_tab_roster">Roster</string>
     <string name="coach_dashboard_settings_cd">Settings</string>
     <string name="coach_dashboard_location_tbd">TBD</string>
+    <string name="coach_dashboard_attendance">ATTENDANCE</string>
+    <string name="coach_dashboard_rsvp_yes">Yes</string>
+    <string name="coach_dashboard_rsvp_maybe">Maybe</string>
+    <string name="coach_dashboard_rsvp_no">No</string>
 </resources>
