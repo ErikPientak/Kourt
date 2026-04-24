@@ -40,6 +40,8 @@ class ReviewConfirmViewModel @Inject constructor(
             technicalDirector = savedStateHandle.get<String>("technicalDirector") ?: "",
             country = savedStateHandle.get<String>("country") ?: "",
             city = savedStateHandle.get<String>("city") ?: "",
+            accentColor = savedStateHandle.get<String>("accentColor") ?: "#9CA3AF",
+            initials = savedStateHandle.get<String>("initials") ?: "",
         )
     )
         private set
@@ -67,6 +69,8 @@ class ReviewConfirmViewModel @Inject constructor(
                     createdAt = Timestamp.now(),
                     logoURL = "",
                     adminIds = listOf(uid),
+                    accentColor = uiState.accentColor,
+                    initials = uiState.initials,
                 )
                 clubRepository.createClub(club)
             }.fold(

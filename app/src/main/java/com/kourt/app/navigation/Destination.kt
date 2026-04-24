@@ -8,7 +8,8 @@ sealed class Destination(val route: String) {
     object CreateClubScreen   : Destination("create_club")
     object ReviewConfirmScreen : Destination(
         "review_confirm?clubName={clubName}&shortName={shortName}&president={president}" +
-            "&technicalDirector={technicalDirector}&country={country}&city={city}"
+            "&technicalDirector={technicalDirector}&country={country}&city={city}" +
+            "&accentColor={accentColor}&initials={initials}"
     )
     object ClubManagementScreen  : Destination("club_management")
     object CoachDashboardScreen  : Destination("coach_dashboard")

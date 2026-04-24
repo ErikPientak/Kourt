@@ -7,6 +7,8 @@ data class ReviewConfirmScreenUiState(
     val technicalDirector: String = "",
     val country: String = "",
     val city: String = "",
+    val accentColor: String = "#9CA3AF",
+    val initials: String = "",
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
     val error: String? = null,

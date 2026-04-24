@@ -48,6 +48,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,6 +64,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.R
@@ -69,10 +74,13 @@ import com.kourt.app.ui.components.AuthFieldLabel
 import com.kourt.app.ui.components.BaseScreen
 import com.kourt.app.ui.components.CategoryChip
 import com.kourt.app.ui.components.KourtButton
+import com.kourt.app.ui.components.TeamIdentityBottomSheet
 import com.kourt.app.ui.components.authTextFieldColors
+import com.kourt.app.ui.components.contentColorForBackground
 import com.kourt.app.ui.theme.KourtTheme
 import com.kourt.app.ui.theme.White
 import com.kourt.app.viewmodel.team.AddTeamViewModel
+import androidx.core.graphics.toColorInt
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -83,6 +91,12 @@ fun AddTeamScreen(
     val uiState = viewModel.uiState
     val placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
     val iconTintColor = MaterialTheme.colorScheme.onBackground
+
+    val accentColor = remember(uiState.accentColor) {
+        runCatching { Color(uiState.accentColor.toColorInt()) }
+            .getOrDefault(Color(0xFF9CA3AF))
+    }
+    var showIdentitySheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
@@ -125,11 +139,9 @@ fun AddTeamScreen(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            // ── Team photo upload ─────────────────────────────────────────────
+            // ── Team avatar preview ───────────────────────────────────────────
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { viewModel.onLogoUploadTap() },
+                modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Box(
@@ -137,22 +149,45 @@ fun AddTeamScreen(
                     modifier = Modifier
                         .size(96.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surface),
+                        .background(accentColor)
+                        .clickable { showIdentitySheet = true },
                 ) {
-                    Icon(
-                        painter = painterResource(R.drawable.camera),
-                        contentDescription = stringResource(R.string.add_team_photo_cd),
-                        tint = iconTintColor,
-                        modifier = Modifier.size(32.dp),
+                    Text(
+                        text = uiState.initials.take(3),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = accentColor.contentColorForBackground(),
                     )
+
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
                     text = stringResource(R.string.add_team_brand_label),
-                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                    style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = stringResource(R.string.create_club_upload_logo_subtitle),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    textAlign = TextAlign.Center,
+                )
+
+            }
+
+            if (showIdentitySheet) {
+                TeamIdentityBottomSheet(
+                    selectedColor = accentColor,
+                    selectedInitials = uiState.initials,
+                    onDismiss = { showIdentitySheet = false },
+                    onApply = { color, initials ->
+                        viewModel.onAccentColorChanged(color)
+                        viewModel.onInitialsChanged(initials)
+                    },
                 )
             }
 

@@ -1,5 +1,6 @@
 package com.kourt.app.ui.screens.team.create
 
+import androidx.compose.ui.graphics.Color
 import com.kourt.app.data.model.User
 
 interface AddTeamScreenActions {
@@ -14,7 +15,8 @@ interface AddTeamScreenActions {
     fun onToggleLocation()
     fun onLocationChange(value: String)
     fun onArenaChange(value: String)
-    fun onLogoUploadTap()
+    fun onAccentColorChanged(color: Color)
+    fun onInitialsChanged(value: String)
     fun onSaveTeam()
     fun onDeleteTeam()
     fun onDeleteTeamClick()

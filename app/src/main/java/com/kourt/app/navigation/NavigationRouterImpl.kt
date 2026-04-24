@@ -37,6 +37,8 @@ class NavigationRouterImpl(private val navController: NavController) : INavigati
         technicalDirector: String,
         country: String,
         city: String,
+        accentColor: String,
+        initials: String,
     ) {
         val route = "review_confirm" +
             "?clubName=${Uri.encode(clubName)}" +
@@ -44,7 +46,9 @@ class NavigationRouterImpl(private val navController: NavController) : INavigati
             "&president=${Uri.encode(president)}" +
             "&technicalDirector=${Uri.encode(technicalDirector)}" +
             "&country=${Uri.encode(country)}" +
-            "&city=${Uri.encode(city)}"
+            "&city=${Uri.encode(city)}" +
+            "&accentColor=${Uri.encode(accentColor)}" +
+            "&initials=${Uri.encode(initials)}"
         navController.navigate(route)
     }
 

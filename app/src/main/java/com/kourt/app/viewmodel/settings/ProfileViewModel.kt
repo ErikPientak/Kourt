@@ -89,13 +89,15 @@ class ProfileViewModel @Inject constructor(
                 members.map { member ->
                     async {
                         val team = teamRepository.getTeam(member.teamId)
-                        val clubName = team?.clubId?.let { clubRepository.getClub(it)?.name }.orEmpty()
+                        val club = team?.clubId?.let { clubRepository.getClub(it) }
                         MembershipRowUiItem(
                             clubId = team?.clubId.orEmpty(),
                             teamId = member.teamId,
-                            clubName = clubName.ifEmpty { team?.name.orEmpty() },
+                            clubName = club?.name.orEmpty().ifEmpty { team?.name.orEmpty() },
                             subtitle = team?.name.orEmpty(),
                             role = member.role,
+                            accentColor = team?.accentColor.orEmpty(),
+                            initials = team?.initials.orEmpty(),
                         )
                     }
                 }.awaitAll()
@@ -117,6 +119,8 @@ class ProfileViewModel @Inject constructor(
                     clubName = club.name,
                     subtitle = "Club",
                     role = "ADMIN",
+                    accentColor = club.accentColor,
+                    initials = club.initials,
                 )
             }
         } catch (e: Exception) {

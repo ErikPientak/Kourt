@@ -71,6 +71,7 @@ import com.kourt.app.R
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.EventCard
 import com.kourt.app.ui.components.KourtAvatarLeading
+import com.kourt.app.ui.components.KourtTeamAvatar
 import com.kourt.app.ui.components.KourtButton
 import com.kourt.app.ui.components.KourtCalendar
 import com.kourt.app.ui.components.ScheduleEventCard
@@ -262,7 +263,15 @@ private fun CoachDashboardTopBar(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    KourtAvatarLeading(fallbackText = coachName, size = 40.dp)
+                    if (activeTeam?.accentColor?.isNotBlank() == true) {
+                        KourtTeamAvatar(
+                            initials = activeTeam.initials,
+                            accentColor = activeTeam.accentColor,
+                            size = 40.dp,
+                        )
+                    } else {
+                        KourtAvatarLeading(fallbackText = coachName, size = 40.dp)
+                    }
                     Column {
                         Text(
                             text = stringResource(R.string.coach_dashboard_managing_label),
@@ -296,6 +305,13 @@ private fun CoachDashboardTopBar(
                     teams.forEach { team ->
                         val isActive = team.teamId == activeTeam?.teamId
                         DropdownMenuItem(
+                            leadingIcon = {
+                                KourtTeamAvatar(
+                                    initials = team.initials,
+                                    accentColor = team.accentColor,
+                                    size = 32.dp,
+                                )
+                            },
                             text = {
                                 Text(
                                     text = team.teamName,

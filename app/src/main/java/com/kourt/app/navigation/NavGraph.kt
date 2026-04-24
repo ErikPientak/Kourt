@@ -122,6 +122,8 @@ fun NavGraph(
                 navArgument("technicalDirector") { type = NavType.StringType; defaultValue = "" },
                 navArgument("country") { type = NavType.StringType; defaultValue = "" },
                 navArgument("city") { type = NavType.StringType; defaultValue = "" },
+                navArgument("accentColor") { type = NavType.StringType; defaultValue = "#9CA3AF" },
+                navArgument("initials") { type = NavType.StringType; defaultValue = "" },
             ),
         ) {
             ReviewConfirmScreen(navigation = navigation)

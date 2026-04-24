@@ -19,4 +19,6 @@ data class MembershipRowUiItem(
     val clubName: String,
     val subtitle: String,
     val role: String,
+    val accentColor: String = "",
+    val initials: String = "",
 )

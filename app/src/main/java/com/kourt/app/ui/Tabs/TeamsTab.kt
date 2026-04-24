@@ -77,6 +77,8 @@ fun TeamsTab(
                     TeamCard(
                         teamName = team.name,
                         headCoach = team.headCoach,
+                        accentColor = team.accentColor,
+                        initials = team.initials,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                         onClick = { onTeamClick(team.id) },
                     )

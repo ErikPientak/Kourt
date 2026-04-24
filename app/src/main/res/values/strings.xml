@@ -37,8 +37,9 @@
     <!-- Create Club -->
     <string name="create_club_title">Create New Club</string>
     <string name="create_club_back_content_desc">Go back</string>
-    <string name="create_club_upload_logo">Upload Club Logo</string>
-    <string name="create_club_upload_logo_subtitle">Establish your team\'s visual identity</string>
+    <string name="create_club_upload_logo">Club Identity</string>
+    <string name="create_club_upload_logo_subtitle">Tap to pick an accent color</string>
+    <string name="create_club_color_picker_subtitle">Select a primary color for your club</string>
     <string name="club_name_label">Club Name</string>
     <string name="club_name_placeholder">e.g., Spartans Basketball Club</string>
     <string name="short_name_label">Short Name / Abbreviation</string>
@@ -120,7 +121,12 @@
     <string name="add_team_title">Add New Team</string>
     <string name="edit_team_title">Edit Team</string>
     <string name="add_team_photo_cd">Upload team photo</string>
-    <string name="add_team_brand_label">TEAM BRAND &amp; IDENTITY</string>
+    <string name="add_team_brand_label">Team Identity</string>
+    <string name="team_identity_title">Team Identity</string>
+    <string name="team_identity_subtitle">Set your team\'s color and abbreviation</string>
+    <string name="team_identity_abbr_label">ABBREVIATION</string>
+    <string name="team_identity_abbr_placeholder">e.g. M</string>
+    <string name="team_identity_apply">Apply</string>
     <string name="add_team_name_label">Team Name</string>
     <string name="add_team_name_placeholder">e.g. Los Angeles Lakers</string>
     <string name="add_team_head_coach_label">Head Coach</string>
@@ -261,4 +267,10 @@
     <string name="coach_dashboard_rsvp_yes">Yes</string>
     <string name="coach_dashboard_rsvp_maybe">Maybe</string>
     <string name="coach_dashboard_rsvp_no">No</string>
+
+    <!-- Color Picker -->
+    <string name="color_picker_title">Pick Accent Color</string>
+    <string name="color_picker_subtitle">Select a primary color</string>
+    <string name="color_picker_cancel">Cancel</string>
+    <string name="color_picker_apply">Apply Color</string>
 </resources>

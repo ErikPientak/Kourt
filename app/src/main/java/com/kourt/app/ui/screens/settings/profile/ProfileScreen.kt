@@ -39,6 +39,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.R
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.BaseScreen
+import com.kourt.app.ui.components.KourtTeamAvatar
 import com.kourt.app.ui.components.roleBadgeColor
 import com.kourt.app.ui.theme.KourtTheme
 import com.kourt.app.ui.theme.RoleBadgeAdmin
@@ -253,10 +254,9 @@ private fun MembershipRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            // Initials avatar — background = role badge color
-            InitialsAvatar(
-                text = item.clubName,
-                backgroundColor = roleColor,
+            KourtTeamAvatar(
+                initials = item.initials,
+                accentColor = item.accentColor,
             )
 
             // Club name + subtitle
@@ -279,34 +279,6 @@ private fun MembershipRow(
             // Role badge pill
             RoleBadgePill(role = item.role, color = roleColor)
         }
-    }
-}
-
-@Composable
-private fun InitialsAvatar(
-    text: String,
-    backgroundColor: Color,
-    modifier: Modifier = Modifier,
-) {
-    val initials = text
-        .trim()
-        .split(" ")
-        .filter { it.isNotEmpty() }
-        .take(2)
-        .joinToString("") { it.first().uppercaseChar().toString() }
-
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = modifier
-            .size(44.dp)
-            .clip(CircleShape)
-            .background(backgroundColor.copy(alpha = 0.20f)),
-    ) {
-        Text(
-            text = initials.ifEmpty { "?" },
-            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-            color = backgroundColor,
-        )
     }
 }
 

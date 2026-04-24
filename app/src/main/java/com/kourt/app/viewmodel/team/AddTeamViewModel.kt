@@ -4,6 +4,8 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -58,14 +60,18 @@ class AddTeamViewModel @Inject constructor(
     private fun loadClubMembers() {
         viewModelScope.launch {
             runCatching {
+                val club = clubRepository.getClub(clubId)
+                val adminIds = club?.adminIds ?: emptyList()
                 val teams = teamRepository.getTeamsByClub(clubId)
                 val memberIds = teams
                     .flatMap { team -> teamMemberRepository.getMembersByTeam(team.id) }
                     .map { it.userId }
                     .toMutableSet()
-                val adminIds = clubRepository.getClub(clubId)?.adminIds ?: emptyList()
                 memberIds.addAll(adminIds)
                 clubMembers = userRepository.getUsersByIds(memberIds.toList())
+                club?.accentColor?.ifBlank { null }?.let { color ->
+                    uiState = uiState.copy(accentColor = color)
+                }
                 Log.d(TAG, "Loaded ${clubMembers.size} club members (incl. admins) for search")
             }.onFailure { e ->
                 Log.e(TAG, "Failed to load club members", e)
@@ -98,6 +104,8 @@ class AddTeamViewModel @Inject constructor(
                     headCoachQuery = team.headCoach,
                     selectedHeadCoach = User(displayName = team.headCoach),
                     isHeadCoachPreloaded = true,
+                    accentColor = team.accentColor.ifBlank { "#9CA3AF" },
+                    initials = team.initials.ifBlank { categoryToInitials(team.category) },
                 )
                 Log.d(TAG, "Loaded team for edit: ${team.id}")
             }.onFailure { e ->
@@ -195,7 +203,24 @@ class AddTeamViewModel @Inject constructor(
     }
 
     override fun onCategoryChange(value: String) {
-        uiState = uiState.copy(category = value)
+        uiState = uiState.copy(category = value, initials = categoryToInitials(value))
+    }
+
+    override fun onAccentColorChanged(color: Color) {
+        val hex = "#%06X".format(color.toArgb() and 0xFFFFFF)
+        uiState = uiState.copy(accentColor = hex)
+    }
+
+    override fun onInitialsChanged(value: String) {
+        uiState = uiState.copy(initials = value.uppercase().take(4))
+    }
+
+    private fun categoryToInitials(category: String) = when (category) {
+        "men" -> "M"
+        "women" -> "W"
+        "children" -> "K"
+        "seniors" -> "S"
+        else -> ""
     }
 
     override fun onToggleLocation() {
@@ -208,10 +233,6 @@ class AddTeamViewModel @Inject constructor(
 
     override fun onArenaChange(value: String) {
         uiState = uiState.copy(arena = value, error = null)
-    }
-
-    override fun onLogoUploadTap() {
-        Log.d(TAG, "Logo upload tapped")
     }
 
     override fun onSaveTeam() {
@@ -242,6 +263,8 @@ class AddTeamViewModel @Inject constructor(
                     arena = uiState.arena,
                     joinCode = generateJoinCode(),
                     createdBy = uid,
+                    accentColor = uiState.accentColor,
+                    initials = uiState.initials,
                 )
 
                 val newTeamId = teamRepository.createTeam(team)
@@ -284,6 +307,8 @@ class AddTeamViewModel @Inject constructor(
                     arena = uiState.arena,
                     joinCode = uiState.originalJoinCode,
                     createdBy = uiState.originalCreatedBy,
+                    accentColor = uiState.accentColor,
+                    initials = uiState.initials,
                 )
 
                 teamRepository.updateTeam(updated)

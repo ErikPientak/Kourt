@@ -12,6 +12,8 @@ data class TeamUiItem(
     val teamId: String,
     val teamName: String,
     val clubId: String,
+    val accentColor: String = "",
+    val initials: String = "",
 )
 
 @Immutable

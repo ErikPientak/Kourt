@@ -17,6 +17,8 @@ interface INavigationRouter {
         technicalDirector: String,
         country: String,
         city: String,
+        accentColor: String,
+        initials: String,
     )
     fun navigateToClubManagementScreen()
     fun navigateToAddTeamScreen(clubId: String)

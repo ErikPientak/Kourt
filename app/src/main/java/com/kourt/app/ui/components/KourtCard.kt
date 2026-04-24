@@ -2,6 +2,7 @@ package com.kourt.app.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.core.graphics.toColorInt
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -43,6 +45,7 @@ import com.kourt.app.ui.theme.RoleBadgeCaptain
 import com.kourt.app.ui.theme.RoleBadgeCoach
 import com.kourt.app.ui.theme.RoleBadgeParent
 import com.kourt.app.ui.theme.RoleBadgePlayer
+import com.kourt.app.ui.theme.White
 
 /**
  * Unified list-item card used for teams, members, and events.
@@ -194,6 +197,36 @@ private fun eventTypeColor(type: String): Color = when (type.lowercase()) {
 // ── Leading content helpers ───────────────────────────────────────────────────
 
 /**
+ * Colored circle avatar for team cards, using the team's stored [accentColor] and [initials].
+ *
+ * Falls back to neutral gray when [accentColor] is blank or unparseable.
+ */
+@Composable
+fun KourtTeamAvatar(
+    initials: String,
+    accentColor: String,
+    modifier: Modifier = Modifier,
+    size: Dp = 44.dp,
+) {
+    val color = remember(accentColor) {
+        runCatching { Color(accentColor.toColorInt()) }.getOrDefault(Color(0xFF9CA3AF))
+    }
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(color),
+    ) {
+        Text(
+            text = initials.take(3).ifEmpty { "?" },
+            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+            color = color.contentColorForBackground(),
+        )
+    }
+}
+
+/**
  * Circular avatar for team and member cards.
  *
  * Displays up to two initials derived from [fallbackText] on a
@@ -239,24 +272,30 @@ fun KourtDateLeading(
     dayOfWeek: String,
     dayOfMonth: Int,
     modifier: Modifier = Modifier,
+    color: Color = Color.Unspecified,
 ) {
+    val hasColor = color != Color.Unspecified
+    val bgColor = if (hasColor) color.copy(alpha = 0.15f) else MaterialTheme.colorScheme.outline
+    val labelColor = if (hasColor) color.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+    val numberColor = if (hasColor) color else MaterialTheme.colorScheme.onBackground
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
         modifier = modifier
             .size(44.dp)
             .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.outline),
+            .background(bgColor),
     ) {
         Text(
             text = dayOfWeek.uppercase(),
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+            color = White,
         )
         Text(
             text = dayOfMonth.toString(),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.onBackground,
+            color = White,
         )
     }
 }
@@ -275,13 +314,21 @@ fun TeamCard(
     teamName: String,
     headCoach: String,
     modifier: Modifier = Modifier,
+    accentColor: String = "",
+    initials: String = "",
     showChevron: Boolean = true,
     onClick: (() -> Unit)? = null,
 ) {
     KourtCard(
         title = teamName,
         subtitle = headCoach,
-        leadingContent = { KourtAvatarLeading(fallbackText = teamName) },
+        leadingContent = {
+            if (accentColor.isNotBlank()) {
+                KourtTeamAvatar(initials = initials, accentColor = accentColor)
+            } else {
+                KourtAvatarLeading(fallbackText = teamName)
+            }
+        },
         modifier = modifier,
         subtitleLeadingPainter = painterResource(R.drawable.whistle),
         trailingContent = if (showChevron && onClick != null) {
@@ -374,7 +421,13 @@ fun EventCard(
     KourtCard(
         title = title,
         subtitle = if (location.isNotBlank()) "$startTime · $location" else startTime,
-        leadingContent = { KourtDateLeading(dayOfWeek = dayOfWeek, dayOfMonth = dayOfMonth) },
+        leadingContent = {
+            KourtDateLeading(
+                dayOfWeek = dayOfWeek,
+                dayOfMonth = dayOfMonth,
+                color = if (isCancelled) Color.Unspecified else eventTypeColor(eventType),
+            )
+        },
         modifier = modifier.alpha(cardAlpha),
         titleIndicatorColor = if (isCancelled) null else eventTypeColor(eventType),
         titleTextDecoration = if (isCancelled) TextDecoration.LineThrough else null,

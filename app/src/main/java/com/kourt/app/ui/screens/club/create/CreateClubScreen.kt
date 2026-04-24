@@ -2,15 +2,14 @@ package com.kourt.app.ui.screens.club.create
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -36,8 +35,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -48,10 +49,10 @@ import com.kourt.app.R
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.AuthFieldLabel
 import com.kourt.app.ui.components.BaseScreen
+import com.kourt.app.ui.components.ColorPickerBottomSheet
 import com.kourt.app.ui.components.KourtButton
 import com.kourt.app.ui.components.authTextFieldColors
-import com.kourt.app.ui.theme.DarkPlaceholder
-import com.kourt.app.ui.theme.LightPlaceholder
+import com.kourt.app.ui.components.contentColorForBackground
 import com.kourt.app.viewmodel.club.CreateClubViewModel
 
 private val COUNTRIES = listOf(
@@ -74,7 +75,13 @@ fun CreateClubScreen(
     val placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
     val iconTintColor = MaterialTheme.colorScheme.onBackground
 
+    val accentColor = remember(uiState.accentColor) {
+        runCatching { Color(android.graphics.Color.parseColor(uiState.accentColor)) }
+            .getOrDefault(Color(0xFF9CA3AF))
+    }
+
     var countryDropdownExpanded by remember { mutableStateOf(false) }
+    var showColorPicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
@@ -85,6 +92,8 @@ fun CreateClubScreen(
                 technicalDirector = uiState.technicalDirector,
                 country = uiState.country,
                 city = uiState.city,
+                accentColor = uiState.accentColor,
+                initials = uiState.shortName.take(3).uppercase(),
             )
             viewModel.onSaveConsumed()
         }
@@ -103,11 +112,9 @@ fun CreateClubScreen(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            // ── Logo upload area ─────────────────────────────────────────────
+            // ── Club avatar preview ──────────────────────────────────────────
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { viewModel.onLogoUploadTap() },
+                modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Box(
@@ -115,13 +122,14 @@ fun CreateClubScreen(
                     modifier = Modifier
                         .size(110.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surface),
+                        .background(accentColor)
+                        .clickable { showColorPicker = true },
                 ) {
-                    Icon(
-                        painter = painterResource(R.drawable.camera),
-                        contentDescription = stringResource(R.string.create_club_upload_logo),
-                        tint = iconTintColor,
-                        modifier = Modifier.size(36.dp),
+                    Text(
+                        text = uiState.shortName.take(3).uppercase(),
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = accentColor.contentColorForBackground(),
                     )
                 }
 
@@ -140,6 +148,15 @@ fun CreateClubScreen(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     textAlign = TextAlign.Center,
+                )
+            }
+
+            if (showColorPicker) {
+                ColorPickerBottomSheet(
+                    selectedColor = accentColor,
+                    subtitle = stringResource(R.string.create_club_color_picker_subtitle),
+                    onDismiss = { showColorPicker = false },
+                    onApply = { color -> viewModel.onAccentColorChanged(color) },
                 )
             }
 

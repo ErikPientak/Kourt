@@ -23,6 +23,8 @@ data class AddTeamScreenUiState(
     val selectedAssistants: List<User> = emptyList(),
     // Category: "men" | "women" | "children" | "seniors"
     val category: String = "men",
+    val accentColor: String = "#9CA3AF",
+    val initials: String = "M",
     // Location & Arena
     val isLocationExpanded: Boolean = false,
     val location: String = "",

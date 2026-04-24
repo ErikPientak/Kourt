@@ -31,4 +31,10 @@ data class Club(
     @get:PropertyName("admin_ids")
     @set:PropertyName("admin_ids")
     var adminIds: List<String> = emptyList(),
+    @get:PropertyName("accentColor")
+    @set:PropertyName("accentColor")
+    var accentColor: String = "",
+    @get:PropertyName("initials")
+    @set:PropertyName("initials")
+    var initials: String = "",
 )

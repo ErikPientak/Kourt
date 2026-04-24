@@ -14,5 +14,7 @@ data class Team(
     val arena: String = "",
     @PropertyName("join_code") val joinCode: String = "",
     @PropertyName("created_by") val createdBy: String = "",
-    @PropertyName("created_at") val createdAt: Timestamp = Timestamp.now()
+    @PropertyName("created_at") val createdAt: Timestamp = Timestamp.now(),
+    val accentColor: String = "",
+    val initials: String = "",
 )

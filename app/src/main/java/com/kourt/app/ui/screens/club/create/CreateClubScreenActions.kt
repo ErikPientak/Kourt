@@ -1,5 +1,7 @@
 package com.kourt.app.ui.screens.club.create
 
+import androidx.compose.ui.graphics.Color
+
 interface CreateClubScreenActions {
     fun onClubNameChange(value: String)
     fun onShortNameChange(value: String)
@@ -9,5 +11,5 @@ interface CreateClubScreenActions {
     fun onCityChange(value: String)
     fun onCreateClub()
     fun onSaveConsumed()
-    fun onLogoUploadTap()
+    fun onAccentColorChanged(color: Color)
 }

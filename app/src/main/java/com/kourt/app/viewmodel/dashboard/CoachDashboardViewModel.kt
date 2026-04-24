@@ -76,7 +76,7 @@ class CoachDashboardViewModel @Inject constructor(
                         .map { m -> async { teamRepository.getTeam(m.teamId) } }
                         .awaitAll()
                         .filterNotNull()
-                        .map { team -> TeamUiItem(teamId = team.id, teamName = team.name, clubId = team.clubId) }
+                        .map { team -> TeamUiItem(teamId = team.id, teamName = team.name, clubId = team.clubId, accentColor = team.accentColor, initials = team.initials) }
 
                     val savedId = appPreferencesRepository.activeTeamId
                     val activeTeam = teams.firstOrNull { it.teamId == savedId } ?: teams.firstOrNull()
