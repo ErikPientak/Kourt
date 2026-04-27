@@ -1,6 +1,5 @@
 package com.kourt.app.viewmodel.club
 
-import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,7 +26,6 @@ import java.util.Calendar
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
@@ -39,7 +37,6 @@ private val ROLE_ORDER = mapOf("admin" to 0, "coach" to 1, "assistant" to 2, "pl
 
 @HiltViewModel
 class ClubManagementViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val clubRepository: ClubRepository,
     private val teamRepository: TeamRepository,
     private val teamMemberRepository: TeamMemberRepository,
@@ -64,7 +61,7 @@ class ClubManagementViewModel @Inject constructor(
 
             val uid = authRepository.currentUser?.uid
             if (uid == null) {
-                uiState = uiState.copy(isLoading = false, error = context.getString(R.string.error_not_signed_in))
+                uiState = uiState.copy(isLoading = false, error = R.string.error_not_signed_in)
                 return@launch
             }
 
@@ -76,7 +73,7 @@ class ClubManagementViewModel @Inject constructor(
                     clubRepository.getClubByAdminId(uid)
                 }
                 if (club == null) {
-                    uiState = uiState.copy(isLoading = false, error = context.getString(R.string.error_no_club_found))
+                    uiState = uiState.copy(isLoading = false, error = R.string.error_no_club_found)
                     return@launch
                 }
 
@@ -96,7 +93,7 @@ class ClubManagementViewModel @Inject constructor(
                 Log.e(TAG, "Failed to load club data", e)
                 uiState = uiState.copy(
                     isLoading = false,
-                    error = e.message ?: "Failed to load club data",
+                    error = R.string.error_load_failed,
                 )
             }
         }
@@ -170,7 +167,7 @@ class ClubManagementViewModel @Inject constructor(
                 Log.e(TAG, "Failed to load members", e)
                 uiState = uiState.copy(
                     isMembersLoading = false,
-                    membersError = e.message ?: "Failed to load members",
+                    membersError = R.string.error_load_failed,
                 )
             }
         }

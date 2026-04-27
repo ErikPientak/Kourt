@@ -54,6 +54,26 @@ fun RegisterScreen(
 ) {
     val uiState = viewModel.uiState
 
+    LaunchedEffect(uiState.isSuccess) {
+        if (uiState.isSuccess) {
+            viewModel.onSaveConsumed()
+            navigation.navigateToHome()
+        }
+    }
+
+    RegisterScreenContent(
+        uiState = uiState,
+        actions = viewModel,
+        onNavigateToLogin = { navigation.navigateToLoginScreen() },
+    )
+}
+
+@Composable
+private fun RegisterScreenContent(
+    uiState: RegisterScreenUiState,
+    actions: RegisterScreenActions,
+    onNavigateToLogin: () -> Unit,
+) {
     var fullName by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
@@ -64,14 +84,6 @@ fun RegisterScreen(
     val placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
     val iconTintColor = MaterialTheme.colorScheme.onBackground
 
-
-    LaunchedEffect(uiState.isSuccess) {
-        if (uiState.isSuccess) {
-            viewModel.onSaveConsumed()
-            navigation.navigateToHome()
-        }
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -80,17 +92,14 @@ fun RegisterScreen(
             .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Center,
-
-        ) {
+    ) {
         Spacer(modifier = Modifier.height(64.dp))
 
-        // "Join" — orange
         Text(
             text = stringResource(R.string.auth_join),
             style = MaterialTheme.typography.displayMedium,
             color = MaterialTheme.colorScheme.primary,
         )
-        // "Kourt" — white (on the next line, visually continuous with "Join")
         Text(
             text = stringResource(R.string.app_name),
             style = MaterialTheme.typography.displayMedium,
@@ -99,7 +108,6 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Subtitle
         Text(
             text = stringResource(R.string.auth_register_subtitle),
             style = MaterialTheme.typography.titleMedium,
@@ -268,7 +276,7 @@ fun RegisterScreen(
         // Error message
         if (uiState.error != null) {
             Text(
-                text = uiState.error,
+                text = stringResource(uiState.error),
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier
@@ -280,7 +288,7 @@ fun RegisterScreen(
         // Sign Up button
         KourtButton(
             text = stringResource(R.string.auth_signup_button),
-            onClick = { viewModel.onRegister(fullName, email, password, confirmPassword) },
+            onClick = { actions.onRegister(fullName, email, password, confirmPassword) },
             enabled = !uiState.isLoading,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -301,11 +309,10 @@ fun RegisterScreen(
                 text = stringResource(R.string.auth_login_button),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.clickable { navigation.navigateToLoginScreen() },
+                modifier = Modifier.clickable { onNavigateToLogin() },
             )
         }
 
         Spacer(modifier = Modifier.height(40.dp))
     }
 }
-

@@ -80,7 +80,7 @@ fun MembersTab(
 
             uiState.membersError != null -> {
                 MembersErrorState(
-                    message = uiState.membersError,
+                    message = stringResource(uiState.membersError),
                     modifier = Modifier
                         .fillMaxSize()
                         .weight(1f),

@@ -86,6 +86,28 @@ fun AddTeamScreen(
     viewModel: AddTeamViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
+
+    LaunchedEffect(uiState.isSuccess) {
+        if (uiState.isSuccess) {
+            viewModel.onSaveConsumed()
+            navigation.navigateToClubManagementScreen()
+        }
+    }
+
+    AddTeamScreenContent(
+        uiState = uiState,
+        actions = viewModel,
+        onBack = { navigation.returnBack() },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+private fun AddTeamScreenContent(
+    uiState: AddTeamScreenUiState,
+    actions: AddTeamScreenActions,
+    onBack: () -> Unit,
+) {
     val placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
     val iconTintColor = MaterialTheme.colorScheme.onBackground
 
@@ -95,27 +117,20 @@ fun AddTeamScreen(
     }
     var showIdentitySheet by remember { mutableStateOf(false) }
 
-    LaunchedEffect(uiState.isSuccess) {
-        if (uiState.isSuccess) {
-            viewModel.onSaveConsumed()
-            navigation.navigateToClubManagementScreen()
-        }
-    }
-
     if (uiState.showDeleteDialog) {
         DeleteTeamDialog(
-            onDismiss = { viewModel.onDeleteTeamDismiss() },
-            onConfirm = { viewModel.onDeleteTeamConfirm() },
+            onDismiss = { actions.onDeleteTeamDismiss() },
+            onConfirm = { actions.onDeleteTeamConfirm() },
         )
     }
 
     BaseScreen(
         title = stringResource(if (uiState.isEditMode) R.string.edit_team_title else R.string.add_team_title),
-        onBack = { navigation.returnBack() },
+        onBack = onBack,
         trailingIcon = if (uiState.isEditMode) {
             {
                 IconButton(
-                    onClick = { viewModel.onDeleteTeamClick() },
+                    onClick = { actions.onDeleteTeamClick() },
                     enabled = !uiState.isLoading,
                 ) {
                     Icon(
@@ -155,7 +170,6 @@ fun AddTeamScreen(
                         fontWeight = FontWeight.Bold,
                         color = accentColor.contentColorForBackground(),
                     )
-
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -173,7 +187,6 @@ fun AddTeamScreen(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     textAlign = TextAlign.Center,
                 )
-
             }
 
             if (showIdentitySheet) {
@@ -182,8 +195,8 @@ fun AddTeamScreen(
                     selectedInitials = uiState.initials,
                     onDismiss = { showIdentitySheet = false },
                     onApply = { color, initials ->
-                        viewModel.onAccentColorChanged(color)
-                        viewModel.onInitialsChanged(initials)
+                        actions.onAccentColorChanged(color)
+                        actions.onInitialsChanged(initials)
                     },
                 )
             }
@@ -195,7 +208,7 @@ fun AddTeamScreen(
             Spacer(modifier = Modifier.height(6.dp))
             OutlinedTextField(
                 value = uiState.teamName,
-                onValueChange = { viewModel.onTeamNameChange(it) },
+                onValueChange = { actions.onTeamNameChange(it) },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = {
                     Text(
@@ -229,7 +242,7 @@ fun AddTeamScreen(
             Box(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     value = uiState.headCoachQuery,
-                    onValueChange = { viewModel.onHeadCoachQueryChange(it) },
+                    onValueChange = { actions.onHeadCoachQueryChange(it) },
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = {
                         Text(
@@ -271,7 +284,7 @@ fun AddTeamScreen(
                                     color = MaterialTheme.colorScheme.onSurface,
                                 )
                             },
-                            onClick = { viewModel.onHeadCoachSelected(user) },
+                            onClick = { actions.onHeadCoachSelected(user) },
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Filled.Person,
@@ -296,62 +309,62 @@ fun AddTeamScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Box(modifier = Modifier.weight(1f)) {
-                OutlinedTextField(
-                    value = uiState.assistantQuery,
-                    onValueChange = { viewModel.onAssistantQueryChange(it) },
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = {
-                        Text(
-                            text = stringResource(R.string.add_team_assistant_placeholder),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = placeholderColor,
-                        )
-                    },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.Person,
-                            contentDescription = null,
-                            tint = iconTintColor,
-                        )
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                        capitalization = KeyboardCapitalization.Words,
-                        imeAction = ImeAction.Done,
-                    ),
-                    singleLine = true,
-                    shape = RoundedCornerShape(12.dp),
-                    colors = authTextFieldColors(placeholderColor = placeholderColor),
-                )
-                DropdownMenu(
-                    expanded = uiState.assistantSuggestions.isNotEmpty(),
-                    onDismissRequest = {},
-                    properties = PopupProperties(focusable = false),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface),
-                ) {
-                    uiState.assistantSuggestions.forEach { user ->
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = user.displayName,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                )
-                            },
-                            onClick = { viewModel.onAssistantSelected(user) },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Filled.Person,
-                                    contentDescription = null,
-                                    tint = iconTintColor,
-                                    modifier = Modifier.size(16.dp),
-                                )
-                            },
-                        )
+                    OutlinedTextField(
+                        value = uiState.assistantQuery,
+                        onValueChange = { actions.onAssistantQueryChange(it) },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = {
+                            Text(
+                                text = stringResource(R.string.add_team_assistant_placeholder),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = placeholderColor,
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Filled.Person,
+                                contentDescription = null,
+                                tint = iconTintColor,
+                            )
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Text,
+                            capitalization = KeyboardCapitalization.Words,
+                            imeAction = ImeAction.Done,
+                        ),
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
+                        colors = authTextFieldColors(placeholderColor = placeholderColor),
+                    )
+                    DropdownMenu(
+                        expanded = uiState.assistantSuggestions.isNotEmpty(),
+                        onDismissRequest = {},
+                        properties = PopupProperties(focusable = false),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surface),
+                    ) {
+                        uiState.assistantSuggestions.forEach { user ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = user.displayName,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                },
+                                onClick = { actions.onAssistantSelected(user) },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Filled.Person,
+                                        contentDescription = null,
+                                        tint = iconTintColor,
+                                        modifier = Modifier.size(16.dp),
+                                    )
+                                },
+                            )
+                        }
                     }
-                }
                 }
                 Box(
                     contentAlignment = Alignment.Center,
@@ -359,7 +372,7 @@ fun AddTeamScreen(
                         .size(52.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(MaterialTheme.colorScheme.primary)
-                        .clickable { viewModel.onAssistantAdd() },
+                        .clickable { actions.onAssistantAdd() },
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Add,
@@ -379,7 +392,7 @@ fun AddTeamScreen(
                     uiState.selectedAssistants.forEach { user ->
                         AssistantChip(
                             name = user.displayName,
-                            onRemove = { viewModel.onAssistantRemoved(user) },
+                            onRemove = { actions.onAssistantRemoved(user) },
                             iconTintColor = iconTintColor,
                         )
                     }
@@ -400,14 +413,14 @@ fun AddTeamScreen(
                         label = stringResource(R.string.add_team_category_men),
                         value = "men",
                         selected = uiState.category == "men",
-                        onClick = { viewModel.onCategoryChange("men") },
+                        onClick = { actions.onCategoryChange("men") },
                         modifier = Modifier.weight(1f),
                     )
                     CategoryChip(
                         label = stringResource(R.string.add_team_category_women),
                         value = "women",
                         selected = uiState.category == "women",
-                        onClick = { viewModel.onCategoryChange("women") },
+                        onClick = { actions.onCategoryChange("women") },
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -419,14 +432,14 @@ fun AddTeamScreen(
                         label = stringResource(R.string.add_team_category_children),
                         value = "children",
                         selected = uiState.category == "children",
-                        onClick = { viewModel.onCategoryChange("children") },
+                        onClick = { actions.onCategoryChange("children") },
                         modifier = Modifier.weight(1f),
                     )
                     CategoryChip(
                         label = stringResource(R.string.add_team_category_seniors),
                         value = "seniors",
                         selected = uiState.category == "seniors",
-                        onClick = { viewModel.onCategoryChange("seniors") },
+                        onClick = { actions.onCategoryChange("seniors") },
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -445,7 +458,7 @@ fun AddTeamScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { viewModel.onToggleLocation() }
+                            .clickable { actions.onToggleLocation() }
                             .padding(horizontal = 16.dp, vertical = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -488,7 +501,7 @@ fun AddTeamScreen(
                         ) {
                             OutlinedTextField(
                                 value = uiState.location,
-                                onValueChange = { viewModel.onLocationChange(it) },
+                                onValueChange = { actions.onLocationChange(it) },
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -512,7 +525,7 @@ fun AddTeamScreen(
                             )
                             OutlinedTextField(
                                 value = uiState.arena,
-                                onValueChange = { viewModel.onArenaChange(it) },
+                                onValueChange = { actions.onArenaChange(it) },
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -556,7 +569,7 @@ fun AddTeamScreen(
             // ── Save / Delete buttons ─────────────────────────────────────────
             KourtButton(
                 text = stringResource(if (uiState.isEditMode) R.string.add_team_save_changes_button else R.string.add_team_save_button),
-                onClick = { viewModel.onSaveTeam() },
+                onClick = { actions.onSaveTeam() },
                 enabled = !uiState.isLoading,
                 modifier = Modifier.fillMaxWidth(),
             )

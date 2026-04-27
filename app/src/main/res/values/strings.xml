@@ -208,6 +208,10 @@
     <string name="error_invalid_join_code">No team found with this code</string>
     <string name="error_already_member">You are already a member of this team</string>
     <string name="error_load_failed">Failed to load data. Please try again.</string>
+    <string name="error_login_failed">Login failed. Please check your credentials.</string>
+    <string name="error_google_sign_in_failed">Google sign-in failed. Please try again.</string>
+    <string name="error_registration_failed">Registration failed. Please try again.</string>
+    <string name="error_create_club_failed">Failed to create club. Please try again.</string>
 
     <!-- Schedule tab -->
     <string name="schedule_upcoming_events">UPCOMING EVENTS</string>

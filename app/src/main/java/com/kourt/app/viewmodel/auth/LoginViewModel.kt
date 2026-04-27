@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import android.util.Log
+import com.kourt.app.R
 import com.kourt.app.data.model.User
 import com.kourt.app.data.repository.AuthRepository
 import com.kourt.app.data.repository.ClubRepository
@@ -41,9 +42,8 @@ class LoginViewModel @Inject constructor(
                 val uid = result.getOrNull()!!.uid
                 resolveDestination(uid)
             } else {
-                val error = result.exceptionOrNull()?.message ?: "Login failed"
-                Log.e(TAG, "Email sign-in failed: $error")
-                uiState = uiState.copy(isLoading = false, error = error)
+                Log.e(TAG, "Email sign-in failed: ${result.exceptionOrNull()?.message}")
+                uiState = uiState.copy(isLoading = false, error = R.string.error_login_failed)
             }
         }
     }
@@ -74,9 +74,8 @@ class LoginViewModel @Inject constructor(
                 }
                 resolveDestination(firebaseUser.uid)
             } else {
-                val error = result.exceptionOrNull()?.message ?: "Google sign-in failed"
-                Log.e(TAG, "Google sign-in failed: $error")
-                uiState = uiState.copy(isLoading = false, error = error)
+                Log.e(TAG, "Google sign-in failed: ${result.exceptionOrNull()?.message}")
+                uiState = uiState.copy(isLoading = false, error = R.string.error_google_sign_in_failed)
             }
         }
     }

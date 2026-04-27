@@ -61,6 +61,29 @@ fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
+
+    LaunchedEffect(uiState.destination) {
+        when (uiState.destination) {
+            LoginDestination.SETUP -> navigation.navigateToSetupScreen()
+            LoginDestination.SETTINGS -> navigation.navigateToSettingsScreen()
+            LoginDestination.CLUB_MANAGEMENT -> navigation.navigateToClubManagementScreen()
+            LoginDestination.NONE -> Unit
+        }
+    }
+
+    LoginScreenContent(
+        uiState = uiState,
+        actions = viewModel,
+        onNavigateToRegister = { navigation.navigateToRegisterScreen() },
+    )
+}
+
+@Composable
+private fun LoginScreenContent(
+    uiState: LoginScreenUiState,
+    actions: LoginScreenActions,
+    onNavigateToRegister: () -> Unit,
+) {
     val context = LocalContext.current
 
     var email by rememberSaveable { mutableStateOf("") }
@@ -72,15 +95,6 @@ fun LoginScreen(
     val placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
     val iconContainerColor = if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent
     val iconTintColor = MaterialTheme.colorScheme.onBackground
-
-    LaunchedEffect(uiState.destination) {
-        when (uiState.destination) {
-            LoginDestination.SETUP -> navigation.navigateToSetupScreen()
-            LoginDestination.SETTINGS -> navigation.navigateToSettingsScreen()
-            LoginDestination.CLUB_MANAGEMENT -> navigation.navigateToClubManagementScreen()
-            LoginDestination.NONE -> Unit
-        }
-    }
 
     Column(
         modifier = Modifier
@@ -230,7 +244,7 @@ fun LoginScreen(
         // Error message
         if (uiState.error != null) {
             Text(
-                text = uiState.error,
+                text = stringResource(uiState.error),
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier
@@ -242,7 +256,7 @@ fun LoginScreen(
         // Log In button
         KourtButton(
             text = stringResource(R.string.auth_login_button),
-            onClick = { viewModel.onSignInWithEmail(email, password) },
+            onClick = { actions.onSignInWithEmail(email, password) },
             enabled = !uiState.isLoading,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -251,7 +265,7 @@ fun LoginScreen(
 
         // Sign in with Google button
         OutlinedButton(
-            onClick = { viewModel.onSignInWithGoogle(context) },
+            onClick = { actions.onSignInWithGoogle(context) },
             enabled = !uiState.isLoading,
             modifier = Modifier
                 .fillMaxWidth()
@@ -289,7 +303,7 @@ fun LoginScreen(
                 text = stringResource(R.string.auth_create_account),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.clickable { navigation.navigateToRegisterScreen() },
+                modifier = Modifier.clickable { onNavigateToRegister() },
             )
         }
 

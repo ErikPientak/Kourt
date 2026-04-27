@@ -1,5 +1,6 @@
 package com.kourt.app.ui.screens.club.management
 
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import com.kourt.app.data.model.Team
@@ -43,7 +44,7 @@ data class ClubManagementScreenUiState(
     val clubId: String = "",
     val clubName: String = "",
     val isLoading: Boolean = false,
-    val error: String? = null,
+    @StringRes val error: Int? = null,
 
     // ── Teams tab ────────────────────────────────────────────────────────────
     val teams: List<Team> = emptyList(),
@@ -56,7 +57,7 @@ data class ClubManagementScreenUiState(
     val memberSearchQuery: String = "",
     val memberFilter: MemberFilter = MemberFilter.ALL,
     val isMembersLoading: Boolean = false,
-    val membersError: String? = null,
+    @StringRes val membersError: Int? = null,
 
     // ── Member Action bottom sheet ────────────────────────────────────────────
     /** The member whose action sheet is open. `null` means the sheet is dismissed. */

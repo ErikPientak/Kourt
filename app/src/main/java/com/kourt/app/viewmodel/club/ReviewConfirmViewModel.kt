@@ -1,6 +1,5 @@
 package com.kourt.app.viewmodel.club
 
-import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,7 +15,6 @@ import com.kourt.app.data.repository.ClubRepository
 import com.kourt.app.ui.screens.club.review.ReviewConfirmScreenActions
 import com.kourt.app.ui.screens.club.review.ReviewConfirmScreenUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,7 +24,6 @@ private val JOIN_CODE_CHARS = ('A'..'Z') + ('0'..'9')
 
 @HiltViewModel
 class ReviewConfirmViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
     savedStateHandle: SavedStateHandle,
     private val clubRepository: ClubRepository,
     private val authRepository: AuthRepository,
@@ -49,7 +46,7 @@ class ReviewConfirmViewModel @Inject constructor(
     override fun onConfirm() {
         val uid = authRepository.currentUser?.uid
         if (uid == null) {
-            uiState = uiState.copy(error = context.getString(R.string.error_not_signed_in))
+            uiState = uiState.copy(error = R.string.error_not_signed_in)
             return
         }
 
@@ -80,10 +77,7 @@ class ReviewConfirmViewModel @Inject constructor(
                 },
                 onFailure = { e ->
                     Log.e(TAG, "Failed to create club", e)
-                    uiState = uiState.copy(
-                        isLoading = false,
-                        error = e.message ?: "Failed to create club",
-                    )
+                    uiState = uiState.copy(isLoading = false, error = R.string.error_create_club_failed)
                 },
             )
         }

@@ -1,5 +1,7 @@
 package com.kourt.app.ui.screens.club.review
 
+import androidx.annotation.StringRes
+
 data class ReviewConfirmScreenUiState(
     val clubName: String = "",
     val shortName: String = "",
@@ -11,5 +13,5 @@ data class ReviewConfirmScreenUiState(
     val initials: String = "",
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
-    val error: String? = null,
+    @StringRes val error: Int? = null,
 )

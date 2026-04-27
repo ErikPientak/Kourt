@@ -72,16 +72,6 @@ fun CreateClubScreen(
     viewModel: CreateClubViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
-    val placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
-    val iconTintColor = MaterialTheme.colorScheme.onBackground
-
-    val accentColor = remember(uiState.accentColor) {
-        runCatching { Color(android.graphics.Color.parseColor(uiState.accentColor)) }
-            .getOrDefault(Color(0xFF9CA3AF))
-    }
-
-    var countryDropdownExpanded by remember { mutableStateOf(false) }
-    var showColorPicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
@@ -99,9 +89,34 @@ fun CreateClubScreen(
         }
     }
 
+    CreateClubScreenContent(
+        uiState = uiState,
+        actions = viewModel,
+        onBack = { navigation.returnBack() },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CreateClubScreenContent(
+    uiState: CreateClubScreenUiState,
+    actions: CreateClubScreenActions,
+    onBack: () -> Unit,
+) {
+    val placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
+    val iconTintColor = MaterialTheme.colorScheme.onBackground
+
+    val accentColor = remember(uiState.accentColor) {
+        runCatching { Color(android.graphics.Color.parseColor(uiState.accentColor)) }
+            .getOrDefault(Color(0xFF9CA3AF))
+    }
+
+    var countryDropdownExpanded by remember { mutableStateOf(false) }
+    var showColorPicker by remember { mutableStateOf(false) }
+
     BaseScreen(
         title = stringResource(R.string.create_club_title),
-        onBack = { navigation.returnBack() },
+        onBack = onBack,
     ) { padding ->
         Column(
             modifier = Modifier
@@ -156,7 +171,7 @@ fun CreateClubScreen(
                     selectedColor = accentColor,
                     subtitle = stringResource(R.string.create_club_color_picker_subtitle),
                     onDismiss = { showColorPicker = false },
-                    onApply = { color -> viewModel.onAccentColorChanged(color) },
+                    onApply = { color -> actions.onAccentColorChanged(color) },
                 )
             }
 
@@ -167,7 +182,7 @@ fun CreateClubScreen(
             Spacer(modifier = Modifier.height(6.dp))
             OutlinedTextField(
                 value = uiState.clubName,
-                onValueChange = { viewModel.onClubNameChange(it) },
+                onValueChange = { actions.onClubNameChange(it) },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = {
                     Text(
@@ -200,7 +215,7 @@ fun CreateClubScreen(
             Spacer(modifier = Modifier.height(6.dp))
             OutlinedTextField(
                 value = uiState.shortName,
-                onValueChange = { viewModel.onShortNameChange(it) },
+                onValueChange = { actions.onShortNameChange(it) },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = {
                     Text(
@@ -233,7 +248,7 @@ fun CreateClubScreen(
             Spacer(modifier = Modifier.height(6.dp))
             OutlinedTextField(
                 value = uiState.president,
-                onValueChange = { viewModel.onPresidentChange(it) },
+                onValueChange = { actions.onPresidentChange(it) },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = {
                     Text(
@@ -266,7 +281,7 @@ fun CreateClubScreen(
             Spacer(modifier = Modifier.height(6.dp))
             OutlinedTextField(
                 value = uiState.technicalDirector,
-                onValueChange = { viewModel.onTechnicalDirectorChange(it) },
+                onValueChange = { actions.onTechnicalDirectorChange(it) },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = {
                     Text(
@@ -346,7 +361,7 @@ fun CreateClubScreen(
                                         )
                                     },
                                     onClick = {
-                                        viewModel.onCountryChange(country)
+                                        actions.onCountryChange(country)
                                         countryDropdownExpanded = false
                                     },
                                 )
@@ -361,7 +376,7 @@ fun CreateClubScreen(
                     Spacer(modifier = Modifier.height(6.dp))
                     OutlinedTextField(
                         value = uiState.city,
-                        onValueChange = { viewModel.onCityChange(it) },
+                        onValueChange = { actions.onCityChange(it) },
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = {
                             Text(
@@ -387,7 +402,7 @@ fun CreateClubScreen(
             // ── Error message ────────────────────────────────────────────────
             if (uiState.error != null) {
                 Text(
-                    text = uiState.error,
+                    text = stringResource(uiState.error),
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier
@@ -399,7 +414,7 @@ fun CreateClubScreen(
             // ── Review & Confirm button ──────────────────────────────────────
             KourtButton(
                 text = stringResource(R.string.create_club_review_button),
-                onClick = { viewModel.onCreateClub() },
+                onClick = { actions.onCreateClub() },
                 enabled = !uiState.isLoading,
                 modifier = Modifier.fillMaxWidth(),
             )

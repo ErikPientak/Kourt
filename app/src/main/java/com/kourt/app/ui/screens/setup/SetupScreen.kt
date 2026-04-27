@@ -52,6 +52,19 @@ fun SetupScreen(
         }
     }
 
+    SetupScreenContent(
+        uiState = uiState,
+        actions = viewModel,
+        onNavigateToCreateClub = { navigation.navigateToCreateClubScreen() },
+    )
+}
+
+@Composable
+private fun SetupScreenContent(
+    uiState: SetupScreenUiState,
+    actions: SetupScreenActions,
+    onNavigateToCreateClub: () -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -102,7 +115,7 @@ fun SetupScreen(
         ) {
             KourtButton(
                 text = stringResource(R.string.setup_create_club_button),
-                onClick = { navigation.navigateToCreateClubScreen() },
+                onClick = onNavigateToCreateClub,
                 modifier = Modifier
                     .padding(start = 68.dp)
                     .fillMaxWidth(),
@@ -121,7 +134,7 @@ fun SetupScreen(
         ) {
             OutlinedTextField(
                 value = uiState.joinCode,
-                onValueChange = { viewModel.onJoinCodeChange(it) },
+                onValueChange = { actions.onJoinCodeChange(it) },
                 modifier = Modifier
                     .padding(start = 68.dp)
                     .fillMaxWidth()
@@ -171,7 +184,7 @@ fun SetupScreen(
 
             KourtButton(
                 text = stringResource(R.string.setup_join_button),
-                onClick = { viewModel.onJoinTeam() },
+                onClick = { actions.onJoinTeam() },
                 enabled = !uiState.isLoading,
                 modifier = Modifier
                     .padding(start = 68.dp)

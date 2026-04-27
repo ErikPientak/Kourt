@@ -60,16 +60,16 @@ fun ReviewConfirmScreen(
 
     ReviewConfirmContent(
         uiState = uiState,
+        actions = viewModel,
         onBack = { navigation.returnBack() },
-        onConfirm = { viewModel.onConfirm() },
     )
 }
 
 @Composable
 private fun ReviewConfirmContent(
     uiState: ReviewConfirmScreenUiState,
+    actions: ReviewConfirmScreenActions,
     onBack: () -> Unit,
-    onConfirm: () -> Unit,
 ) {
     BaseScreen(
         title = stringResource(R.string.review_confirm_title),
@@ -175,7 +175,7 @@ private fun ReviewConfirmContent(
                 // ── Error message ─────────────────────────────────────────────
                 if (uiState.error != null) {
                     Text(
-                        text = uiState.error,
+                        text = stringResource(uiState.error),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.labelSmall,
                         modifier = Modifier
@@ -189,7 +189,7 @@ private fun ReviewConfirmContent(
             // ── Fixed bottom CTA ──────────────────────────────────────────────
             KourtButton(
                 text = stringResource(R.string.review_confirm_button),
-                onClick = onConfirm,
+                onClick = { actions.onConfirm() },
                 enabled = !uiState.isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -365,8 +365,11 @@ private fun ReviewConfirmScreenDarkPreview() {
                 country = "USA",
                 city = "Chicago",
             ),
+            actions = object : ReviewConfirmScreenActions {
+                override fun onConfirm() = Unit
+                override fun onSaveConsumed() = Unit
+            },
             onBack = {},
-            onConfirm = {},
         )
     }
 }
@@ -384,8 +387,11 @@ private fun ReviewConfirmScreenLightPreview() {
                 country = "USA",
                 city = "Chicago",
             ),
+            actions = object : ReviewConfirmScreenActions {
+                override fun onConfirm() = Unit
+                override fun onSaveConsumed() = Unit
+            },
             onBack = {},
-            onConfirm = {},
         )
     }
 }
@@ -404,8 +410,11 @@ private fun ReviewConfirmScreenLoadingPreview() {
                 city = "Chicago",
                 isLoading = true,
             ),
+            actions = object : ReviewConfirmScreenActions {
+                override fun onConfirm() = Unit
+                override fun onSaveConsumed() = Unit
+            },
             onBack = {},
-            onConfirm = {},
         )
     }
 }
