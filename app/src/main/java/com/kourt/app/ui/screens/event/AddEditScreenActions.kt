@@ -23,4 +23,8 @@ interface AddEditEventScreenActions {
     fun onNominationClick()
     fun onSave()
     fun onSaveConsumed()
+    fun onSaveThisOnly()
+    fun onSaveThisAndFollowing()
+    fun onEditScopeDialogDismiss()
+    fun onCancel()
 }

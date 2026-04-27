@@ -3,10 +3,15 @@ package com.kourt.app.ui.screens.club.management
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import com.kourt.app.data.model.Team
+import com.kourt.app.ui.screens.dashboard.coach.EventUiItem
 
 // ── Members tab — filter options ──────────────────────────────────────────────
 
 enum class MemberFilter { ALL, COACH, PLAYER, PARENT, ASSISTANT }
+
+// ── Events tab — filter options ───────────────────────────────────────────────
+
+enum class EventStatusFilter { ALL, UPCOMING, PAST, CANCELLED }
 
 // ── Members tab — UI projection ───────────────────────────────────────────────
 
@@ -61,4 +66,13 @@ data class ClubManagementScreenUiState(
     val memberForAssignTeam: ClubMemberUiItem? = null,
     val memberForMakeAdmin: ClubMemberUiItem? = null,
     val memberForRemove: ClubMemberUiItem? = null,
+
+    // ── Events tab ────────────────────────────────────────────────────────────
+    val events: List<EventUiItem> = emptyList(),
+    val filteredEvents: List<EventUiItem> = emptyList(),
+    val eventStatusFilter: EventStatusFilter = EventStatusFilter.ALL,
+    val isEventsLoading: Boolean = false,
+    val selectedEvent: EventUiItem? = null,
+    val eventForCancel: EventUiItem? = null,
+    val eventForDelete: EventUiItem? = null,
 )

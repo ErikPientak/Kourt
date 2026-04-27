@@ -90,6 +90,8 @@ private fun AddEditEventContent(
     actions: AddEditEventScreenActions,
     onCancel: () -> Unit,
 ) {
+    var showCancelDialog by remember { mutableStateOf(false) }
+
     val placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
     val iconTintColor = MaterialTheme.colorScheme.onBackground
 
@@ -99,7 +101,60 @@ private fun AddEditEventContent(
         stringResource(R.string.add_event_title)
     }
 
-    BaseScreen(title = title, onBack = onCancel) { padding ->
+    if (showCancelDialog) {
+        AlertDialog(
+            onDismissRequest = { showCancelDialog = false },
+            title = { Text(stringResource(R.string.cancel_event_title)) },
+            text = { Text(stringResource(R.string.cancel_event_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showCancelDialog = false
+                    actions.onCancel()
+                }) {
+                    Text(
+                        text = stringResource(R.string.cancel_event_confirm),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCancelDialog = false }) {
+                    Text(stringResource(R.string.cancel_event_keep))
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+        )
+    }
+
+    if (uiState.isEditScopeDialogOpen) {
+        AlertDialog(
+            onDismissRequest = actions::onEditScopeDialogDismiss,
+            title = { Text(stringResource(R.string.edit_recurring_title)) },
+            text = null,
+            confirmButton = {
+                TextButton(onClick = actions::onSaveThisAndFollowing) {
+                    Text(stringResource(R.string.edit_recurring_this_and_following))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = actions::onSaveThisOnly) {
+                    Text(stringResource(R.string.edit_recurring_this_only))
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+        )
+    }
+
+    BaseScreen(title = title, onBack = onCancel, trailingIcon = {
+        if (uiState.isEditMode) {
+            IconButton(onClick = { showCancelDialog = true }) {
+                Icon(
+                    painter = painterResource(R.drawable.cancel),
+                    contentDescription = null,
+                )
+            }
+        }
+    }) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -213,10 +268,10 @@ private fun AddEditEventContent(
             // ── Repeat weekly (Practice only) ────────────────────────────
             if (uiState.eventType == "practice") {
                 RepeatRow(
-                    isEnabled = uiState.isRepeatEnabled,
+                    isEnabled = uiState.repeatDays.isNotEmpty(),
                     repeatDays = uiState.repeatDays,
                     onRowClick = {
-                        if (!uiState.isRepeatEnabled) actions.onRepeatSheetOpen()
+                        if (uiState.repeatDays.isNotEmpty()) actions.onRepeatSheetOpen()
                     },
                     onToggle = { enabled ->
                         if (enabled) actions.onRepeatSheetOpen() else actions.onRepeatToggle(false)

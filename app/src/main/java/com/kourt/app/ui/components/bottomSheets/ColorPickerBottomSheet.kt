@@ -1,4 +1,4 @@
-package com.kourt.app.ui.components
+package com.kourt.app.ui.components.bottomSheets
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

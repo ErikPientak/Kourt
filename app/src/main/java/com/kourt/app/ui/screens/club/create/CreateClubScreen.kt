@@ -49,10 +49,10 @@ import com.kourt.app.R
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.AuthFieldLabel
 import com.kourt.app.ui.components.BaseScreen
-import com.kourt.app.ui.components.ColorPickerBottomSheet
+import com.kourt.app.ui.components.bottomSheets.ColorPickerBottomSheet
 import com.kourt.app.ui.components.KourtButton
 import com.kourt.app.ui.components.authTextFieldColors
-import com.kourt.app.ui.components.contentColorForBackground
+import com.kourt.app.ui.components.bottomSheets.contentColorForBackground
 import com.kourt.app.viewmodel.club.CreateClubViewModel
 
 private val COUNTRIES = listOf(
@@ -244,7 +244,7 @@ fun CreateClubScreen(
                 },
                 leadingIcon = {
                     Icon(
-                        imageVector = Icons.Default.Person,
+                        imageVector = Icons.Filled.Person,
                         contentDescription = null,
                         tint = iconTintColor,
                     )
@@ -318,7 +318,7 @@ fun CreateClubScreen(
                                 .menuAnchor(),
                             trailingIcon = {
                                 Icon(
-                                    imageVector = Icons.Default.KeyboardArrowDown,
+                                    imageVector = Icons.Filled.KeyboardArrowDown,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.primary,
                                 )

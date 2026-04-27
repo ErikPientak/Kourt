@@ -33,6 +33,9 @@ data class EventUiItem(
     val rsvpYes: Int = 0,
     val rsvpMaybe: Int = 0,
     val rsvpNo: Int = 0,
+    val teamId: String = "",
+    val teamName: String = "",
+    val teamColor: String = "",
 )
 
 data class CoachDashboardScreenUiState(
@@ -55,4 +58,5 @@ data class CoachDashboardScreenUiState(
     val selectedEpochDay: Long = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis()),
     val eventDaysInView: Set<Long> = emptySet(),
     val navigateToAddEvent: Boolean = false,
+    val navigateToEditEvent: Boolean = false,
 )

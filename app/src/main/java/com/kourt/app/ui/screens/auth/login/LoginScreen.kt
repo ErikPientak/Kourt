@@ -146,7 +146,7 @@ fun LoginScreen(
             },
             leadingIcon = {
                 Icon(
-                    imageVector = Icons.Default.Email,
+                    imageVector = Icons.Filled.Email,
                     contentDescription = null,
                     tint = iconTintColor,
                 )
@@ -197,7 +197,7 @@ fun LoginScreen(
             },
             leadingIcon = {
                 Icon(
-                    imageVector = Icons.Default.Lock,
+                    imageVector = Icons.Filled.Lock,
                     contentDescription = null,
                     tint = iconTintColor,
                 )

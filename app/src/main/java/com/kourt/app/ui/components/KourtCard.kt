@@ -38,14 +38,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kourt.app.R
+import com.kourt.app.ui.components.bottomSheets.contentColorForBackground
 import com.kourt.app.ui.theme.KourtTheme
-import com.kourt.app.ui.theme.RoleBadgeAdmin
-import com.kourt.app.ui.theme.RoleBadgeAssistant
-import com.kourt.app.ui.theme.RoleBadgeCaptain
-import com.kourt.app.ui.theme.RoleBadgeCoach
-import com.kourt.app.ui.theme.RoleBadgeParent
-import com.kourt.app.ui.theme.RoleBadgePlayer
 import com.kourt.app.ui.theme.White
+import java.util.concurrent.TimeUnit
 
 /**
  * Unified list-item card used for teams, members, and events.
@@ -401,22 +397,25 @@ fun EventCard(
     title: String,
     eventType: String,
     status: String = "scheduled",
+    epochDay: Long = -1,
     dayOfWeek: String,
     dayOfMonth: Int,
     startTime: String,
     location: String,
     modifier: Modifier = Modifier,
+    teamBadge: String? = null,
+    teamBadgeColor: Color = Color.Transparent,
     showChevron: Boolean = true,
+    showMenu: Boolean = false,
+    onMenuClick: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null,
 ) {
     val isCancelled = status.lowercase() == "cancelled"
-    val isPast = status.lowercase() in setOf("past", "completed")
+    val today = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())
+    val isPast = status.lowercase() in setOf("past", "completed") ||
+                 (epochDay >= 0 && epochDay < today && !isCancelled)
 
-    val cardAlpha = when {
-        isCancelled -> 0.80f
-        isPast      -> 0.80f
-        else        -> 1f
-    }
+    val cardAlpha = if (isCancelled || isPast) 0.80f else 1f
 
     KourtCard(
         title = title,
@@ -425,23 +424,40 @@ fun EventCard(
             KourtDateLeading(
                 dayOfWeek = dayOfWeek,
                 dayOfMonth = dayOfMonth,
-                color = if (isCancelled) Color.Unspecified else eventTypeColor(eventType),
+                color = if (isCancelled || isPast) Color.Unspecified else eventTypeColor(eventType),
             )
         },
         modifier = modifier.alpha(cardAlpha),
-        titleIndicatorColor = if (isCancelled) null else eventTypeColor(eventType),
+        badge = teamBadge,
+        badgeColor = teamBadgeColor,
+        titleIndicatorColor = if (isCancelled || isPast) null else eventTypeColor(eventType),
         titleTextDecoration = if (isCancelled) TextDecoration.LineThrough else null,
         subtitleLeadingIcon = Icons.Filled.DateRange,
-        trailingContent = if (showChevron && onClick != null) {
-            {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                    modifier = Modifier.size(20.dp),
-                )
+        trailingContent = when {
+            showMenu -> {
+                {
+                    Icon(
+                        painter = painterResource(R.drawable.more_vert),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                        modifier = Modifier
+                            .size(20.dp)
+                            .then(if (onMenuClick != null) Modifier.clickable(onClick = onMenuClick) else Modifier),
+                    )
+                }
             }
-        } else null,
+            showChevron && onClick != null -> {
+                {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+            }
+            else -> null
+        },
         onClick = onClick,
     )
 }

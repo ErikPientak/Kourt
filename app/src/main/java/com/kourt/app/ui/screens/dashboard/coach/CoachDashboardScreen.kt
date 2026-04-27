@@ -126,6 +126,7 @@ fun CoachDashboardScreen(
         onLogAttendance = viewModel::onLogAttendance,
         onLogStatistics = viewModel::onLogStatistics,
         onAddEvent = viewModel::onAddEvent,
+        onCardClicked = {navigation.navigateToEditEvent(it,uiState.activeTeam!!.teamId)}
     )
 }
 
@@ -144,6 +145,7 @@ private fun CoachDashboardContent(
     onLogAttendance: (String) -> Unit,
     onLogStatistics: (String) -> Unit,
     onAddEvent: () -> Unit,
+    onCardClicked: (String) -> Unit
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(TAB_HOME) }
 
@@ -200,6 +202,7 @@ private fun CoachDashboardContent(
                         onDateSelected = onDateSelected,
                         onLogAttendance = onLogAttendance,
                         onLogStatistics = onLogStatistics,
+                        onCardClicked = onCardClicked,
                     )
                     TAB_ROSTER -> MembersTab(
                         uiState = ClubManagementScreenUiState(
@@ -477,6 +480,7 @@ private fun HomeTab(
                     title = event.title,
                     eventType = event.type,
                     status = event.status,
+                    epochDay = event.epochDay,
                     dayOfWeek = event.dayOfWeek,
                     dayOfMonth = event.dayOfMonth,
                     startTime = event.startTime,

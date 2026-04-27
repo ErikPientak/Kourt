@@ -12,13 +12,20 @@ import com.kourt.app.data.model.Team
 import com.kourt.app.data.repository.AppPreferencesRepository
 import com.kourt.app.data.repository.AuthRepository
 import com.kourt.app.data.repository.ClubRepository
+import com.kourt.app.data.repository.EventRepository
 import com.kourt.app.data.repository.TeamMemberRepository
 import com.kourt.app.data.repository.TeamRepository
 import com.kourt.app.data.repository.UserRepository
 import com.kourt.app.ui.screens.club.management.ClubMemberUiItem
 import com.kourt.app.ui.screens.club.management.ClubManagementScreenActions
 import com.kourt.app.ui.screens.club.management.ClubManagementScreenUiState
+import com.kourt.app.ui.screens.club.management.EventStatusFilter
 import com.kourt.app.ui.screens.club.management.MemberFilter
+import com.kourt.app.ui.screens.dashboard.coach.EventUiItem
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
+import java.util.concurrent.TimeUnit
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.async
@@ -39,6 +46,7 @@ class ClubManagementViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val authRepository: AuthRepository,
     private val appPreferencesRepository: AppPreferencesRepository,
+    private val eventRepository: EventRepository,
 ) : ViewModel(), ClubManagementScreenActions {
 
     var uiState by mutableStateOf(ClubManagementScreenUiState())
@@ -81,8 +89,9 @@ class ClubManagementViewModel @Inject constructor(
                 )
                 Log.d(TAG, "Club data loaded: $club")
 
-                // Kick off member loading now that we have teams
+                // Kick off member and event loading now that we have teams
                 loadMembers(teams)
+                loadEvents(teams)
             }.onFailure { e ->
                 Log.e(TAG, "Failed to load club data", e)
                 uiState = uiState.copy(
@@ -309,6 +318,146 @@ class ClubManagementViewModel @Inject constructor(
 
     override fun onRemoveDismiss() {
         uiState = uiState.copy(memberForRemove = null)
+    }
+
+    // ── Events tab ────────────────────────────────────────────────────────────
+
+    private fun loadEvents(teams: List<Team>) {
+        viewModelScope.launch {
+            uiState = uiState.copy(isEventsLoading = true)
+            runCatching {
+                val allEvents = teams.flatMap { team ->
+                    eventRepository.getEventsByTeam(team.id).map { event ->
+                        event.toClubEventUiItem(team.name, team.accentColor)
+                    }
+                }.sortedBy { it.epochDay }
+
+                uiState = uiState.copy(
+                    isEventsLoading = false,
+                    events = allEvents,
+                    filteredEvents = applyEventFilter(allEvents, uiState.eventStatusFilter),
+                )
+                Log.d(TAG, "Events loaded: ${allEvents.size}")
+            }.onFailure { e ->
+                Log.e(TAG, "Failed to load events", e)
+                uiState = uiState.copy(isEventsLoading = false)
+            }
+        }
+    }
+
+    private fun applyEventFilter(events: List<EventUiItem>, filter: EventStatusFilter): List<EventUiItem> {
+        val today = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())
+        return when (filter) {
+            EventStatusFilter.ALL       -> events
+            EventStatusFilter.UPCOMING  -> events.filter { it.epochDay >= today && it.status != "cancelled" }
+            EventStatusFilter.PAST      -> events.filter { it.epochDay < today && it.status != "cancelled" }
+            EventStatusFilter.CANCELLED -> events.filter { it.status == "cancelled" }
+        }
+    }
+
+    private fun com.kourt.app.data.model.Event.toClubEventUiItem(teamName: String, teamColor: String): EventUiItem {
+        val eventDate = date.toDate()
+        val cal = Calendar.getInstance().apply { time = eventDate }
+        val today = Calendar.getInstance()
+        val tomorrow = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, 1) }
+
+        val isToday = cal.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+                cal.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
+        val isTomorrow = cal.get(Calendar.YEAR) == tomorrow.get(Calendar.YEAR) &&
+                cal.get(Calendar.DAY_OF_YEAR) == tomorrow.get(Calendar.DAY_OF_YEAR)
+
+        val locale = Locale.getDefault()
+        val shortDatePattern = android.text.format.DateFormat.getBestDateTimePattern(locale, "MMMd")
+
+        return EventUiItem(
+            eventId = id,
+            title = title,
+            type = type,
+            status = status,
+            teamId = teamId,
+            teamName = teamName,
+            teamColor = teamColor,
+            dayOfWeek = SimpleDateFormat("EEE", locale).format(eventDate).uppercase(locale),
+            dayOfMonth = cal.get(Calendar.DAY_OF_MONTH),
+            startTime = startTime,
+            location = location,
+            isToday = isToday,
+            dateLabel = when {
+                isToday    -> "Today"
+                isTomorrow -> "Tomorrow"
+                else       -> SimpleDateFormat(shortDatePattern, locale).format(eventDate)
+            },
+            epochDay = TimeUnit.MILLISECONDS.toDays(eventDate.time),
+            subtitle = notes,
+        )
+    }
+
+    override fun onEventStatusFilterChange(filter: EventStatusFilter) {
+        uiState = uiState.copy(
+            eventStatusFilter = filter,
+            filteredEvents = applyEventFilter(uiState.events, filter),
+        )
+    }
+
+    override fun onEventMenuClick(eventId: String) {
+        val event = uiState.events.find { it.eventId == eventId } ?: return
+        uiState = uiState.copy(selectedEvent = event)
+    }
+
+    override fun onEventActionDismiss() {
+        uiState = uiState.copy(selectedEvent = null)
+    }
+
+    override fun onEventCancelClick(eventId: String) {
+        val event = uiState.events.find { it.eventId == eventId } ?: return
+        uiState = uiState.copy(selectedEvent = null, eventForCancel = event)
+    }
+
+    override fun onEventCancelConfirm(eventId: String) {
+        uiState = uiState.copy(eventForCancel = null)
+        viewModelScope.launch {
+            runCatching {
+                eventRepository.cancelEvent(eventId)
+                val updated = uiState.events.map { if (it.eventId == eventId) it.copy(status = "cancelled") else it }
+                uiState = uiState.copy(
+                    events = updated,
+                    filteredEvents = applyEventFilter(updated, uiState.eventStatusFilter),
+                )
+                Log.d(TAG, "Event cancelled: $eventId")
+            }.onFailure { e ->
+                Log.e(TAG, "Failed to cancel event $eventId", e)
+            }
+        }
+    }
+
+    override fun onEventCancelDismiss() {
+        uiState = uiState.copy(eventForCancel = null)
+    }
+
+    override fun onEventDeleteClick(eventId: String) {
+        val event = uiState.events.find { it.eventId == eventId } ?: return
+        uiState = uiState.copy(selectedEvent = null, eventForDelete = event)
+    }
+
+    override fun onEventDeleteConfirm(eventId: String) {
+        uiState = uiState.copy(eventForDelete = null)
+        viewModelScope.launch {
+            runCatching {
+                eventRepository.deleteEvent(eventId)
+                val updated = uiState.events.filter { it.eventId != eventId }
+                uiState = uiState.copy(
+                    events = updated,
+                    filteredEvents = applyEventFilter(updated, uiState.eventStatusFilter),
+                )
+                Log.d(TAG, "Event deleted: $eventId")
+            }.onFailure { e ->
+                Log.e(TAG, "Failed to delete event $eventId", e)
+            }
+        }
+    }
+
+    override fun onEventDeleteDismiss() {
+        uiState = uiState.copy(eventForDelete = null)
     }
 
     // ── Teams tab ─────────────────────────────────────────────────────────────

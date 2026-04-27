@@ -46,8 +46,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.data.model.Team
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.BaseScreenWithBottomNav
-import com.kourt.app.ui.components.MemberActionBottomSheet
+import com.kourt.app.ui.components.bottomSheets.MemberActionBottomSheet
 import com.kourt.app.ui.components.TeamCard
+import com.kourt.app.ui.Tabs.EventsTab
 import com.kourt.app.ui.Tabs.MembersTab
 import com.kourt.app.ui.Tabs.TeamsTab
 import com.kourt.app.viewmodel.club.ClubManagementViewModel
@@ -86,6 +87,8 @@ fun ClubManagementScreen(
         onMakeAdminDismiss = viewModel::onMakeAdminDismiss,
         onRemoveConfirm = viewModel::onRemoveConfirm,
         onRemoveDismiss = viewModel::onRemoveDismiss,
+        eventActions = viewModel,
+        onEditEvent = { eventId, teamId -> navigation.navigateToEditEvent(eventId, teamId) },
     )
 }
 
@@ -111,6 +114,8 @@ private fun ClubManagementScreenContent(
     onMakeAdminDismiss: () -> Unit,
     onRemoveConfirm: (String) -> Unit,
     onRemoveDismiss: () -> Unit,
+    eventActions: ClubManagementScreenActions,
+    onEditEvent: (eventId: String, teamId: String) -> Unit,
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(TAB_TEAMS) }
 
@@ -190,7 +195,7 @@ private fun ClubManagementScreenContent(
         trailingIcon = {
             IconButton(onClick = onSettingsTap) {
                 Icon(
-                    imageVector = Icons.Default.Settings,
+                    imageVector = Icons.Filled.Settings,
                     contentDescription = stringResource(com.kourt.app.R.string.club_management_settings_cd),
                 )
             }
@@ -210,7 +215,7 @@ private fun ClubManagementScreenContent(
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Add,
+                        imageVector = Icons.Filled.Add,
                         contentDescription = stringResource(com.kourt.app.R.string.club_management_add_team_cd),
                     )
                 }
@@ -221,7 +226,7 @@ private fun ClubManagementScreenContent(
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Add,
+                        imageVector = Icons.Filled.Add,
                         contentDescription = stringResource(com.kourt.app.R.string.members_add_member_cd),
                     )
                 }
@@ -244,7 +249,11 @@ private fun ClubManagementScreenContent(
                     onFilterChange = onMemberFilterChange,
                     onMenuClick = onMemberMenuClick,
                 )
-                TAB_EVENTS -> ComingSoonTab()
+                TAB_EVENTS -> EventsTab(
+                    uiState = uiState,
+                    actions = eventActions,
+                    onEditEvent = onEditEvent,
+                )
             }
         }
     }
@@ -399,16 +408,3 @@ private fun ClubManagementBottomNav(
     }
 }
 
-@Composable
-private fun ComingSoonTab() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = stringResource(com.kourt.app.R.string.coming_soon),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-        )
-    }
-}

@@ -16,4 +16,5 @@ interface CoachDashboardScreenActions {
     fun onLogAttendance(eventId: String)
     fun onLogStatistics(eventId: String)
     fun onAddEvent()
+    fun onCardClicked(eventId: String)
 }

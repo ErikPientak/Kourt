@@ -29,4 +29,15 @@ interface ClubManagementScreenActions {
     fun onRemoveMember(memberId: String)
     fun onRemoveConfirm(memberId: String)
     fun onRemoveDismiss()
+
+    // ── Events tab ────────────────────────────────────────────────────────────
+    fun onEventStatusFilterChange(filter: EventStatusFilter)
+    fun onEventMenuClick(eventId: String)
+    fun onEventActionDismiss()
+    fun onEventCancelClick(eventId: String)
+    fun onEventCancelConfirm(eventId: String)
+    fun onEventCancelDismiss()
+    fun onEventDeleteClick(eventId: String)
+    fun onEventDeleteConfirm(eventId: String)
+    fun onEventDeleteDismiss()
 }

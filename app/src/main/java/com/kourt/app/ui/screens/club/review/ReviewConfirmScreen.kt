@@ -2,7 +2,6 @@ package com.kourt.app.ui.screens.club.review
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,7 +30,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -46,10 +44,6 @@ import com.kourt.app.ui.components.BaseScreen
 import com.kourt.app.ui.components.KourtButton
 import com.kourt.app.ui.theme.KourtTheme
 import com.kourt.app.viewmodel.club.ReviewConfirmViewModel
-
-// NOTE: R.drawable.court must be added to your drawable resources before this screen
-// renders the hero image. Place a court image file at res/drawable/court.png (or .webp).
-
 
 @Composable
 fun ReviewConfirmScreen(
@@ -144,7 +138,7 @@ private fun ReviewConfirmContent(
                             title = stringResource(R.string.review_card_leadership),
                         )
                         CardFieldRow(
-                            leadingIcon = Icons.Default.Person,
+                            leadingIcon = Icons.Filled.Person,
                             label = stringResource(R.string.review_label_club_president),
                             value = uiState.president,
                         )
@@ -163,13 +157,13 @@ private fun ReviewConfirmContent(
                             title = stringResource(R.string.review_card_location),
                         )
                         CardFieldRow(
-                            leadingIcon = Icons.Default.LocationOn,
+                            leadingIcon = Icons.Filled.LocationOn,
                             label = stringResource(R.string.review_label_country),
                             value = uiState.country,
                         )
                         CardDivider()
                         CardFieldRow(
-                            leadingIcon = Icons.Default.Home,
+                            leadingIcon = Icons.Filled.Home,
                             label = stringResource(R.string.review_label_primary_city),
                             value = uiState.city,
                         )
@@ -229,7 +223,6 @@ private fun CardSectionHeader(
     title: String,
     modifier: Modifier = Modifier,
 ) {
-    val primary = MaterialTheme.colorScheme.primary
     val iconColor = MaterialTheme.colorScheme.onBackground
 
     Row(

@@ -1,4 +1,4 @@
-package com.kourt.app.ui.components
+package com.kourt.app.ui.components.bottomSheets
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

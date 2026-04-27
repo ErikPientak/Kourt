@@ -30,6 +30,14 @@ class EventRepository @Inject constructor(
         collection.document(event.id).set(event).await()
     }
 
+    suspend fun getEventsBySeriesId(seriesId: String): List<Event> =
+        collection.whereEqualTo("seriesId", seriesId).get().await()
+            .toObjects(Event::class.java)
+
+    suspend fun cancelEvent(id: String) {
+        collection.document(id).update("status", "cancelled").await()
+    }
+
     suspend fun deleteEvent(id: String) {
         collection.document(id).delete().await()
     }

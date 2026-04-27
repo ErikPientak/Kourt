@@ -29,8 +29,9 @@
     <!-- Create Club -->
     <string name="create_club_title">Vytvořit nový klub</string>
     <string name="create_club_back_content_desc">Zpět</string>
-    <string name="create_club_upload_logo">Nahrát logo klubu</string>
-    <string name="create_club_upload_logo_subtitle">Vytvořte vizuální identitu svého týmu</string>
+    <string name="create_club_upload_logo">Identita klubu</string>
+    <string name="create_club_upload_logo_subtitle">Klepnutím vyberte barvu motivu</string>
+    <string name="create_club_color_picker_subtitle">Vyberte hlavní barvu pro svůj klub</string>
     <string name="club_name_label">Název klubu</string>
     <string name="club_name_placeholder">např. Basketbalový klub Sparta</string>
     <string name="short_name_label">Zkratka / Krátký název</string>
@@ -105,10 +106,16 @@
     <string name="members_subtitle_athlete">Sportovec: %1$s</string>
     <string name="members_add_member_cd">Přidat člena</string>
 
+    <!-- Add / Edit Team -->
     <string name="add_team_title">Přidat nový tým</string>
     <string name="edit_team_title">Upravit tým</string>
     <string name="add_team_photo_cd">Nahrát fotku týmu</string>
-    <string name="add_team_brand_label">IDENTITA A ZNAČKA TÝMU</string>
+    <string name="add_team_brand_label">Identita týmu</string>
+    <string name="team_identity_title">Identita týmu</string>
+    <string name="team_identity_subtitle">Nastavte barvu a zkratku svého týmu</string>
+    <string name="team_identity_abbr_label">ZKRATKA</string>
+    <string name="team_identity_abbr_placeholder">např. M</string>
+    <string name="team_identity_apply">Použít</string>
     <string name="add_team_name_label">Název týmu</string>
     <string name="add_team_name_placeholder">např. Los Angeles Lakers</string>
     <string name="add_team_head_coach_label">Hlavní trenér</string>
@@ -203,6 +210,17 @@
     <string name="schedule_log_statistics">Zapsat statistiky</string>
     <string name="schedule_add_event_cd">Přidat událost</string>
 
+    <!-- Edit recurring event scope dialog -->
+    <string name="edit_recurring_title">Upravit opakovanou událost</string>
+    <string name="edit_recurring_this_only">Jen tuto událost</string>
+    <string name="edit_recurring_this_and_following">Tuto a všechny následující</string>
+
+    <!-- Cancel event confirmation dialog -->
+    <string name="cancel_event_title">Zrušit událost</string>
+    <string name="cancel_event_message">Událost bude označena jako zrušená a všem členům se zobrazí jako přeškrtnutá.</string>
+    <string name="cancel_event_confirm">Zrušit událost</string>
+    <string name="cancel_event_keep">Ponechat</string>
+
     <!-- Add / Edit Event -->
     <string name="add_event_title">Přidat novou událost</string>
     <string name="edit_event_title">Upravit událost</string>
@@ -250,4 +268,14 @@
     <string name="coach_dashboard_tab_roster">Soupiska</string>
     <string name="coach_dashboard_settings_cd">Nastavení</string>
     <string name="coach_dashboard_location_tbd">Místo TBD</string>
+    <string name="coach_dashboard_attendance">DOCHÁZKA</string>
+    <string name="coach_dashboard_rsvp_yes">Ano</string>
+    <string name="coach_dashboard_rsvp_maybe">Možná</string>
+    <string name="coach_dashboard_rsvp_no">Ne</string>
+
+    <!-- Color Picker -->
+    <string name="color_picker_title">Vybrat barvu motivu</string>
+    <string name="color_picker_subtitle">Vyberte hlavní barvu</string>
+    <string name="color_picker_cancel">Zrušit</string>
+    <string name="color_picker_apply">Použít barvu</string>
 </resources>

@@ -32,23 +32,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.R
 import com.kourt.app.navigation.INavigationRouter
-import com.kourt.app.ui.components.AvatarPickerBottomSheet
+import com.kourt.app.ui.components.bottomSheets.AvatarPickerBottomSheet
 import com.kourt.app.ui.components.BaseScreen
 import com.kourt.app.ui.components.KourtTeamAvatar
-import com.kourt.app.ui.components.avatarResId
+import com.kourt.app.ui.components.bottomSheets.avatarResId
 import com.kourt.app.ui.components.roleBadgeColor
-import com.kourt.app.ui.theme.KourtTheme
-import com.kourt.app.ui.theme.RoleBadgeAdmin
-import com.kourt.app.ui.theme.RoleBadgeAssistant
-import com.kourt.app.ui.theme.RoleBadgeCaptain
-import com.kourt.app.ui.theme.RoleBadgeCoach
-import com.kourt.app.ui.theme.RoleBadgeParent
-import com.kourt.app.ui.theme.RoleBadgePlayer
 import com.kourt.app.viewmodel.settings.ProfileViewModel
 
 @Composable

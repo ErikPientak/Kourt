@@ -9,6 +9,8 @@ data class Event(
     val teamId: String = "",
     val title: String = "",
     val seriesId: String = "",
+    val repeatsWeekly: Boolean = false,
+    val repeatDays: List<Int> = emptyList(),
     val type: String = "",
     val venueType: String = "",
     val opponent: String = "",

@@ -239,6 +239,30 @@
     <string name="event_create_button">Create Event</string>
     <string name="event_save_button">Save Changes</string>
     <string name="event_cancel">Cancel</string>
+
+    <!-- Edit recurring event scope dialog -->
+    <string name="edit_recurring_title">Edit Recurring Event</string>
+    <string name="edit_recurring_this_only">This Event</string>
+    <string name="edit_recurring_this_and_following">This and Following Events</string>
+
+    <!-- Events tab — Club Management -->
+    <string name="events_tab_empty">No events found</string>
+    <string name="event_filter_all">All</string>
+    <string name="event_filter_upcoming">Upcoming</string>
+    <string name="event_filter_past">Past</string>
+    <string name="event_filter_cancelled">Cancelled</string>
+    <string name="event_action_edit">Edit Event</string>
+    <string name="event_action_cancel">Cancel Event</string>
+    <string name="event_action_delete">Delete Event</string>
+    <string name="delete_event_title">Delete Event</string>
+    <string name="delete_event_message">This event will be permanently deleted and cannot be recovered.</string>
+    <string name="delete_event_confirm">Delete</string>
+
+    <!-- Cancel event confirmation dialog -->
+    <string name="cancel_event_title">Cancel Event</string>
+    <string name="cancel_event_message">The event will be marked as cancelled and shown as crossed out to all members.</string>
+    <string name="cancel_event_confirm">Cancel Event</string>
+    <string name="cancel_event_keep">Keep</string>
     <string name="event_opponent_label">Opponent</string>
     <string name="event_opponent_placeholder">e.g., Lakers</string>
     <string name="event_venue_type_label">VENUE TYPE</string>

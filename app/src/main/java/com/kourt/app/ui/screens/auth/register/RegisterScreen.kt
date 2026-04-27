@@ -1,7 +1,6 @@
 package com.kourt.app.ui.screens.auth.register
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,7 +32,6 @@ import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -47,8 +45,6 @@ import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.AuthFieldLabel
 import com.kourt.app.ui.components.KourtButton
 import com.kourt.app.ui.components.authTextFieldColors
-import com.kourt.app.ui.theme.DarkPlaceholder
-import com.kourt.app.ui.theme.LightPlaceholder
 import com.kourt.app.viewmodel.auth.RegisterViewModel
 
 @Composable
@@ -128,7 +124,7 @@ fun RegisterScreen(
             },
             leadingIcon = {
                 Icon(
-                    imageVector = Icons.Default.Person,
+                    imageVector = Icons.Filled.Person,
                     contentDescription = null,
                     tint = iconTintColor,
                 )
@@ -161,7 +157,7 @@ fun RegisterScreen(
             },
             leadingIcon = {
                 Icon(
-                    imageVector = Icons.Default.Email,
+                    imageVector = Icons.Filled.Email,
                     contentDescription = null,
                     tint = iconTintColor,
                 )
@@ -193,7 +189,7 @@ fun RegisterScreen(
             },
             leadingIcon = {
                 Icon(
-                    imageVector = Icons.Default.Lock,
+                    imageVector = Icons.Filled.Lock,
                     contentDescription = null,
                     tint = iconTintColor,
                 )
@@ -239,7 +235,7 @@ fun RegisterScreen(
             },
             leadingIcon = {
                 Icon(
-                    imageVector = Icons.Default.Lock,
+                    imageVector = Icons.Filled.Lock,
                     contentDescription = null,
                     tint = iconTintColor,
                 )

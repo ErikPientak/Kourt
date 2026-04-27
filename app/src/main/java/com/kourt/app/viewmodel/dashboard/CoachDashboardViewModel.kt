@@ -109,7 +109,7 @@ class CoachDashboardViewModel @Inject constructor(
                     val sortedEvents = eventsDeferred.await().sortedBy { it.date.toDate() }
                     val futureEvents = sortedEvents.filter { it.date.toDate().after(now) }
 
-                    val upNext = futureEvents.firstOrNull()?.toEventUiItem()
+                    val upNext = futureEvents.firstOrNull { it.status.lowercase() == "upcoming" }?.toEventUiItem()
                     val upcoming = futureEvents.drop(1).take(5).map { it.toEventUiItem() }
                     val allEvents = sortedEvents.map { it.toEventUiItem() }
 
@@ -238,6 +238,10 @@ class CoachDashboardViewModel @Inject constructor(
         uiState = uiState.copy(navigateToAddEvent = true)
     }
 
+    override fun onCardClicked(eventId: String) {
+        uiState = uiState.copy(navigateToEditEvent = true)
+    }
+
     fun onAddEventNavigated() {
         uiState = uiState.copy(navigateToAddEvent = false)
     }
@@ -298,6 +302,7 @@ class CoachDashboardViewModel @Inject constructor(
             title = title,
             type = type,
             status = status,
+            teamId = teamId,
             dayOfWeek = SimpleDateFormat("EEE", locale).format(eventDate).uppercase(locale),
             dayOfMonth = cal.get(Calendar.DAY_OF_MONTH),
             startTime = startTime,

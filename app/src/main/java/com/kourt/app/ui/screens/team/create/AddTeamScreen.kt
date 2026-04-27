@@ -4,7 +4,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,7 +30,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -68,15 +66,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.R
-import com.kourt.app.data.model.User
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.AuthFieldLabel
 import com.kourt.app.ui.components.BaseScreen
 import com.kourt.app.ui.components.CategoryChip
 import com.kourt.app.ui.components.KourtButton
-import com.kourt.app.ui.components.TeamIdentityBottomSheet
+import com.kourt.app.ui.components.bottomSheets.TeamIdentityBottomSheet
 import com.kourt.app.ui.components.authTextFieldColors
-import com.kourt.app.ui.components.contentColorForBackground
+import com.kourt.app.ui.components.bottomSheets.contentColorForBackground
 import com.kourt.app.ui.theme.KourtTheme
 import com.kourt.app.ui.theme.White
 import com.kourt.app.viewmodel.team.AddTeamViewModel
@@ -243,7 +240,7 @@ fun AddTeamScreen(
                     },
                     leadingIcon = {
                         Icon(
-                            imageVector = Icons.Default.Person,
+                            imageVector = Icons.Filled.Person,
                             contentDescription = null,
                             tint = iconTintColor,
                         )
@@ -277,7 +274,7 @@ fun AddTeamScreen(
                             onClick = { viewModel.onHeadCoachSelected(user) },
                             leadingIcon = {
                                 Icon(
-                                    imageVector = Icons.Default.Person,
+                                    imageVector = Icons.Filled.Person,
                                     contentDescription = null,
                                     tint = iconTintColor,
                                     modifier = Modifier.size(16.dp),
@@ -312,7 +309,7 @@ fun AddTeamScreen(
                     },
                     leadingIcon = {
                         Icon(
-                            imageVector = Icons.Default.Person,
+                            imageVector = Icons.Filled.Person,
                             contentDescription = null,
                             tint = iconTintColor,
                         )
@@ -346,7 +343,7 @@ fun AddTeamScreen(
                             onClick = { viewModel.onAssistantSelected(user) },
                             leadingIcon = {
                                 Icon(
-                                    imageVector = Icons.Default.Person,
+                                    imageVector = Icons.Filled.Person,
                                     contentDescription = null,
                                     tint = iconTintColor,
                                     modifier = Modifier.size(16.dp),
@@ -365,7 +362,7 @@ fun AddTeamScreen(
                         .clickable { viewModel.onAssistantAdd() },
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Add,
+                        imageVector = Icons.Filled.Add,
                         contentDescription = stringResource(R.string.add_team_add_assistant_cd),
                         tint = White,
                         modifier = Modifier.size(22.dp),
@@ -467,9 +464,9 @@ fun AddTeamScreen(
                         )
                         Icon(
                             imageVector = if (uiState.isLocationExpanded)
-                                Icons.Default.KeyboardArrowUp
+                                Icons.Filled.KeyboardArrowUp
                             else
-                                Icons.Default.KeyboardArrowDown,
+                                Icons.Filled.KeyboardArrowDown,
                             contentDescription = null,
                             tint = iconTintColor,
                         )

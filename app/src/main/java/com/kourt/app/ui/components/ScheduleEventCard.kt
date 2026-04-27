@@ -1,6 +1,7 @@
 package com.kourt.app.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +17,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -34,10 +38,18 @@ private val PracticeBlue = Color(0xFF2563EB)
 fun ScheduleEventCard(
     event: EventUiItem,
     onCtaClick: () -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val isCancelled = event.status.lowercase() == "cancelled"
+    val today = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())
+    val isPast = event.epochDay >= 0 && event.epochDay < today && !isCancelled
     val colorScheme = MaterialTheme.colorScheme
-    val badgeColor = if (event.type.lowercase() == "match") colorScheme.primary else PracticeBlue
+    val badgeColor = when {
+        isCancelled || isPast                   -> Color(0xFF6B7280)
+        event.type.lowercase() == "match"       -> colorScheme.primary
+        else                                    -> PracticeBlue
+    }
     val ctaText = if (event.type.lowercase() == "match") {
         stringResource(R.string.schedule_log_statistics)
     } else {
@@ -47,10 +59,14 @@ fun ScheduleEventCard(
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = colorScheme.surface,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .alpha(if (isCancelled || isPast) 0.8f else 1f),
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier
+                .padding(16.dp)
+                .clickable(onClick = onClick),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             // ── Top row: type badge + date/time ──────────────────────────────
@@ -79,10 +95,22 @@ fun ScheduleEventCard(
             }
 
             // ── Title ─────────────────────────────────────────────────────────
+            val titleColor = colorScheme.onSurface
             Text(
                 text = event.title,
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                color = colorScheme.onSurface,
+                color = titleColor,
+                modifier = if (isCancelled) {
+                    Modifier.drawWithContent {
+                        drawContent()
+                        drawLine(
+                            color = titleColor,
+                            start = Offset(0f, size.height / 2f),
+                            end = Offset(size.width, size.height / 2f),
+                            strokeWidth = 2.dp.toPx(),
+                        )
+                    }
+                } else Modifier,
             )
 
             // ── Subtitle (conditional) ────────────────────────────────────────
@@ -112,12 +140,14 @@ fun ScheduleEventCard(
                 )
             }
 
-            // ── CTA button ────────────────────────────────────────────────────
-            KourtButton(
-                text = ctaText,
-                onClick = onCtaClick,
-                modifier = Modifier.fillMaxWidth(),
-            )
+            // ── CTA button — hidden for cancelled events ──────────────────────
+            if (!isCancelled) {
+                KourtButton(
+                    text = ctaText,
+                    onClick = onCtaClick,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
     }
 }
@@ -161,6 +191,7 @@ private fun ScheduleEventCardMatchLightPreview() {
         ScheduleEventCard(
             event = previewMatchEvent,
             onCtaClick = {},
+            onClick = {},
             modifier = Modifier.padding(16.dp),
         )
     }
@@ -173,6 +204,7 @@ private fun ScheduleEventCardPracticeLightPreview() {
         ScheduleEventCard(
             event = previewPracticeEvent,
             onCtaClick = {},
+            onClick = {},
             modifier = Modifier.padding(16.dp),
         )
     }
@@ -185,6 +217,7 @@ private fun ScheduleEventCardMatchDarkPreview() {
         ScheduleEventCard(
             event = previewMatchEvent,
             onCtaClick = {},
+            onClick = {},
             modifier = Modifier.padding(16.dp),
         )
     }
@@ -197,6 +230,33 @@ private fun ScheduleEventCardPracticeDarkPreview() {
         ScheduleEventCard(
             event = previewPracticeEvent,
             onCtaClick = {},
+            onClick = {},
+            modifier = Modifier.padding(16.dp),
+        )
+    }
+}
+
+@Preview(name = "ScheduleEventCard Cancelled – Dark", showBackground = true, backgroundColor = 0xFF1A1A1A)
+@Composable
+private fun ScheduleEventCardCancelledDarkPreview() {
+    KourtTheme(darkTheme = true) {
+        ScheduleEventCard(
+            event = previewMatchEvent.copy(status = "cancelled"),
+            onCtaClick = {},
+            onClick = {},
+            modifier = Modifier.padding(16.dp),
+        )
+    }
+}
+
+@Preview(name = "ScheduleEventCard Cancelled – Light", showBackground = true, backgroundColor = 0xFFF5F5F5)
+@Composable
+private fun ScheduleEventCardCancelledLightPreview() {
+    KourtTheme(darkTheme = false) {
+        ScheduleEventCard(
+            event = previewMatchEvent.copy(status = "cancelled"),
+            onCtaClick = {},
+            onClick = {},
             modifier = Modifier.padding(16.dp),
         )
     }
