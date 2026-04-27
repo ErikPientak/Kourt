@@ -2,6 +2,7 @@ package com.kourt.app.data.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.kourt.app.data.model.Team
+import com.kourt.app.data.model.TeamMember
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -22,6 +23,18 @@ class TeamRepository @Inject constructor(
     suspend fun createTeam(team: Team): String {
         val ref = collection.add(team).await()
         return ref.id
+    }
+
+    suspend fun createTeamWithMembers(team: Team, members: List<TeamMember>): String {
+        val batch = firestore.batch()
+        val teamRef = collection.document()
+        batch.set(teamRef, team)
+        val memberCollection = firestore.collection("Team_member")
+        members.forEach { member ->
+            batch.set(memberCollection.document(), member.copy(teamId = teamRef.id))
+        }
+        batch.commit().await()
+        return teamRef.id
     }
 
     suspend fun updateTeam(team: Team) {

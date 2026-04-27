@@ -7,6 +7,7 @@ data class User(
     val displayName: String = "",
     val email: String = "",
     val photoURL: String = "",
+    val avatarId: String = "",
     val childIds: List<String> = emptyList(),
     val isManagedProfile: Boolean = false
 )

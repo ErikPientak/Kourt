@@ -1,5 +1,6 @@
 package com.kourt.app.ui.screens.settings.profile
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,9 +18,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,8 +37,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.R
 import com.kourt.app.navigation.INavigationRouter
+import com.kourt.app.ui.components.AvatarPickerBottomSheet
 import com.kourt.app.ui.components.BaseScreen
 import com.kourt.app.ui.components.KourtTeamAvatar
+import com.kourt.app.ui.components.avatarResId
 import com.kourt.app.ui.components.roleBadgeColor
 import com.kourt.app.ui.theme.KourtTheme
 import com.kourt.app.ui.theme.RoleBadgeAdmin
@@ -75,6 +76,8 @@ fun ProfileScreen(
         uiState = uiState,
         onBack = navigation::returnBack,
         onEditAvatarClick = viewModel::onEditAvatarClick,
+        onAvatarSelected = viewModel::onAvatarSelected,
+        onAvatarPickerDismiss = viewModel::onAvatarPickerDismiss,
         onMembershipClick = viewModel::onMembershipClick,
     )
 }
@@ -84,8 +87,18 @@ private fun ProfileScreenContent(
     uiState: ProfileScreenUiState,
     onBack: () -> Unit,
     onEditAvatarClick: () -> Unit,
+    onAvatarSelected: (String) -> Unit = {},
+    onAvatarPickerDismiss: () -> Unit = {},
     onMembershipClick: (MembershipRowUiItem) -> Unit = {},
 ) {
+    if (uiState.showAvatarPicker) {
+        AvatarPickerBottomSheet(
+            currentAvatarId = uiState.avatarId,
+            onAvatarSelected = onAvatarSelected,
+            onDismiss = onAvatarPickerDismiss,
+        )
+    }
+
     BaseScreen(
         title = stringResource(R.string.profile_title),
         onBack = onBack,
@@ -124,6 +137,8 @@ private fun ProfileScreenContent(
                             ProfileHeader(
                                 displayName = uiState.displayName,
                                 email = uiState.email,
+                                avatarId = uiState.avatarId,
+                                isReadOnly = uiState.isReadOnly,
                                 onEditAvatarClick = onEditAvatarClick,
                             )
                         }
@@ -164,6 +179,8 @@ private fun ProfileScreenContent(
 private fun ProfileHeader(
     displayName: String,
     email: String,
+    avatarId: String,
+    isReadOnly: Boolean,
     onEditAvatarClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -172,11 +189,8 @@ private fun ProfileHeader(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        // Circular avatar with edit badge
-        Box(
-            modifier = Modifier.size(96.dp),
-        ) {
-            // Avatar circle
+        Box(modifier = Modifier.size(96.dp)) {
+            val resId = avatarResId(avatarId)
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
@@ -184,34 +198,42 @@ private fun ProfileHeader(
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.surface),
             ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                    modifier = Modifier.size(48.dp),
-                )
+                if (resId != null) {
+                    Image(
+                        painter = painterResource(resId),
+                        contentDescription = null,
+                        modifier = Modifier.size(80.dp),
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource(R.drawable.person_search),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                        modifier = Modifier.size(48.dp),
+                    )
+                }
             }
 
-            // Edit pencil badge at bottom-right
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(28.dp)
-                    .align(Alignment.BottomEnd)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary)
-                    .clickable(onClick = onEditAvatarClick),
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = stringResource(R.string.profile_edit_avatar_cd),
-                    tint = Color.White,
-                    modifier = Modifier.size(14.dp),
-                )
+            if (!isReadOnly) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(28.dp)
+                        .align(Alignment.BottomEnd)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
+                        .clickable(onClick = onEditAvatarClick),
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.person_edit),
+                        contentDescription = stringResource(R.string.profile_edit_avatar_cd),
+                        tint = Color.White,
+                        modifier = Modifier.size(14.dp),
+                    )
+                }
             }
         }
 
-        // Display name
         if (displayName.isNotEmpty()) {
             Text(
                 text = displayName,
@@ -220,7 +242,6 @@ private fun ProfileHeader(
             )
         }
 
-        // Email
         if (email.isNotEmpty()) {
             Text(
                 text = email,

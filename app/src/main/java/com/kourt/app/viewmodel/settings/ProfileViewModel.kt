@@ -64,6 +64,7 @@ class ProfileViewModel @Inject constructor(
             uiState = uiState.copy(
                 displayName = user?.displayName ?: firebaseUser.displayName.orEmpty(),
                 email = user?.email ?: firebaseUser.email.orEmpty(),
+                avatarId = user?.avatarId.orEmpty(),
             )
 
             // Load team memberships and admin clubs concurrently
@@ -130,8 +131,26 @@ class ProfileViewModel @Inject constructor(
     }
 
     override fun onEditAvatarClick() {
-        // TODO: navigate to edit profile / photo picker
-        Log.d(TAG, "onEditAvatarClick: not yet implemented")
+        if (uiState.isReadOnly) return
+        uiState = uiState.copy(showAvatarPicker = true)
+    }
+
+    override fun onAvatarSelected(avatarId: String) {
+        val uid = authRepository.currentUser?.uid ?: return
+        uiState = uiState.copy(avatarId = avatarId, showAvatarPicker = false)
+        viewModelScope.launch {
+            runCatching {
+                val user = userRepository.getUser(uid) ?: return@launch
+                userRepository.updateUser(user.copy(avatarId = avatarId))
+                Log.d(TAG, "onAvatarSelected: saved avatarId=$avatarId")
+            }.onFailure { e ->
+                Log.e(TAG, "onAvatarSelected: failed to save", e)
+            }
+        }
+    }
+
+    override fun onAvatarPickerDismiss() {
+        uiState = uiState.copy(showAvatarPicker = false)
     }
 
     override fun onMembershipClick(item: MembershipRowUiItem) {

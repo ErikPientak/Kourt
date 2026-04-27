@@ -267,21 +267,15 @@ class AddTeamViewModel @Inject constructor(
                     initials = uiState.initials,
                 )
 
-                val newTeamId = teamRepository.createTeam(team)
-
-                uiState.selectedHeadCoach?.let { coach ->
-                    if (coach.id.isNotBlank()) {
-                        teamMemberRepository.addMember(
-                            TeamMember(userId = coach.id, teamId = newTeamId, role = "coach"),
-                        )
+                val members = buildList {
+                    uiState.selectedHeadCoach?.let { coach ->
+                        if (coach.id.isNotBlank()) add(TeamMember(userId = coach.id, role = "coach"))
+                    }
+                    uiState.selectedAssistants.forEach { assistant ->
+                        add(TeamMember(userId = assistant.id, role = "assistant"))
                     }
                 }
-
-                uiState.selectedAssistants.forEach { assistant ->
-                    teamMemberRepository.addMember(
-                        TeamMember(userId = assistant.id, teamId = newTeamId, role = "assistant"),
-                    )
-                }
+                val newTeamId = teamRepository.createTeamWithMembers(team, members)
 
                 uiState = uiState.copy(isLoading = false, isSuccess = true)
                 Log.d(TAG, "Team created: $newTeamId")
