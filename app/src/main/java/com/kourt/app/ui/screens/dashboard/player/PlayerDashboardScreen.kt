@@ -1,40 +1,26 @@
-package com.kourt.app.ui.screens.dashboard.coach
+package com.kourt.app.ui.screens.dashboard.player
 
-import android.text.format.DateFormat
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -44,148 +30,112 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.navigation.compose.currentBackStackEntryAsState
-import com.kourt.app.navigation.Destination
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.R
+import com.kourt.app.navigation.Destination
 import com.kourt.app.navigation.INavigationRouter
+import com.kourt.app.ui.Tabs.MembersTab
+import com.kourt.app.ui.Tabs.ScheduleTab
 import com.kourt.app.ui.components.EventCard
 import com.kourt.app.ui.components.KourtAvatarLeading
 import com.kourt.app.ui.components.KourtTeamAvatar
-import com.kourt.app.ui.components.KourtButton
-import com.kourt.app.ui.components.KourtCalendar
-import com.kourt.app.ui.components.ScheduleEventCard
-import com.kourt.app.ui.screens.club.management.ClubManagementScreenUiState
-import com.kourt.app.ui.screens.club.management.MemberFilter
-import com.kourt.app.ui.Tabs.MembersTab
-import com.kourt.app.ui.Tabs.ScheduleTab
 import com.kourt.app.ui.components.UpNextCard
-import com.kourt.app.viewmodel.dashboard.CoachDashboardViewModel
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
-import java.util.concurrent.TimeUnit
+import com.kourt.app.ui.components.bottomSheets.RsvpReasonBottomSheet
+import com.kourt.app.ui.components.bottomSheets.RsvpSelectionBottomSheet
+import com.kourt.app.ui.screens.club.management.ClubManagementScreenUiState
+import com.kourt.app.ui.screens.dashboard.coach.CoachDashboardScreenUiState
+import com.kourt.app.ui.screens.dashboard.coach.TeamUiItem
+import com.kourt.app.viewmodel.dashboard.PlayerDashboardViewModel
 
 private const val TAB_HOME = 0
 private const val TAB_SCHEDULE = 1
 private const val TAB_ROSTER = 2
 
 @Composable
-fun CoachDashboardScreen(
+fun PlayerDashboardScreen(
     navigation: INavigationRouter,
-    viewModel: CoachDashboardViewModel = hiltViewModel(),
+    viewModel: PlayerDashboardViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
 
     val navBackStackEntry by navigation.getNavController().currentBackStackEntryAsState()
     LaunchedEffect(navBackStackEntry) {
-        if (navBackStackEntry?.destination?.route == Destination.CoachDashboardScreen.route) {
+        if (navBackStackEntry?.destination?.route == Destination.PlayerDashboardScreen.route) {
             viewModel.refreshEvents()
         }
     }
 
-    LaunchedEffect(uiState.navigateToAddEvent) {
-        if (uiState.navigateToAddEvent) {
-            val teamId = uiState.activeTeam?.teamId ?: return@LaunchedEffect
-            navigation.navigateToAddEvent(teamId)
-            viewModel.onAddEventNavigated()
-        }
-    }
-
-    CoachDashboardContent(
+    PlayerDashboardContent(
         uiState = uiState,
-        onTeamDropdownToggle = viewModel::onTeamDropdownToggle,
-        onTeamSelected = viewModel::onTeamSelected,
+        actions = viewModel,
         onSettingsTap = { navigation.navigateToSettingsScreen() },
-        onUpdateLineup = viewModel::onUpdateLineup,
-        onRosterSearchQueryChange = viewModel::onRosterSearchQueryChange,
-        onRosterFilterChange = viewModel::onRosterFilterChange,
-        onPreviousMonth = viewModel::onPreviousMonth,
-        onNextMonth = viewModel::onNextMonth,
-        onDateSelected = viewModel::onDateSelected,
-        onLogAttendance = viewModel::onLogAttendance,
-        onLogStatistics = viewModel::onLogStatistics,
-        onAddEvent = viewModel::onAddEvent,
-        onCardClicked = {navigation.navigateToEditEvent(it,uiState.activeTeam!!.teamId)}
+        onCardClicked = viewModel::onCardClicked,
     )
 }
 
 @Composable
-private fun CoachDashboardContent(
-    uiState: CoachDashboardScreenUiState,
-    onTeamDropdownToggle: () -> Unit,
-    onTeamSelected: (String) -> Unit,
+private fun PlayerDashboardContent(
+    uiState: PlayerDashboardScreenUiState,
+    actions: PlayerDashboardScreenActions,
     onSettingsTap: () -> Unit,
-    onUpdateLineup: () -> Unit,
-    onRosterSearchQueryChange: (String) -> Unit,
-    onRosterFilterChange: (MemberFilter) -> Unit,
-    onPreviousMonth: () -> Unit,
-    onNextMonth: () -> Unit,
-    onDateSelected: (Long) -> Unit,
-    onLogAttendance: (String) -> Unit,
-    onLogStatistics: (String) -> Unit,
-    onAddEvent: () -> Unit,
-    onCardClicked: (String) -> Unit
+    onCardClicked: (String) -> Unit,
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(TAB_HOME) }
 
     BaseScreenWithBottomNav(
         topBar = {
-            CoachDashboardTopBar(
-                coachName = uiState.coachName,
+            PlayerDashboardTopBar(
+                playerName = uiState.playerName,
                 activeTeam = uiState.activeTeam,
                 teams = uiState.teams,
                 isDropdownOpen = uiState.isTeamDropdownOpen,
-                onToggleDropdown = onTeamDropdownToggle,
-                onTeamSelected = onTeamSelected,
+                onToggleDropdown = actions::onTeamDropdownToggle,
+                onTeamSelected = actions::onTeamSelected,
                 onSettingsTap = onSettingsTap,
             )
         },
         bottomBar = {
-            CoachDashboardBottomNav(
+            PlayerDashboardBottomNav(
                 selectedTab = selectedTab,
                 onTabSelected = { selectedTab = it },
             )
         },
-        floatingActionButton = {
-            if (selectedTab == TAB_SCHEDULE) {
-                FloatingActionButton(
-                    onClick = onAddEvent,
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                    shape = RoundedCornerShape(16.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Add,
-                        contentDescription = stringResource(R.string.schedule_add_event_cd),
-                    )
-                }
-            }
-        },
     ) { padding ->
+        if (uiState.isRsvpSelectionSheetOpen) {
+            RsvpSelectionBottomSheet(
+                onRsvpSelected = actions::onRsvpSelected,
+                onDismiss = actions::onDismissRsvpSheet,
+            )
+        }
+        if (uiState.isRsvpReasonSheetOpen) {
+            RsvpReasonBottomSheet(
+                selectedReason = uiState.selectedReason,
+                reasonNote = uiState.reasonNote,
+                isSubmitting = uiState.isRsvpSubmitting,
+                onReasonSelected = actions::onReasonSelected,
+                onNoteChanged = actions::onReasonNoteChanged,
+                onSubmitReason = actions::onSubmitReason,
+                onDismiss = actions::onDismissReasonSheet,
+            )
+        }
         if (uiState.isLoading) {
             Box(
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
                 contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
@@ -193,15 +143,26 @@ private fun CoachDashboardContent(
         } else {
             Box(modifier = Modifier.fillMaxSize().padding(padding)) {
                 when (selectedTab) {
-                    TAB_HOME -> HomeTab(uiState = uiState, onUpdateLineup = onUpdateLineup)
-                    TAB_SCHEDULE -> ScheduleTab(
+                    TAB_HOME -> PlayerHomeTab(
                         uiState = uiState,
-                        onPreviousMonth = onPreviousMonth,
-                        onNextMonth = onNextMonth,
-                        onDateSelected = onDateSelected,
-                        onLogAttendance = onLogAttendance,
-                        onLogStatistics = onLogStatistics,
+                        onUpdateAttendance = actions::onUpdateAttendance,
                         onCardClicked = onCardClicked,
+                    )
+                    TAB_SCHEDULE -> ScheduleTab(
+                        uiState = CoachDashboardScreenUiState(
+                            allEvents = uiState.allEvents,
+                            calendarYear = uiState.calendarYear,
+                            calendarMonth = uiState.calendarMonth,
+                            selectedEpochDay = uiState.selectedEpochDay,
+                            eventDaysInView = uiState.eventDaysInView,
+                        ),
+                        onPreviousMonth = actions::onPreviousMonth,
+                        onNextMonth = actions::onNextMonth,
+                        onDateSelected = actions::onDateSelected,
+                        onLogAttendance = actions::onUpdateAttendanceForEvent,
+                        onLogStatistics = actions::onUpdateAttendanceForEvent,
+                        onCardClicked = actions::onCardClicked,
+                        ctaTextOverride = stringResource(R.string.player_dashboard_update_attendance),
                     )
                     TAB_ROSTER -> MembersTab(
                         uiState = ClubManagementScreenUiState(
@@ -210,8 +171,8 @@ private fun CoachDashboardContent(
                             memberFilter = uiState.memberFilter,
                             isMembersLoading = uiState.isMembersLoading,
                         ),
-                        onSearchQueryChange = onRosterSearchQueryChange,
-                        onFilterChange = onRosterFilterChange,
+                        onSearchQueryChange = actions::onRosterSearchQueryChange,
+                        onFilterChange = actions::onRosterFilterChange,
                         onMenuClick = {},
                     )
                 }
@@ -223,8 +184,8 @@ private fun CoachDashboardContent(
 // ── Top app bar ───────────────────────────────────────────────────────────────
 
 @Composable
-private fun CoachDashboardTopBar(
-    coachName: String,
+private fun PlayerDashboardTopBar(
+    playerName: String,
     activeTeam: TeamUiItem?,
     teams: List<TeamUiItem>,
     isDropdownOpen: Boolean,
@@ -258,7 +219,7 @@ private fun CoachDashboardTopBar(
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Left cluster — avatar + team name + dropdown
+            // Left cluster — avatar + team name + dropdown arrow
             Box {
                 Row(
                     modifier = Modifier.clickable(onClick = onToggleDropdown),
@@ -272,31 +233,26 @@ private fun CoachDashboardTopBar(
                             size = 40.dp,
                         )
                     } else {
-                        KourtAvatarLeading(fallbackText = coachName, size = 40.dp)
+                        KourtAvatarLeading(fallbackText = playerName, size = 40.dp)
                     }
-                    Column {
+
+                    // No "Managing" sub-label for players — just team name + arrow
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
                         Text(
-                            text = stringResource(R.string.coach_dashboard_managing_label),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                            text = activeTeam?.teamName
+                                ?: stringResource(R.string.coach_dashboard_no_team),
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        ) {
-                            Text(
-                                text = activeTeam?.teamName
-                                    ?: stringResource(R.string.coach_dashboard_no_team),
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                            Icon(
-                                imageVector = Icons.Filled.KeyboardArrowDown,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(16.dp),
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Filled.KeyboardArrowDown,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp),
+                        )
                     }
                 }
 
@@ -344,7 +300,7 @@ private fun CoachDashboardTopBar(
                 Icon(
                     imageVector = Icons.Filled.Settings,
                     contentDescription = stringResource(R.string.coach_dashboard_settings_cd),
-                    tint = MaterialTheme.colorScheme.onBackground,
+                    tint = MaterialTheme.colorScheme.onSurface,
                 )
             }
         }
@@ -360,7 +316,7 @@ private data class BottomNavItem(
 )
 
 @Composable
-private fun CoachDashboardBottomNav(
+private fun PlayerDashboardBottomNav(
     selectedTab: Int,
     onTabSelected: (Int) -> Unit,
 ) {
@@ -424,12 +380,13 @@ private fun CoachDashboardBottomNav(
     }
 }
 
-// ── Tab content ───────────────────────────────────────────────────────────────
+// ── Home tab ──────────────────────────────────────────────────────────────────
 
 @Composable
-private fun HomeTab(
-    uiState: CoachDashboardScreenUiState,
-    onUpdateLineup: () -> Unit,
+private fun PlayerHomeTab(
+    uiState: PlayerDashboardScreenUiState,
+    onUpdateAttendance: () -> Unit,
+    onCardClicked: (String) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -444,13 +401,15 @@ private fun HomeTab(
             color = MaterialTheme.colorScheme.onBackground,
         )
 
-        if (uiState.upNextEvent != null) {
+        val upNext = uiState.upNextEvent
+        if (upNext != null) {
             UpNextCard(
-                event = uiState.upNextEvent,
+                event = upNext,
                 rosterSize = uiState.members.size,
-                attendeeNames = uiState.upNextAttendees,
-                ctaText = R.string.coach_dashboard_update_lineup,
-                onCtaClick = onUpdateLineup,
+                myRsvpStatus = uiState.myRsvpStatus,
+                ctaText = R.string.player_dashboard_update_attendance,
+                onCtaClick = onUpdateAttendance,
+                attendeeNames = uiState.upNextAttendees
             )
         } else {
             Box(
@@ -484,7 +443,8 @@ private fun HomeTab(
                     dayOfMonth = event.dayOfMonth,
                     startTime = event.startTime,
                     location = event.location,
-                    showChevron = false,
+                    showChevron = true,
+                    onClick = { onCardClicked(event.eventId) },
                 )
             }
         }

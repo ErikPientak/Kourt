@@ -28,6 +28,7 @@ interface INavigationRouter {
     fun navigateToUserProfile(userId: String)
     fun navigateToEditProfile()
     fun navigateToDashboard()
+    fun navigateToPlayerDashboard()
     fun navigateToAddEvent(teamId: String)
     fun navigateToEditEvent(eventId: String, teamId: String)
 }

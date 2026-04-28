@@ -88,7 +88,11 @@ class LoginViewModel @Inject constructor(
             return
         }
         val members = runCatching { teamMemberRepository.getMembersByUser(uid) }.getOrElse { emptyList() }
-        val destination = if (members.isNotEmpty()) LoginDestination.SETTINGS else LoginDestination.SETUP
+        val destination = when {
+            members.isEmpty() -> LoginDestination.SETUP
+            members.any { it.role.lowercase() in setOf("coach", "assistant") } -> LoginDestination.COACH_DASHBOARD
+            else -> LoginDestination.PLAYER_DASHBOARD
+        }
         Log.d(TAG, "Routing to $destination (memberCount=${members.size})")
         uiState = uiState.copy(isLoading = false, destination = destination)
     }

@@ -10,7 +10,8 @@ data class ProfileScreenUiState(
     val isLoading: Boolean = true,
     @StringRes val error: Int? = null,
     val navigateToClubManagement: Boolean = false,
-    val navigateToDashboard: Boolean = false,
+    val navigateToPlayerDashboard: Boolean = false,
+    val navigateToCoachDashboard: Boolean = false,
     val isReadOnly: Boolean = false,
     val showAvatarPicker: Boolean = false,
 )

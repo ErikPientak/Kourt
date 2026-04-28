@@ -202,6 +202,10 @@
     <string name="error_invalid_join_code">Tým s tímto kódem nebyl nalezen</string>
     <string name="error_already_member">Již jste členem tohoto týmu</string>
     <string name="error_load_failed">Načtení se nezdařilo. Zkuste to prosím znovu.</string>
+    <string name="error_login_failed">Přihlášení se nezdařilo. Zkontrolujte prosím své údaje.</string>
+    <string name="error_google_sign_in_failed">Přihlášení přes Google se nezdařilo. Zkuste to prosím znovu.</string>
+    <string name="error_registration_failed">Registrace se nezdařila. Zkuste to prosím znovu.</string>
+    <string name="error_create_club_failed">Klub se nepodařilo vytvořit. Zkuste to prosím znovu.</string>
 
     <!-- Schedule tab -->
     <string name="schedule_upcoming_events">NÁSLEDUJÍCÍ UDÁLOSTI</string>
@@ -214,6 +218,19 @@
     <string name="edit_recurring_title">Upravit opakovanou událost</string>
     <string name="edit_recurring_this_only">Jen tuto událost</string>
     <string name="edit_recurring_this_and_following">Tuto a všechny následující</string>
+
+    <!-- Events tab — Club Management -->
+    <string name="events_tab_empty">Nenalezeny žádné události</string>
+    <string name="event_filter_all">Vše</string>
+    <string name="event_filter_upcoming">Nadcházející</string>
+    <string name="event_filter_past">Proběhlé</string>
+    <string name="event_filter_cancelled">Zrušené</string>
+    <string name="event_action_edit">Upravit událost</string>
+    <string name="event_action_cancel">Zrušit událost</string>
+    <string name="event_action_delete">Smazat událost</string>
+    <string name="delete_event_title">Smazat událost</string>
+    <string name="delete_event_message">Tato událost bude trvale smazána a akci nelze vzít zpět.</string>
+    <string name="delete_event_confirm">Smazat</string>
 
     <!-- Cancel event confirmation dialog -->
     <string name="cancel_event_title">Zrušit událost</string>
@@ -272,6 +289,24 @@
     <string name="coach_dashboard_rsvp_yes">Ano</string>
     <string name="coach_dashboard_rsvp_maybe">Možná</string>
     <string name="coach_dashboard_rsvp_no">Ne</string>
+
+    <!-- Player Dashboard -->
+    <string name="player_dashboard_update_attendance">Aktualizovat mou docházku</string>
+    <string name="player_dashboard_rsvp_going">JDU</string>
+    <string name="player_dashboard_rsvp_maybe">MOŽNÁ</string>
+    <string name="player_dashboard_rsvp_not_going">NEJDU</string>
+
+    <!-- RSVP -->
+    <string name="rsvp_going">Jdu</string>
+    <string name="rsvp_gonna_be_late">Budu mít zpoždění</string>
+    <string name="rsvp_not_going">Nejdu</string>
+    <string name="rsvp_reason_title">Proč se nemůžeš zúčastnit?</string>
+    <string name="rsvp_reason_sick">Nemoc / Zranění</string>
+    <string name="rsvp_reason_work">Práce / Škola</string>
+    <string name="rsvp_reason_out_of_town">Mimo město</string>
+    <string name="rsvp_reason_other">Jiné</string>
+    <string name="rsvp_reason_note_hint">Přidat poznámku pro trenéra (volitelné)…</string>
+    <string name="rsvp_submit_reason">Odeslat důvod</string>
 
     <!-- Color Picker -->
     <string name="color_picker_title">Vybrat barvu motivu</string>

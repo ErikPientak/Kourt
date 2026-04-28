@@ -19,11 +19,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -41,6 +43,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.data.model.Team
@@ -191,14 +194,11 @@ private fun ClubManagementScreenContent(
     }
 
     BaseScreenWithBottomNav(
-        title = uiState.clubName.ifBlank { stringResource(com.kourt.app.R.string.club_management_title) },
-        trailingIcon = {
-            IconButton(onClick = onSettingsTap) {
-                Icon(
-                    imageVector = Icons.Filled.Settings,
-                    contentDescription = stringResource(com.kourt.app.R.string.club_management_settings_cd),
-                )
-            }
+        topBar = {
+            ClubManagementTopBar(
+                title = uiState.clubName.ifBlank { stringResource(com.kourt.app.R.string.club_management_title) },
+                onSettingsTap = onSettingsTap,
+            )
         },
         bottomBar = {
             ClubManagementBottomNav(
@@ -257,6 +257,49 @@ private fun ClubManagementScreenContent(
             }
         }
     }
+}
+
+// ── Top app bar ───────────────────────────────────────────────────────────────
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ClubManagementTopBar(
+    title: String,
+    onSettingsTap: () -> Unit,
+) {
+    val outlineColor = MaterialTheme.colorScheme.surface
+    CenterAlignedTopAppBar(
+        modifier = Modifier.drawWithContent {
+            drawContent()
+            val thickness = 1.dp.toPx()
+            val y = size.height - (thickness / 2)
+            drawLine(
+                color = outlineColor,
+                start = Offset(0f, y),
+                end = Offset(size.width, y),
+                strokeWidth = thickness,
+            )
+        },
+        title = {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            )
+        },
+        actions = {
+            IconButton(onClick = onSettingsTap) {
+                Icon(
+                    imageVector = Icons.Filled.Settings,
+                    contentDescription = stringResource(com.kourt.app.R.string.club_management_settings_cd),
+                )
+            }
+        },
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            containerColor = MaterialTheme.colorScheme.background,
+            titleContentColor = MaterialTheme.colorScheme.onBackground,
+            actionIconContentColor = MaterialTheme.colorScheme.primary,
+        ),
+    )
 }
 
 // ── Assign Team bottom sheet ──────────────────────────────────────────────────

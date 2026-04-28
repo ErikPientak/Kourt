@@ -57,8 +57,15 @@ fun ProfileScreen(
         }
     }
 
-    LaunchedEffect(uiState.navigateToDashboard) {
-        if (uiState.navigateToDashboard) {
+    LaunchedEffect(uiState.navigateToPlayerDashboard) {
+        if (uiState.navigateToPlayerDashboard) {
+            navigation.navigateToPlayerDashboard()
+            viewModel.onNavigationConsumed()
+        }
+    }
+
+    LaunchedEffect(uiState.navigateToCoachDashboard) {
+        if (uiState.navigateToCoachDashboard) {
             navigation.navigateToDashboard()
             viewModel.onNavigationConsumed()
         }

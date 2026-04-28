@@ -1,5 +1,6 @@
 package com.kourt.app.ui.components
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -37,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kourt.app.R
+import com.kourt.app.ui.screens.club.management.ClubMemberUiItem
 import com.kourt.app.ui.screens.dashboard.coach.EventUiItem
 
 
@@ -44,8 +46,10 @@ import com.kourt.app.ui.screens.dashboard.coach.EventUiItem
 fun UpNextCard(
     event: EventUiItem,
     rosterSize: Int,
-    attendeeNames: List<String>,
-    onUpdateLineup: () -> Unit,
+    attendeeNames: List<ClubMemberUiItem>,
+    myRsvpStatus: String? = null,
+    @StringRes ctaText: Int,
+    onCtaClick: () -> Unit,
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -151,15 +155,16 @@ fun UpNextCard(
 
                 AttendanceSection(
                     rsvpYes = event.rsvpYes,
-                    rsvpMaybe = event.rsvpMaybe,
+                    rsvpLate = event.rsvpLate,
                     rsvpNo = event.rsvpNo,
                     rosterSize = rosterSize,
                     attendeeNames = attendeeNames,
+                    myRsvpStatus = myRsvpStatus,
                 )
 
                 KourtButton(
-                    text = stringResource(R.string.coach_dashboard_update_lineup),
-                    onClick = onUpdateLineup,
+                    text = stringResource(ctaText),
+                    onClick = onCtaClick,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
@@ -170,10 +175,11 @@ fun UpNextCard(
 @Composable
 private fun AttendanceSection(
     rsvpYes: Int,
-    rsvpMaybe: Int,
+    rsvpLate: Int,
     rsvpNo: Int,
     rosterSize: Int,
-    attendeeNames: List<String>,
+    attendeeNames: List<ClubMemberUiItem>,
+    myRsvpStatus: String?,
 ) {
     Surface(
         shape = RoundedCornerShape(12.dp),
@@ -197,10 +203,24 @@ private fun AttendanceSection(
                     ),
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                 )
-                AvatarStack(
-                    names = attendeeNames.take(3),
-                    extraCount = (attendeeNames.size - 3).coerceAtLeast(0),
-                )
+                if (myRsvpStatus != null) {
+                    val (rsvpText, rsvpColor) = when (myRsvpStatus) {
+                        "yes"   -> stringResource(R.string.player_dashboard_rsvp_going) to Color(0xFF22C55E)
+                        "Late" -> stringResource(R.string.player_dashboard_rsvp_late) to Color(0xFFF97316)
+                        "no"    -> stringResource(R.string.player_dashboard_rsvp_not_going) to Color(0xFFEF4444)
+                        else    -> "—" to MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    }
+                    Text(
+                        text = rsvpText,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = rsvpColor,
+                    )
+                } else {
+                    AvatarStack(
+                        names = attendeeNames.take(3),
+                        extraCount = (attendeeNames.size - 3).coerceAtLeast(0),
+                    )
+                }
             }
 
             Row(
@@ -209,13 +229,13 @@ private fun AttendanceSection(
             ) {
                 AttendanceDonut(
                     yes = rsvpYes,
-                    maybe = rsvpMaybe,
+                    late = rsvpLate,
                     no = rsvpNo,
                     total = rosterSize,
                 )
                 AttendanceLegend(
                     yes = rsvpYes,
-                    maybe = rsvpMaybe,
+                    late = rsvpLate,
                     no = rsvpNo,
                 )
             }
@@ -224,7 +244,7 @@ private fun AttendanceSection(
 }
 
 @Composable
-private fun AvatarStack(names: List<String>, extraCount: Int) {
+private fun AvatarStack(names: List<ClubMemberUiItem>, extraCount: Int) {
     val avatarSize = 36.dp
     val overlapStep = 24.dp
     val displayCount = names.size + if (extraCount > 0) 1 else 0
@@ -237,9 +257,9 @@ private fun AvatarStack(names: List<String>, extraCount: Int) {
             .height(avatarSize)
             .width(totalWidth),
     ) {
-        names.forEachIndexed { index, name ->
+        names.forEachIndexed { index, it ->
             KourtAvatarLeading(
-                fallbackText = name,
+                fallbackText = it.displayName,
                 size = avatarSize,
                 modifier = Modifier
                     .offset(x = overlapStep * index)
@@ -267,10 +287,10 @@ private fun AvatarStack(names: List<String>, extraCount: Int) {
 }
 
 @Composable
-private fun AttendanceDonut(yes: Int, maybe: Int, no: Int, total: Int) {
+private fun AttendanceDonut(yes: Int, late: Int, no: Int, total: Int) {
     val safeTotal = total.coerceAtLeast(1).toFloat()
     val yesSweep = (yes / safeTotal) * 360f
-    val maybeSweep = (maybe / safeTotal) * 360f
+    val lateSweep = (late / safeTotal) * 360f
     val noSweep = (no / safeTotal) * 360f
 
     val trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
@@ -310,17 +330,17 @@ private fun AttendanceDonut(yes: Int, maybe: Int, no: Int, total: Int) {
                 )
                 startAngle += yesSweep
             }
-            if (maybeSweep > 0f) {
+            if (lateSweep > 0f) {
                 drawArc(
                     color = Color(0xFFF97316),
                     startAngle = startAngle,
-                    sweepAngle = maybeSweep,
+                    sweepAngle = lateSweep,
                     useCenter = false,
                     topLeft = topLeft,
                     size = arcSize,
                     style = strokeStyle,
                 )
-                startAngle += maybeSweep
+                startAngle += lateSweep
             }
             if (noSweep > 0f) {
                 drawArc(
@@ -336,7 +356,7 @@ private fun AttendanceDonut(yes: Int, maybe: Int, no: Int, total: Int) {
         }
 
         Text(
-            text = "$yes/$total",
+            text = "${yes+late}/$total",
             style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
             color = textColor,
         )
@@ -344,10 +364,10 @@ private fun AttendanceDonut(yes: Int, maybe: Int, no: Int, total: Int) {
 }
 
 @Composable
-private fun AttendanceLegend(yes: Int, maybe: Int, no: Int) {
+private fun AttendanceLegend(yes: Int, late: Int, no: Int) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         LegendRow(color = Color(0xFF22C55E), label = stringResource(R.string.coach_dashboard_rsvp_yes), count = yes)
-        LegendRow(color = Color(0xFFF97316), label = stringResource(R.string.coach_dashboard_rsvp_maybe), count = maybe)
+        LegendRow(color = Color(0xFFF97316), label = stringResource(R.string.player_dashboard_rsvp_late), count = late)
         LegendRow(color = Color(0xFFEF4444), label = stringResource(R.string.coach_dashboard_rsvp_no), count = no)
     }
 }

@@ -38,6 +38,7 @@ fun ScheduleTab(
     onLogAttendance: (String) -> Unit,
     onLogStatistics: (String) -> Unit,
     onCardClicked: (String) -> Unit,
+    ctaTextOverride: String? = null,
 ) {
     val locale = Locale.getDefault()
     val pattern = remember(locale) {
@@ -124,8 +125,9 @@ fun ScheduleTab(
                                 onLogAttendance(event.eventId)
                             }
                         },
+                        ctaText = ctaTextOverride,
                         modifier = Modifier.fillMaxWidth(),
-                        onClick = { onCardClicked(event.eventId)}
+                        onClick = { onCardClicked(event.eventId) },
                     )
                 }
             }

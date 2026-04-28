@@ -159,12 +159,17 @@ class ProfileViewModel @Inject constructor(
         Log.d(TAG, "onMembershipClick: clubId=${item.clubId}, role=${item.role}")
         if (item.role.lowercase() == "admin") {
             uiState = uiState.copy(navigateToClubManagement = true)
-        } else {
-            uiState = uiState.copy(navigateToDashboard = true)
         }
+        if(item.role.lowercase() == "player"){
+            uiState = uiState.copy(navigateToPlayerDashboard = true)
+        }
+        if(item.role.lowercase() == "coach") {
+            uiState = uiState.copy(navigateToCoachDashboard = true)
+        }
+
     }
 
     override fun onNavigationConsumed() {
-        uiState = uiState.copy(navigateToClubManagement = false, navigateToDashboard = false)
+        uiState = uiState.copy(navigateToClubManagement = false, navigateToCoachDashboard = false,navigateToPlayerDashboard = false )
     }
 }

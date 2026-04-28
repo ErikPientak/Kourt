@@ -52,6 +52,15 @@ class EventRepository @Inject constructor(
         return ref.id
     }
 
+    suspend fun upsertRsvp(eventId: String, rsvp: Rsvp) {
+        collection.document(eventId).collection("rsvps")
+            .document(rsvp.submittedBy).set(rsvp).await()
+    }
+
+    suspend fun getMyRsvp(eventId: String, uid: String): Rsvp? =
+        collection.document(eventId).collection("rsvps")
+            .document(uid).get().await().toObject(Rsvp::class.java)
+
     // Attendance subcollection
     suspend fun getAttendance(eventId: String): List<Attendance> =
         collection.document(eventId).collection("attendance").get().await()

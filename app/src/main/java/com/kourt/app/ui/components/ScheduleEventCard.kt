@@ -40,6 +40,7 @@ fun ScheduleEventCard(
     onCtaClick: () -> Unit,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    ctaText: String? = null,
 ) {
     val isCancelled = event.status.lowercase() == "cancelled"
     val today = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())
@@ -50,7 +51,7 @@ fun ScheduleEventCard(
         event.type.lowercase() == "match"       -> colorScheme.primary
         else                                    -> PracticeBlue
     }
-    val ctaText = if (event.type.lowercase() == "match") {
+    val resolvedCtaText = ctaText ?: if (event.type.lowercase() == "match") {
         stringResource(R.string.schedule_log_statistics)
     } else {
         stringResource(R.string.schedule_log_attendance)
@@ -143,7 +144,7 @@ fun ScheduleEventCard(
             // ── CTA button — hidden for cancelled events ──────────────────────
             if (!isCancelled) {
                 KourtButton(
-                    text = ctaText,
+                    text = resolvedCtaText,
                     onClick = onCtaClick,
                     modifier = Modifier.fillMaxWidth(),
                 )

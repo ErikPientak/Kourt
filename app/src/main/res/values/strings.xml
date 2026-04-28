@@ -293,8 +293,27 @@
     <string name="coach_dashboard_location_tbd">TBD</string>
     <string name="coach_dashboard_attendance">ATTENDANCE</string>
     <string name="coach_dashboard_rsvp_yes">Yes</string>
-    <string name="coach_dashboard_rsvp_maybe">Maybe</string>
     <string name="coach_dashboard_rsvp_no">No</string>
+    <string name="player_dashboard_rsvp_late">Late</string>
+
+
+    <!-- Player Dashboard -->
+    <string name="player_dashboard_update_attendance">Update my Attendance</string>
+    <string name="player_dashboard_rsvp_going">GOING</string>
+    <string name="player_dashboard_rsvp_maybe">MAYBE</string>
+    <string name="player_dashboard_rsvp_not_going">NOT GOING</string>
+
+    <!-- RSVP -->
+    <string name="rsvp_going">Going</string>
+    <string name="rsvp_gonna_be_late">Gonna be late</string>
+    <string name="rsvp_not_going">Not Going</string>
+    <string name="rsvp_reason_title">Why can\'t you make it?</string>
+    <string name="rsvp_reason_sick">Sick / Injured</string>
+    <string name="rsvp_reason_work">Work / School</string>
+    <string name="rsvp_reason_out_of_town">Out of Town</string>
+    <string name="rsvp_reason_other">Other</string>
+    <string name="rsvp_reason_note_hint">Add a note for the coach (optional)…</string>
+    <string name="rsvp_submit_reason">Submit Reason</string>
 
     <!-- Color Picker -->
     <string name="color_picker_title">Pick Accent Color</string>

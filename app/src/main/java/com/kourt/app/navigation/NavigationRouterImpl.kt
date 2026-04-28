@@ -86,6 +86,12 @@ class NavigationRouterImpl(private val navController: NavController) : INavigati
         }
     }
 
+    override fun navigateToPlayerDashboard() {
+        navController.navigate(Destination.PlayerDashboardScreen.route) {
+            popUpTo(0) { inclusive = true }
+        }
+    }
+
     override fun navigateToAddEvent(teamId: String) {
         navController.navigate("add_edit_event?teamId=${Uri.encode(teamId)}&eventId=")
     }
