@@ -260,6 +260,7 @@ private fun AvatarStack(names: List<ClubMemberUiItem>, extraCount: Int) {
         names.forEachIndexed { index, it ->
             KourtAvatarLeading(
                 fallbackText = it.displayName,
+                photoUrl = it.avatarUrl,
                 size = avatarSize,
                 modifier = Modifier
                     .offset(x = overlapStep * index)

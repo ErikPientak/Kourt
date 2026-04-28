@@ -119,11 +119,11 @@ class PlayerDashboardViewModel @Inject constructor(
                 ?: return@launch
 
             runCatching {
-                val attendees = buildAttendees(rsvps.filter { it.status == "yes" }.map { it.submittedBy })
+                val attendees = buildAttendees(rsvps.filter { it.status == "yes" }.map { it.id }.filter { it.isNotBlank() })
                 if (uiState.upNextEvent?.eventId == eventId) {
                     uiState = uiState.copy(upNextAttendees = attendees)
                 }
-            }.onFailure { Log.w(logTag, "Failed to load attendee names for $eventId") }
+            }.onFailure { e -> Log.w(logTag, "Failed to load attendee names for $eventId", e) }
         }
     }
 
@@ -146,11 +146,11 @@ class PlayerDashboardViewModel @Inject constructor(
                 ?: return@launch
 
             runCatching {
-                val attendees = buildAttendees(rsvps.filter { it.status == "yes" }.map { it.submittedBy })
+                val attendees = buildAttendees(rsvps.filter { it.status == "yes" }.map { it.id }.filter { it.isNotBlank() })
                 if (uiState.upNextEvent?.eventId == eventId) {
                     uiState = uiState.copy(upNextAttendees = attendees)
                 }
-            }.onFailure { Log.w(logTag, "Failed to load attendee names for $eventId") }
+            }.onFailure { e -> Log.w(logTag, "Failed to load attendee names for $eventId", e) }
         }
     }
 
@@ -163,6 +163,7 @@ class PlayerDashboardViewModel @Inject constructor(
                 displayName = user.displayName.ifBlank { user.email },
                 role = "",
                 subtitle = "",
+                avatarUrl = user.avatarId.ifBlank { user.photoURL },
             )
         }
     }

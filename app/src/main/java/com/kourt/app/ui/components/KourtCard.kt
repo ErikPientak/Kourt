@@ -35,9 +35,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.kourt.app.R
+import com.kourt.app.ui.components.bottomSheets.avatarResId
 import com.kourt.app.ui.components.bottomSheets.contentColorForBackground
 import com.kourt.app.ui.theme.KourtTheme
 import com.kourt.app.ui.theme.White
@@ -235,6 +239,7 @@ fun KourtAvatarLeading(
     fallbackText: String,
     modifier: Modifier = Modifier,
     size: Dp = 44.dp,
+    photoUrl: String = "",
 ) {
     val initials = fallbackText
         .trim()
@@ -250,11 +255,26 @@ fun KourtAvatarLeading(
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.background),
     ) {
-        Text(
-            text = initials.ifEmpty { "?" },
-            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-        )
+        val drawableResId = if (photoUrl.isNotBlank()) avatarResId(photoUrl) else null
+        when {
+            drawableResId != null -> Image(
+                painter = painterResource(drawableResId),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.size(size).clip(CircleShape),
+            )
+            photoUrl.isNotBlank() -> AsyncImage(
+                model = photoUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.size(size).clip(CircleShape),
+            )
+            else -> Text(
+                text = initials.ifEmpty { "?" },
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+            )
+        }
     }
 }
 

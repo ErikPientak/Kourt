@@ -97,12 +97,24 @@ class CoachDashboardViewModel @Inject constructor(
 
     private fun loadRsvpCounts(eventId: String) {
         viewModelScope.launch {
-            runCatching {
+            val rsvps = runCatching {
                 val rsvps = eventRepository.getRsvps(eventId)
                 val yes = rsvps.count { it.status == "yes" }
                 val late = rsvps.count { it.status == "late" }
                 val no = rsvps.count { it.status == "no" }
-                val yesUids = rsvps.filter { it.status == "yes" }.map { it.submittedBy }
+                val current = uiState.upNextEvent
+                if (current?.eventId == eventId) {
+                    uiState = uiState.copy(
+                        upNextEvent = current.copy(rsvpYes = yes, rsvpLate = late, rsvpNo = no),
+                    )
+                }
+                Log.d(logTag, "RSVP counts for $eventId: yes=$yes late=$late no=$no")
+                rsvps
+            }.onFailure { Log.w(logTag, "Failed to load RSVP counts for $eventId") }.getOrNull()
+                ?: return@launch
+
+            runCatching {
+                val yesUids = rsvps.filter { it.status == "yes" }.map { it.id }.filter { it.isNotBlank() }
                 val attendees = if (yesUids.isNotEmpty()) {
                     userRepository.getUsersByIds(yesUids).map { user ->
                         ClubMemberUiItem(
@@ -111,20 +123,15 @@ class CoachDashboardViewModel @Inject constructor(
                             displayName = user.displayName.ifBlank { user.email },
                             role = "",
                             subtitle = "",
+                            avatarUrl = user.avatarId.ifBlank { user.photoURL },
                         )
                     }
                 } else emptyList()
-                val current = uiState.upNextEvent
-                if (current?.eventId == eventId) {
-                    uiState = uiState.copy(
-                        upNextEvent = current.copy(rsvpYes = yes, rsvpLate = late, rsvpNo = no),
-                        upNextAttendees = attendees,
-                    )
+                if (uiState.upNextEvent?.eventId == eventId) {
+                    uiState = uiState.copy(upNextAttendees = attendees)
                 }
-                Log.d(logTag, "RSVP counts for $eventId: yes=$yes late=$late no=$no attendees=${attendees.size}")
-            }.onFailure {
-                Log.w(logTag, "Failed to load RSVP counts for $eventId")
-            }
+                Log.d(logTag, "Attendees for $eventId: ${attendees.size}")
+            }.onFailure { e -> Log.w(logTag, "Failed to load attendee names for $eventId", e) }
         }
     }
 
