@@ -122,7 +122,12 @@ abstract class BaseDashboardViewModel(
                         val u = userMap[m.userId] ?: return@mapNotNull null
                         val role = m.role.lowercase()
                         val subtitle = when (role) {
-                            "parent" -> "Athlete: ${u.displayName.ifBlank { u.email }}"
+                            "parent" -> {
+                                val childName = u.childIds
+                                    .firstOrNull { it in userIds }
+                                    ?.let { userMap[it]?.displayName }
+                                if (childName != null) "Guardian of: $childName" else "Team: $teamName"
+                            }
                             else -> "Team: $teamName"
                         }
                         ClubMemberUiItem(

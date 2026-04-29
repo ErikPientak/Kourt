@@ -1,14 +1,11 @@
 package com.kourt.app.ui.screens.setup
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -19,7 +16,6 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -36,7 +32,7 @@ import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.KourtButton
 import com.kourt.app.ui.components.SetupOptionCard
 import com.kourt.app.ui.theme.White
-import com.kourt.app.viewmodel.SetupViewModel
+import com.kourt.app.viewmodel.setup.SetupViewModel
 
 @Composable
 fun SetupScreen(
@@ -56,6 +52,7 @@ fun SetupScreen(
         uiState = uiState,
         actions = viewModel,
         onNavigateToCreateClub = { navigation.navigateToCreateClubScreen() },
+        onNavigateToAddChild = { navigation.navigateToAddChild() },
     )
 }
 
@@ -64,6 +61,7 @@ private fun SetupScreenContent(
     uiState: SetupScreenUiState,
     actions: SetupScreenActions,
     onNavigateToCreateClub: () -> Unit,
+    onNavigateToAddChild: () -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -186,6 +184,25 @@ private fun SetupScreenContent(
                 text = stringResource(R.string.setup_join_button),
                 onClick = { actions.onJoinTeam() },
                 enabled = !uiState.isLoading,
+                modifier = Modifier
+                    .padding(start = 68.dp)
+                    .fillMaxWidth(),
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Parent card
+        SetupOptionCard(
+            icon = painterResource(R.drawable.group),
+            iconContentDescription = stringResource(R.string.setup_parent_title),
+            title = stringResource(R.string.setup_parent_title),
+            subtitle = stringResource(R.string.setup_parent_subtitle),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            KourtButton(
+                text = stringResource(R.string.setup_parent_button),
+                onClick = onNavigateToAddChild,
                 modifier = Modifier
                     .padding(start = 68.dp)
                     .fillMaxWidth(),

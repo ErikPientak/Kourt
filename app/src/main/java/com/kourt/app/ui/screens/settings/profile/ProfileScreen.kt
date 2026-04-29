@@ -18,11 +18,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -32,15 +37,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.R
 import com.kourt.app.navigation.INavigationRouter
-import com.kourt.app.ui.components.bottomSheets.AvatarPickerBottomSheet
 import com.kourt.app.ui.components.BaseScreen
+import com.kourt.app.ui.components.KourtAvatarLeading
 import com.kourt.app.ui.components.KourtTeamAvatar
+import com.kourt.app.ui.components.bottomSheets.AvatarPickerBottomSheet
+import com.kourt.app.ui.components.bottomSheets.ChildActionBottomSheet
 import com.kourt.app.ui.components.bottomSheets.avatarResId
 import com.kourt.app.ui.components.roleBadgeColor
+import com.kourt.app.ui.theme.White
 import com.kourt.app.viewmodel.settings.ProfileViewModel
 
 @Composable
@@ -78,6 +90,17 @@ fun ProfileScreen(
         onAvatarSelected = viewModel::onAvatarSelected,
         onAvatarPickerDismiss = viewModel::onAvatarPickerDismiss,
         onMembershipClick = viewModel::onMembershipClick,
+        onChildRowClick = viewModel::onChildRowClick,
+        onSwitchToChild = viewModel::onSwitchToChild,
+        onChildActionSheetDismiss = viewModel::onChildActionSheetDismiss,
+        onChildJoinTeamDialogShow = viewModel::onChildJoinTeamDialogShow,
+        onChildJoinTeamDialogDismiss = viewModel::onChildJoinTeamDialogDismiss,
+        onChildJoinCodeChange = viewModel::onChildJoinCodeChange,
+        onChildJoinTeam = viewModel::onChildJoinTeam,
+        onChildLeaveTeam = viewModel::onChildLeaveTeam,
+        onRemoveChild = viewModel::onRemoveChild,
+        onRemoveChildConfirm = viewModel::onRemoveChildConfirm,
+        onRemoveChildDismiss = viewModel::onRemoveChildDismiss,
     )
 }
 
@@ -89,12 +112,80 @@ private fun ProfileScreenContent(
     onAvatarSelected: (String) -> Unit = {},
     onAvatarPickerDismiss: () -> Unit = {},
     onMembershipClick: (MembershipRowUiItem) -> Unit = {},
+    onChildRowClick: (ManagedChildUiItem) -> Unit = {},
+    onSwitchToChild: (String) -> Unit = {},
+    onChildActionSheetDismiss: () -> Unit = {},
+    onChildJoinTeamDialogShow: () -> Unit = {},
+    onChildJoinTeamDialogDismiss: () -> Unit = {},
+    onChildJoinCodeChange: (String) -> Unit = {},
+    onChildJoinTeam: () -> Unit = {},
+    onChildLeaveTeam: (String) -> Unit = {},
+    onRemoveChild: () -> Unit = {},
+    onRemoveChildConfirm: () -> Unit = {},
+    onRemoveChildDismiss: () -> Unit = {},
 ) {
     if (uiState.showAvatarPicker) {
         AvatarPickerBottomSheet(
             currentAvatarId = uiState.avatarId,
             onAvatarSelected = onAvatarSelected,
             onDismiss = onAvatarPickerDismiss,
+        )
+    }
+
+    if (uiState.showChildActionSheet && uiState.selectedChild != null) {
+        ChildActionBottomSheet(
+            child = uiState.selectedChild,
+            onSwitchToChild = { onSwitchToChild(uiState.selectedChild.userId) },
+            onJoinTeam = onChildJoinTeamDialogShow,
+            onLeaveTeam = onChildLeaveTeam,
+            onRemoveChild = onRemoveChild,
+            onDismiss = onChildActionSheetDismiss,
+        )
+    }
+
+    if (uiState.showRemoveChildConfirm && uiState.childToRemove != null) {
+        AlertDialog(
+            onDismissRequest = onRemoveChildDismiss,
+            title = {
+                Text(
+                    text = stringResource(R.string.child_remove_confirm_title, uiState.childToRemove.displayName),
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.child_remove_confirm_body, uiState.childToRemove.displayName),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = onRemoveChildConfirm) {
+                    Text(
+                        text = stringResource(R.string.child_remove_confirm_button),
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onRemoveChildDismiss) {
+                    Text(stringResource(android.R.string.cancel))
+                }
+            },
+            shape = RoundedCornerShape(24.dp),
+        )
+    }
+
+    if (uiState.showJoinTeamForChildDialog && uiState.selectedChild != null) {
+        JoinTeamForChildDialog(
+            childName = uiState.selectedChild.displayName,
+            joinCode = uiState.joinCodeForChild,
+            joinError = uiState.joinCodeForChildError,
+            isLoading = uiState.isLoading,
+            onJoinCodeChange = onChildJoinCodeChange,
+            onConfirm = onChildJoinTeam,
+            onDismiss = onChildJoinTeamDialogDismiss,
         )
     }
 
@@ -142,6 +233,20 @@ private fun ProfileScreenContent(
                             )
                         }
 
+                        if (uiState.managedChildren.isNotEmpty()) {
+                            item {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = stringResource(R.string.profile_my_children),
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                )
+                            }
+                            items(uiState.managedChildren) { child ->
+                                ChildRow(item = child, onClick = { onChildRowClick(child) })
+                            }
+                        }
+
                         item {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
@@ -170,6 +275,103 @@ private fun ProfileScreenContent(
             }
         }
     }
+}
+
+// ── Join team for child dialog ─────────────────────────────────────────────────
+
+@Composable
+private fun JoinTeamForChildDialog(
+    childName: String,
+    joinCode: String,
+    joinError: Int?,
+    isLoading: Boolean,
+    onJoinCodeChange: (String) -> Unit,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(R.string.add_child_step2_title),
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = stringResource(R.string.child_join_team_dialog_subtitle, childName),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                )
+                OutlinedTextField(
+                    value = joinCode,
+                    onValueChange = onJoinCodeChange,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = White,
+                        unfocusedContainerColor = White,
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black,
+                        focusedBorderColor = if (joinError != null) MaterialTheme.colorScheme.error else Color.Transparent,
+                        unfocusedBorderColor = if (joinError != null) MaterialTheme.colorScheme.error else Color.Transparent,
+                    ),
+                    placeholder = {
+                        Text(
+                            text = stringResource(R.string.setup_join_code_placeholder),
+                            style = MaterialTheme.typography.labelLarge,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.Black.copy(alpha = 0.4f),
+                        )
+                    },
+                    textStyle = MaterialTheme.typography.labelLarge.copy(
+                        textAlign = TextAlign.Center,
+                        color = Color.Black,
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        capitalization = KeyboardCapitalization.Characters,
+                        imeAction = ImeAction.Done,
+                    ),
+                    singleLine = true,
+                    shape = RoundedCornerShape(50.dp),
+                    enabled = !isLoading,
+                )
+                if (joinError != null) {
+                    Text(
+                        text = stringResource(joinError),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            } else {
+                TextButton(onClick = onConfirm) {
+                    Text(stringResource(R.string.setup_join_button))
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !isLoading) {
+                Text(
+                    text = stringResource(android.R.string.cancel),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                )
+            }
+        },
+        shape = RoundedCornerShape(24.dp),
+    )
 }
 
 // ── Profile header ─────────────────────────────────────────────────────────────
@@ -279,7 +481,6 @@ private fun MembershipRow(
                 accentColor = item.accentColor,
             )
 
-            // Club name + subtitle
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -296,7 +497,6 @@ private fun MembershipRow(
                 )
             }
 
-            // Role badge pill
             RoleBadgePill(role = item.role, color = roleColor)
         }
     }
@@ -323,4 +523,59 @@ private fun RoleBadgePill(
     }
 }
 
+// ── Child row ──────────────────────────────────────────────────────────────────
 
+@Composable
+private fun ChildRow(
+    item: ManagedChildUiItem,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(52.dp),
+        color = MaterialTheme.colorScheme.surface,
+        onClick = onClick,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            KourtAvatarLeading(
+                fallbackText = item.displayName,
+                size = 44.dp,
+                photoUrl = item.avatarId,
+            )
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    text = item.displayName,
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                if (item.teams.isNotEmpty()) {
+                    Text(
+                        text = item.teams.joinToString(" · ") { it.teamName },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+                    )
+                }
+            }
+
+            if (item.isActive) {
+                Icon(
+                    painter = painterResource(R.drawable.check),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+        }
+    }
+}

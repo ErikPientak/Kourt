@@ -1,4 +1,4 @@
-package com.kourt.app.viewmodel
+package com.kourt.app.viewmodel.setup
 
 import android.util.Log
 import androidx.compose.runtime.getValue

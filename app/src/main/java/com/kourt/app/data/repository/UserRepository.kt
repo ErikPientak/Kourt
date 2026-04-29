@@ -1,9 +1,11 @@
 package com.kourt.app.data.repository
 
 import com.google.firebase.firestore.FieldPath
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.kourt.app.data.model.User
 import kotlinx.coroutines.tasks.await
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -37,6 +39,28 @@ class UserRepository @Inject constructor(
                 .await()
                 .toObjects(User::class.java)
         }
+    }
+
+    suspend fun createManagedUser(displayName: String, avatarId: String, parentUid: String): String {
+        val childUid = UUID.randomUUID().toString()
+        val child = User(
+            id = childUid,
+            displayName = displayName,
+            avatarId = avatarId,
+            isManagedProfile = true,
+            managedBy = parentUid,
+        )
+        collection.document(childUid).set(child).await()
+        collection.document(parentUid)
+            .update("childIds", FieldValue.arrayUnion(childUid))
+            .await()
+        return childUid
+    }
+
+    suspend fun removeChildFromParent(parentUid: String, childUid: String) {
+        collection.document(parentUid)
+            .update("childIds", FieldValue.arrayRemove(childUid))
+            .await()
     }
 
     suspend fun searchByDisplayName(query: String): List<User> {

@@ -24,6 +24,7 @@ import com.kourt.app.ui.screens.team.create.AddTeamScreen
 import com.kourt.app.ui.screens.event.addedit.AddEditEventScreen
 import com.kourt.app.ui.screens.event.attendance.AttendanceScreen
 import com.kourt.app.ui.screens.event.detail.EventDetailScreen
+import com.kourt.app.ui.screens.setup.addchild.AddChildScreen
 
 @Composable
 fun NavGraph(
@@ -61,6 +62,10 @@ fun NavGraph(
 
         composable(route = Destination.SetupScreen.route) {
             SetupScreen(navigation = navigation)
+        }
+
+        composable(route = Destination.AddChildScreen.route) {
+            AddChildScreen(navigation = navigation)
         }
 
         composable(route = Destination.CreateClubScreen.route) {

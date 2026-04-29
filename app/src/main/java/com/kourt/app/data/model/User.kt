@@ -9,5 +9,6 @@ data class User(
     val photoURL: String = "",
     val avatarId: String = "",
     val childIds: List<String> = emptyList(),
-    val isManagedProfile: Boolean = false
+    val isManagedProfile: Boolean = false,
+    val managedBy: String = "",
 )

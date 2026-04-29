@@ -33,6 +33,17 @@
     <string name="setup_join_team_subtitle">Do you have a code from your coach? Enter it and join the team.</string>
     <string name="setup_join_code_placeholder">Enter code…</string>
     <string name="setup_join_button">Join</string>
+    <string name="setup_parent_title">I\'m a Parent</string>
+    <string name="setup_parent_subtitle">Register your child and manage their schedule and attendance.</string>
+    <string name="setup_parent_button">Add a Child</string>
+    <string name="add_child_title">Add a Child</string>
+    <string name="add_child_name_label">Child\'s name</string>
+    <string name="add_child_name_placeholder">Enter name…</string>
+    <string name="add_child_avatar_label">Profile picture</string>
+    <string name="add_child_submit_button">Create Profile</string>
+    <string name="add_child_step2_title">Join a Team</string>
+    <string name="add_child_step2_subtitle">Enter your child\'s team join code, or skip and do it later.</string>
+    <string name="add_child_skip_button">Skip for now</string>
 
     <!-- Create Club -->
     <string name="create_club_title">Create New Club</string>
@@ -191,6 +202,16 @@
     <string name="profile_title">Profile</string>
     <string name="profile_edit_avatar_cd">Edit profile picture</string>
     <string name="profile_my_teams">My Teams</string>
+    <string name="profile_my_children">My Children</string>
+    <string name="child_action_switch">Switch to %1$s</string>
+    <string name="child_action_teams_title">Teams</string>
+    <string name="child_action_join_team">Join another team</string>
+    <string name="child_action_leave_team">Leave %1$s</string>
+    <string name="child_action_remove">Remove %1$s</string>
+    <string name="child_remove_confirm_title">Remove %1$s?</string>
+    <string name="child_remove_confirm_body">%1$s will be removed from your account and all their teams. This cannot be undone.</string>
+    <string name="child_remove_confirm_button">Remove</string>
+    <string name="child_join_team_dialog_subtitle">Enter the join code from %1$s\'s coach.</string>
     <string name="profile_subtitle_club">Club</string>
     <string name="profile_error_load_failed">Failed to load profile data</string>
 
@@ -208,6 +229,8 @@
     <string name="error_invalid_join_code">No team found with this code</string>
     <string name="error_already_member">You are already a member of this team</string>
     <string name="error_load_failed">Failed to load data. Please try again.</string>
+    <string name="error_generic">Something went wrong. Please try again.</string>
+    <string name="error_display_name_required">Please enter a name</string>
     <string name="error_login_failed">Login failed. Please check your credentials.</string>
     <string name="error_google_sign_in_failed">Google sign-in failed. Please try again.</string>
     <string name="error_registration_failed">Registration failed. Please try again.</string>
