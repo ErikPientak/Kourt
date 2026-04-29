@@ -101,4 +101,8 @@ class NavigationRouterImpl(private val navController: NavController) : INavigati
             "add_edit_event?teamId=${Uri.encode(teamId)}&eventId=${Uri.encode(eventId)}"
         )
     }
+
+    override fun navigateToEventDetail(eventId: String) {
+        navController.navigate("event_detail/${Uri.encode(eventId)}")
+    }
 }

@@ -13,8 +13,8 @@ import com.kourt.app.R
 import com.kourt.app.data.model.Event
 import com.kourt.app.data.repository.AuthRepository
 import com.kourt.app.data.repository.EventRepository
-import com.kourt.app.ui.screens.event.AddEditEventScreenActions
-import com.kourt.app.ui.screens.event.AddEditEventScreenUiState
+import com.kourt.app.ui.screens.event.addedit.AddEditEventScreenActions
+import com.kourt.app.ui.screens.event.addedit.AddEditEventScreenUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDate

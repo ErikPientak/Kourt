@@ -59,5 +59,5 @@ data class CoachDashboardScreenUiState(
     val selectedEpochDay: Long = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis()),
     val eventDaysInView: Set<Long> = emptySet(),
     val navigateToAddEvent: Boolean = false,
-    val navigateToEditEvent: Boolean = false,
+    val navigateToEventDetailId: String? = null,
 )

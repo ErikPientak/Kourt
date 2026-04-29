@@ -151,6 +151,7 @@ fun MembersList(
                 playerName = member.displayName,
                 role = member.role,
                 teamName = member.subtitle,
+                avatarUrl = member.avatarUrl,
                 showMenu = true,
                 onMenuClick = { onMenuClick(member.memberId) },
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),

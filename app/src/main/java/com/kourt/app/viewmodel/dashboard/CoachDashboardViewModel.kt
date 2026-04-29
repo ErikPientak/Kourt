@@ -210,11 +210,15 @@ class CoachDashboardViewModel @Inject constructor(
     }
 
     override fun onCardClicked(eventId: String) {
-        uiState = uiState.copy(navigateToEditEvent = true)
+        uiState = uiState.copy(navigateToEventDetailId = eventId)
     }
 
     fun onAddEventNavigated() {
         uiState = uiState.copy(navigateToAddEvent = false)
+    }
+
+    fun onEventDetailNavigated() {
+        uiState = uiState.copy(navigateToEventDetailId = null)
     }
 
     fun refreshEvents() {

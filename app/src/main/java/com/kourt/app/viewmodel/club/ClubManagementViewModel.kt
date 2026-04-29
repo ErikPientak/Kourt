@@ -152,7 +152,7 @@ class ClubManagementViewModel @Inject constructor(
                         displayName = user.displayName.ifBlank { user.email },
                         role = primaryMember.role.lowercase(),
                         subtitle = buildSubtitle(primaryMember.role, teamNames, user.displayName),
-                        avatarUrl = user.photoURL,
+                        avatarUrl = user.avatarId.ifBlank { user.photoURL },
                     )
                 }
 

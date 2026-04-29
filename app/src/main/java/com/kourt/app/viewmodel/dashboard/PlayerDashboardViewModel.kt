@@ -311,7 +311,11 @@ class PlayerDashboardViewModel @Inject constructor(
     }
 
     override fun onCardClicked(eventId: String) {
-        Log.d(logTag, "onCardClicked: $eventId — event detail not yet implemented")
+        uiState = uiState.copy(navigateToEventDetailId = eventId)
+    }
+
+    fun onEventDetailNavigated() {
+        uiState = uiState.copy(navigateToEventDetailId = null)
     }
 
     fun refreshEvents() {

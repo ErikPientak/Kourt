@@ -1,5 +1,6 @@
-package com.kourt.app.ui.screens.event
+package com.kourt.app.ui.screens.event.addedit
 
+import android.text.format.DateFormat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -218,7 +219,7 @@ private fun AddEditEventContent(
             // ── Date ─────────────────────────────────────────────────────
             val locale = Locale.getDefault()
             val datePattern = remember(locale) {
-                android.text.format.DateFormat.getBestDateTimePattern(locale, "MMMd yyyy")
+                DateFormat.getBestDateTimePattern(locale, "MMMd yyyy")
             }
             val dateLabel = remember(uiState.selectedEpochDay, datePattern, locale) {
                 uiState.selectedEpochDay?.let { day ->

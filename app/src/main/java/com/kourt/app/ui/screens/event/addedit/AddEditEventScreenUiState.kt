@@ -1,4 +1,4 @@
-package com.kourt.app.ui.screens.event
+package com.kourt.app.ui.screens.event.addedit
 
 import androidx.annotation.StringRes
 

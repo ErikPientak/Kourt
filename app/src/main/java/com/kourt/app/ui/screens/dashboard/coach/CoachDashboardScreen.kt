@@ -112,6 +112,12 @@ fun CoachDashboardScreen(
         }
     }
 
+    LaunchedEffect(uiState.navigateToEventDetailId) {
+        val id = uiState.navigateToEventDetailId ?: return@LaunchedEffect
+        navigation.navigateToEventDetail(id)
+        viewModel.onEventDetailNavigated()
+    }
+
     CoachDashboardContent(
         uiState = uiState,
         onTeamDropdownToggle = viewModel::onTeamDropdownToggle,
@@ -126,7 +132,7 @@ fun CoachDashboardScreen(
         onLogAttendance = viewModel::onLogAttendance,
         onLogStatistics = viewModel::onLogStatistics,
         onAddEvent = viewModel::onAddEvent,
-        onCardClicked = {navigation.navigateToEditEvent(it,uiState.activeTeam!!.teamId)}
+        onCardClicked = viewModel::onCardClicked,
     )
 }
 
@@ -193,7 +199,11 @@ private fun CoachDashboardContent(
         } else {
             Box(modifier = Modifier.fillMaxSize().padding(padding)) {
                 when (selectedTab) {
-                    TAB_HOME -> HomeTab(uiState = uiState, onUpdateLineup = onUpdateLineup)
+                    TAB_HOME -> HomeTab(
+                        uiState = uiState,
+                        onUpdateLineup = onUpdateLineup,
+                        onCardClicked = onCardClicked
+                        )
                     TAB_SCHEDULE -> ScheduleTab(
                         uiState = uiState,
                         onPreviousMonth = onPreviousMonth,
@@ -430,7 +440,8 @@ private fun CoachDashboardBottomNav(
 private fun HomeTab(
     uiState: CoachDashboardScreenUiState,
     onUpdateLineup: () -> Unit,
-) {
+    onCardClicked: (String) -> Unit,
+    ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -485,7 +496,8 @@ private fun HomeTab(
                     startTime = event.startTime,
                     location = event.location,
                     showChevron = false,
-                )
+                    onClick = { onCardClicked(event.eventId) }
+                    )
             }
         }
     }

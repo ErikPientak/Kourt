@@ -374,6 +374,7 @@ fun MemberCard(
     role: String,
     teamName: String,
     modifier: Modifier = Modifier,
+    avatarUrl: String = "",
     showMenu: Boolean = false,
     onMenuClick: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null,
@@ -381,7 +382,7 @@ fun MemberCard(
     KourtCard(
         title = playerName,
         subtitle = teamName,
-        leadingContent = { KourtAvatarLeading(fallbackText = playerName) },
+        leadingContent = { KourtAvatarLeading(fallbackText = playerName, photoUrl = avatarUrl) },
         modifier = modifier,
         badge = role.uppercase(),
         badgeColor = roleBadgeColor(role),

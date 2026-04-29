@@ -78,6 +78,12 @@ fun PlayerDashboardScreen(
         }
     }
 
+    LaunchedEffect(uiState.navigateToEventDetailId) {
+        val id = uiState.navigateToEventDetailId ?: return@LaunchedEffect
+        navigation.navigateToEventDetail(id)
+        viewModel.onEventDetailNavigated()
+    }
+
     PlayerDashboardContent(
         uiState = uiState,
         actions = viewModel,
