@@ -267,6 +267,24 @@
     <string name="event_save_button">Save Changes</string>
     <string name="event_cancel">Cancel</string>
 
+    <!-- Event Detail -->
+    <string name="event_detail_title">Event Details</string>
+    <string name="event_detail_edit_cd">Edit event</string>
+    <string name="event_detail_section_info">Event Info</string>
+    <string name="event_detail_section_your_status">Your Status</string>
+    <string name="event_detail_section_going">Going</string>
+    <string name="event_detail_section_not_going">Not Going</string>
+    <string name="event_detail_going_label">GOING</string>
+    <string name="event_detail_not_going_label">NOT GOING</string>
+    <string name="event_detail_update_rsvp">Update</string>
+    <string name="event_detail_no_response">No Response</string>
+    <string name="event_detail_status_attending_subtitle">You\'re attending this event</string>
+    <string name="event_detail_status_late_subtitle">You\'re arriving late</string>
+    <string name="event_detail_status_not_attending_subtitle">You\'re not attending</string>
+    <string name="event_detail_status_no_response_subtitle">You haven\'t responded yet</string>
+    <string name="event_detail_view_all">View All %1$d</string>
+    <string name="event_detail_show_less">Show Less</string>
+
     <!-- Edit recurring event scope dialog -->
     <string name="edit_recurring_title">Edit Recurring Event</string>
     <string name="edit_recurring_this_only">This Event</string>
@@ -317,14 +335,12 @@
     <string name="coach_dashboard_attendance">ATTENDANCE</string>
     <string name="coach_dashboard_rsvp_yes">Yes</string>
     <string name="coach_dashboard_rsvp_no">No</string>
-    <string name="player_dashboard_rsvp_late">Late</string>
-
 
     <!-- Player Dashboard -->
     <string name="player_dashboard_update_attendance">Update my Attendance</string>
     <string name="player_dashboard_rsvp_going">GOING</string>
-    <string name="player_dashboard_rsvp_maybe">MAYBE</string>
     <string name="player_dashboard_rsvp_not_going">NOT GOING</string>
+    <string name="player_dashboard_rsvp_late">LATE</string>
 
     <!-- RSVP -->
     <string name="rsvp_going">Going</string>
@@ -337,24 +353,6 @@
     <string name="rsvp_reason_other">Other</string>
     <string name="rsvp_reason_note_hint">Add a note for the coach (optional)…</string>
     <string name="rsvp_submit_reason">Submit Reason</string>
-
-    <!-- Event Detail -->
-    <string name="event_detail_title">Event Details</string>
-    <string name="event_detail_edit_cd">Edit event</string>
-    <string name="event_detail_section_info">Event Info</string>
-    <string name="event_detail_section_your_status">Your Status</string>
-    <string name="event_detail_section_going">Going</string>
-    <string name="event_detail_section_not_going">Not Going</string>
-    <string name="event_detail_going_label">GOING</string>
-    <string name="event_detail_not_going_label">NOT GOING</string>
-    <string name="event_detail_update_rsvp">Update</string>
-    <string name="event_detail_no_response">No Response</string>
-    <string name="event_detail_status_attending_subtitle">You\'re attending this event</string>
-    <string name="event_detail_status_late_subtitle">You\'re arriving late</string>
-    <string name="event_detail_status_not_attending_subtitle">You\'re not attending</string>
-    <string name="event_detail_status_no_response_subtitle">You haven\'t responded yet</string>
-    <string name="event_detail_view_all">View All %1$d</string>
-    <string name="event_detail_show_less">Show Less</string>
 
     <!-- Color Picker -->
     <string name="color_picker_title">Pick Accent Color</string>

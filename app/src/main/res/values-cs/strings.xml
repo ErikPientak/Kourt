@@ -25,6 +25,17 @@
     <string name="setup_join_team_subtitle">Máš kód od svého trenéra? Zadej ho a přidej se k týmu.</string>
     <string name="setup_join_code_placeholder">Zadej kód…</string>
     <string name="setup_join_button">Přidat se</string>
+    <string name="setup_parent_title">Jsem rodič</string>
+    <string name="setup_parent_subtitle">Zaregistrujte své dítě a spravujte jeho rozvrh a docházku.</string>
+    <string name="setup_parent_button">Přidat dítě</string>
+    <string name="add_child_title">Přidat dítě</string>
+    <string name="add_child_name_label">Jméno dítěte</string>
+    <string name="add_child_name_placeholder">Zadejte jméno…</string>
+    <string name="add_child_avatar_label">Profilový obrázek</string>
+    <string name="add_child_submit_button">Vytvořit profil</string>
+    <string name="add_child_step2_title">Přidat se k týmu</string>
+    <string name="add_child_step2_subtitle">Zadejte kód pro připojení k týmu vašeho dítěte, nebo tento krok přeskočte.</string>
+    <string name="add_child_skip_button">Zatím přeskočit</string>
 
     <!-- Create Club -->
     <string name="create_club_title">Vytvořit nový klub</string>
@@ -183,10 +194,20 @@
 
     <!-- Profile -->
     <string name="profile_title">Profil</string>
-    <string name="profile_edit_avatar_cd">Upravit Profilovou Fotku</string>
+    <string name="profile_edit_avatar_cd">Upravit profilový obrázek</string>
     <string name="profile_my_teams">Moje týmy</string>
+    <string name="profile_my_children">Moje děti</string>
+    <string name="child_action_switch">Přepnout na: %1$s</string>
+    <string name="child_action_teams_title">Týmy</string>
+    <string name="child_action_join_team">Přidat se k dalšímu týmu</string>
+    <string name="child_action_leave_team">Opustit tým %1$s</string>
+    <string name="child_action_remove">Odebrat %1$s</string>
+    <string name="child_remove_confirm_title">Odebrat %1$s?</string>
+    <string name="child_remove_confirm_body">%1$s bude odebrán(a) z vašeho účtu a ze všech svých týmů. Tuto akci nelze vzít zpět.</string>
+    <string name="child_remove_confirm_button">Odebrat</string>
+    <string name="child_join_team_dialog_subtitle">Zadejte kód pro připojení od trenéra uživatele %1$s.</string>
     <string name="profile_subtitle_club">Klub</string>
-    <string name="profile_error_load_failed">Chyba při nahrávání dat profilu</string>
+    <string name="profile_error_load_failed">Nepodařilo se načíst data profilu</string>
 
     <!-- Validation errors -->
     <string name="error_passwords_do_not_match">Hesla se neshodují</string>
@@ -202,6 +223,8 @@
     <string name="error_invalid_join_code">Tým s tímto kódem nebyl nalezen</string>
     <string name="error_already_member">Již jste členem tohoto týmu</string>
     <string name="error_load_failed">Načtení se nezdařilo. Zkuste to prosím znovu.</string>
+    <string name="error_generic">Něco se nepodařilo. Zkuste to prosím znovu.</string>
+    <string name="error_display_name_required">Zadejte prosím jméno</string>
     <string name="error_login_failed">Přihlášení se nezdařilo. Zkontrolujte prosím své údaje.</string>
     <string name="error_google_sign_in_failed">Přihlášení přes Google se nezdařilo. Zkuste to prosím znovu.</string>
     <string name="error_registration_failed">Registrace se nezdařila. Zkuste to prosím znovu.</string>
@@ -273,6 +296,24 @@
     <string name="event_repeat_occurs_summary">Probíhá každé %1$s</string>
     <string name="dialog_done">Hotovo</string>
 
+    <!-- Event Detail -->
+    <string name="event_detail_title">Detail události</string>
+    <string name="event_detail_edit_cd">Upravit událost</string>
+    <string name="event_detail_section_info">Informace o události</string>
+    <string name="event_detail_section_your_status">Váš stav</string>
+    <string name="event_detail_section_going">Jdou</string>
+    <string name="event_detail_section_not_going">Nejdou</string>
+    <string name="event_detail_going_label">JDOU</string>
+    <string name="event_detail_not_going_label">NEJDOU</string>
+    <string name="event_detail_update_rsvp">Aktualizovat</string>
+    <string name="event_detail_no_response">Bez odpovědi</string>
+    <string name="event_detail_status_attending_subtitle">Účastníte se této události</string>
+    <string name="event_detail_status_late_subtitle">Dorazíte později</string>
+    <string name="event_detail_status_not_attending_subtitle">Neúčastníte se</string>
+    <string name="event_detail_status_no_response_subtitle">Zatím jste neodpověděli</string>
+    <string name="event_detail_view_all">Zobrazit všech %1$d</string>
+    <string name="event_detail_show_less">Zobrazit méně</string>
+
     <!-- Coach Dashboard -->
     <string name="coach_dashboard_managing_label">Spravuji</string>
     <string name="coach_dashboard_no_team">Žádný tým</string>
@@ -287,14 +328,14 @@
     <string name="coach_dashboard_location_tbd">Místo TBD</string>
     <string name="coach_dashboard_attendance">DOCHÁZKA</string>
     <string name="coach_dashboard_rsvp_yes">Ano</string>
-    <string name="coach_dashboard_rsvp_maybe">Možná</string>
     <string name="coach_dashboard_rsvp_no">Ne</string>
 
     <!-- Player Dashboard -->
     <string name="player_dashboard_update_attendance">Aktualizovat mou docházku</string>
     <string name="player_dashboard_rsvp_going">JDU</string>
-    <string name="player_dashboard_rsvp_maybe">MOŽNÁ</string>
     <string name="player_dashboard_rsvp_not_going">NEJDU</string>
+    <string name="player_dashboard_rsvp_late">POZDĚ</string>
+
 
     <!-- RSVP -->
     <string name="rsvp_going">Jdu</string>
@@ -313,4 +354,11 @@
     <string name="color_picker_subtitle">Vyberte hlavní barvu</string>
     <string name="color_picker_cancel">Zrušit</string>
     <string name="color_picker_apply">Použít barvu</string>
+
+    <!-- Attendance -->
+    <string name="attendance_screen_title">Zapsat docházku</string>
+    <string name="attendance_filter_all">Všichni hráči</string>
+    <string name="attendance_filter_excused">Omluvení</string>
+    <string name="attendance_filter_unexcused">Neomluvení</string>
+    <string name="attendance_save_button">Uložit docházku</string>
 </resources>

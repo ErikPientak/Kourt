@@ -49,7 +49,7 @@ class ReviewConfirmViewModel @Inject constructor(
             uiState = uiState.copy(error = R.string.error_not_signed_in)
             return
         }
-
+        val joinCode = generateJoinCode()
         uiState = uiState.copy(isLoading = true, error = null)
 
         viewModelScope.launch {
@@ -61,7 +61,7 @@ class ReviewConfirmViewModel @Inject constructor(
                     technicalDirector = uiState.technicalDirector.trim(),
                     country = uiState.country,
                     city = uiState.city.trim(),
-                    joinCode = generateJoinCode(),
+                    joinCode = joinCode,
                     createdBy = uid,
                     createdAt = Timestamp.now(),
                     logoURL = "",
@@ -72,7 +72,7 @@ class ReviewConfirmViewModel @Inject constructor(
                 clubRepository.createClub(club)
             }.fold(
                 onSuccess = { clubId ->
-                    Log.d(TAG, "Club created with id=$clubId")
+                    Log.d(TAG, "Club created with id=$clubId, JoinCode:$joinCode")
                     uiState = uiState.copy(isLoading = false, isSuccess = true)
                 },
                 onFailure = { e ->

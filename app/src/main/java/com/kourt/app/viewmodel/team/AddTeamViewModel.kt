@@ -249,6 +249,7 @@ class AddTeamViewModel @Inject constructor(
             uiState = uiState.copy(error = R.string.error_not_signed_in)
             return
         }
+        val joinCode = generateJoinCode()
 
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true, error = null)
@@ -261,7 +262,7 @@ class AddTeamViewModel @Inject constructor(
                     headCoach = uiState.selectedHeadCoach?.displayName ?: uiState.headCoachQuery,
                     location = uiState.location,
                     arena = uiState.arena,
-                    joinCode = generateJoinCode(),
+                    joinCode = joinCode,
                     createdBy = uid,
                     accentColor = uiState.accentColor,
                     initials = uiState.initials,
@@ -278,7 +279,7 @@ class AddTeamViewModel @Inject constructor(
                 val newTeamId = teamRepository.createTeamWithMembers(team, members)
 
                 uiState = uiState.copy(isLoading = false, isSuccess = true)
-                Log.d(TAG, "Team created: $newTeamId")
+                Log.d(TAG, "Team created: $newTeamId JoinCode: $joinCode")
             }.onFailure { e ->
                 Log.e(TAG, "Failed to create team", e)
                 uiState = uiState.copy(isLoading = false, error = R.string.error_team_not_found)
