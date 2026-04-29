@@ -70,4 +70,9 @@ class EventRepository @Inject constructor(
         val ref = collection.document(eventId).collection("attendance").add(attendance).await()
         return ref.id
     }
+
+    suspend fun upsertAttendance(eventId: String, attendance: Attendance) {
+        collection.document(eventId).collection("attendance")
+            .document(attendance.userId).set(attendance).await()
+    }
 }

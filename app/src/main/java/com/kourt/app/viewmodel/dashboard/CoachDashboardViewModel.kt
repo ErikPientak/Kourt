@@ -198,7 +198,11 @@ class CoachDashboardViewModel @Inject constructor(
     }
 
     override fun onLogAttendance(eventId: String) {
-        Log.d(logTag, "onLogAttendance: $eventId — not yet implemented")
+        uiState = uiState.copy(navigateToAttendanceEventId = eventId)
+    }
+
+    fun onAttendanceNavigated() {
+        uiState = uiState.copy(navigateToAttendanceEventId = null)
     }
 
     override fun onLogStatistics(eventId: String) {

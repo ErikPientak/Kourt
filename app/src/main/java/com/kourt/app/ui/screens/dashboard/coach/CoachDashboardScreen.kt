@@ -118,6 +118,12 @@ fun CoachDashboardScreen(
         viewModel.onEventDetailNavigated()
     }
 
+    LaunchedEffect(uiState.navigateToAttendanceEventId) {
+        val id = uiState.navigateToAttendanceEventId ?: return@LaunchedEffect
+        navigation.navigateToAttendance(id)
+        viewModel.onAttendanceNavigated()
+    }
+
     CoachDashboardContent(
         uiState = uiState,
         onTeamDropdownToggle = viewModel::onTeamDropdownToggle,

@@ -32,4 +32,5 @@ interface INavigationRouter {
     fun navigateToAddEvent(teamId: String)
     fun navigateToEditEvent(eventId: String, teamId: String)
     fun navigateToEventDetail(eventId: String)
+    fun navigateToAttendance(eventId: String)
 }

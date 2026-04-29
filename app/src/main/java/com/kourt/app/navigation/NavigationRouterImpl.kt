@@ -105,4 +105,8 @@ class NavigationRouterImpl(private val navController: NavController) : INavigati
     override fun navigateToEventDetail(eventId: String) {
         navController.navigate("event_detail/${Uri.encode(eventId)}")
     }
+
+    override fun navigateToAttendance(eventId: String) {
+        navController.navigate("attendance/${Uri.encode(eventId)}")
+    }
 }

@@ -6,6 +6,7 @@ import com.google.firebase.firestore.PropertyName
 
 data class Attendance(
     @DocumentId val id: String = "",
+    val userId: String = "",
     val status: String = "",
     @PropertyName("recorded_by") val recordedBy: String = "",
     @PropertyName("recorded_at") val recordedAt: Timestamp = Timestamp.now()

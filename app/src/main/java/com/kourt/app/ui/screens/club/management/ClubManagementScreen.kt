@@ -32,10 +32,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.kourt.app.navigation.Destination
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
@@ -66,6 +69,13 @@ fun ClubManagementScreen(
     viewModel: ClubManagementViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
+
+    val navBackStackEntry by navigation.getNavController().currentBackStackEntryAsState()
+    LaunchedEffect(navBackStackEntry) {
+        if (navBackStackEntry?.destination?.route == Destination.ClubManagementScreen.route) {
+            viewModel.refreshTeams()
+        }
+    }
 
     ClubManagementScreenContent(
         uiState = uiState,

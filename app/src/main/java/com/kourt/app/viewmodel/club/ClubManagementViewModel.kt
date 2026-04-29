@@ -457,6 +457,11 @@ class ClubManagementViewModel @Inject constructor(
         uiState = uiState.copy(eventForDelete = null)
     }
 
+    fun refreshTeams() {
+        if (uiState.clubId.isBlank()) return
+        loadClubData()
+    }
+
     // ── Teams tab ─────────────────────────────────────────────────────────────
 
     override fun onAddTeam() {

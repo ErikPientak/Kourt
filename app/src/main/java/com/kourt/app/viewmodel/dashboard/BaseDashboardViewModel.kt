@@ -98,7 +98,11 @@ abstract class BaseDashboardViewModel(
                     val eventsDeferred = async { eventRepository.getEventsByTeam(teamId) }
                     val membersDeferred = async { teamMemberRepository.getMembersByTeam(teamId) }
 
+                    val today = Calendar.getInstance()
+                    val todayYear = today.get(Calendar.YEAR)
+                    val todayMonth = today.get(Calendar.MONTH)
                     val todayEpochDay = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())
+
                     val sortedEvents = eventsDeferred.await().sortedBy { it.date.toDate() }
                     val futureEvents = sortedEvents.filter {
                         TimeUnit.MILLISECONDS.toDays(it.date.toDate().time) >= todayEpochDay
@@ -107,11 +111,6 @@ abstract class BaseDashboardViewModel(
                     val upNext = futureEvents.firstOrNull { it.status.lowercase() == "upcoming" }?.toEventUiItem()
                     val upcoming = futureEvents.drop(1).take(5).map { it.toEventUiItem() }
                     val allEvents = sortedEvents.map { it.toEventUiItem() }
-
-                    val today = Calendar.getInstance()
-                    val todayYear = today.get(Calendar.YEAR)
-                    val todayMonth = today.get(Calendar.MONTH)
-//                    val todayEpochDay = TimeUnit.MILLISECONDS.toDays(today.timeInMillis)
                     val eventDaysInView = computeEventDaysInView(allEvents, todayYear, todayMonth)
 
                     val teamMembers = membersDeferred.await()

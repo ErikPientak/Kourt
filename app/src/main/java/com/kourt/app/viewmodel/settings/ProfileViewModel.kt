@@ -156,6 +156,7 @@ class ProfileViewModel @Inject constructor(
     override fun onMembershipClick(item: MembershipRowUiItem) {
         if (uiState.isReadOnly) return
         appPreferencesRepository.activeClubId = item.clubId
+        appPreferencesRepository.activeTeamId = if (item.teamId.isNullOrBlank()) "" else item.teamId
         Log.d(TAG, "onMembershipClick: clubId=${item.clubId}, role=${item.role}")
         if (item.role.lowercase() == "admin") {
             uiState = uiState.copy(navigateToClubManagement = true)

@@ -338,4 +338,11 @@
     <string name="color_picker_subtitle">Select a primary color</string>
     <string name="color_picker_cancel">Cancel</string>
     <string name="color_picker_apply">Apply Color</string>
+
+    <!-- Attendance -->
+    <string name="attendance_screen_title">Log Attendance</string>
+    <string name="attendance_filter_all">All Players</string>
+    <string name="attendance_filter_excused">Excused</string>
+    <string name="attendance_filter_unexcused">Unexcused</string>
+    <string name="attendance_save_button">Save Attendance</string>
 </resources>

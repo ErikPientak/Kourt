@@ -60,4 +60,5 @@ data class CoachDashboardScreenUiState(
     val eventDaysInView: Set<Long> = emptySet(),
     val navigateToAddEvent: Boolean = false,
     val navigateToEventDetailId: String? = null,
+    val navigateToAttendanceEventId: String? = null,
 )
