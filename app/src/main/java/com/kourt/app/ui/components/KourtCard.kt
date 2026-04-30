@@ -332,7 +332,7 @@ fun TeamCard(
     modifier: Modifier = Modifier,
     accentColor: String = "",
     initials: String = "",
-    showChevron: Boolean = true,
+    onMenuClick: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null,
 ) {
     KourtCard(
@@ -347,13 +347,15 @@ fun TeamCard(
         },
         modifier = modifier,
         subtitleLeadingPainter = painterResource(R.drawable.whistle),
-        trailingContent = if (showChevron && onClick != null) {
+        trailingContent = if (onMenuClick != null) {
             {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    painter = painterResource(R.drawable.more_vert),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier
+                        .size(20.dp)
+                        .clickable(onClick = onMenuClick),
                 )
             }
         } else null,

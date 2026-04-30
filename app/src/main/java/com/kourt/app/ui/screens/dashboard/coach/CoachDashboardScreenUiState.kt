@@ -14,6 +14,7 @@ data class TeamUiItem(
     val clubId: String,
     val accentColor: String = "",
     val initials: String = "",
+    val joinCode: String = "",
 )
 
 @Immutable
@@ -61,4 +62,5 @@ data class CoachDashboardScreenUiState(
     val navigateToAddEvent: Boolean = false,
     val navigateToEventDetailId: String? = null,
     val navigateToAttendanceEventId: String? = null,
+    val showGrowTeamSheet: Boolean = false,
 )

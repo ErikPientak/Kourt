@@ -5,7 +5,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
-import com.kourt.app.R
 import com.kourt.app.data.repository.AppPreferencesRepository
 import com.kourt.app.data.repository.AuthRepository
 import com.kourt.app.data.repository.EventRepository
@@ -75,7 +74,7 @@ class CoachDashboardViewModel @Inject constructor(
         calendarYear: Int,
         calendarMonth: Int,
         todayEpochDay: Long,
-        eventDaysInView: Set<Long>,
+        eventDaysInView: Set<Long>
     ) {
         uiState = uiState.copy(
             isLoading = false,
@@ -149,8 +148,8 @@ class CoachDashboardViewModel @Inject constructor(
         loadTeamData(teamId, team.teamName)
     }
 
-    override fun onUpdateLineup() {
-        Log.d(logTag, "onUpdateLineup — not yet implemented")
+    override fun onUpdateLineup(eventId: String) {
+        uiState = uiState.copy(navigateToAttendanceEventId = eventId)
     }
 
     override fun onRosterSearchQueryChange(query: String) {
@@ -215,6 +214,14 @@ class CoachDashboardViewModel @Inject constructor(
 
     override fun onCardClicked(eventId: String) {
         uiState = uiState.copy(navigateToEventDetailId = eventId)
+    }
+
+    override fun onGrowTeamClicked() {
+        uiState = uiState.copy(showGrowTeamSheet = true)
+    }
+
+    override fun onGrowTeamDismissed() {
+        uiState = uiState.copy(showGrowTeamSheet = false)
     }
 
     fun onAddEventNavigated() {

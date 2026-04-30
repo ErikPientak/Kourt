@@ -48,6 +48,10 @@ data class ClubManagementScreenUiState(
 
     // ── Teams tab ────────────────────────────────────────────────────────────
     val teams: List<Team> = emptyList(),
+    val selectedTeam: Team? = null,
+    val teamForDelete: Team? = null,
+    val teamForCode: Team? = null,
+    val showTeamCodeSheet: Boolean = false,
 
     // ── Members tab ──────────────────────────────────────────────────────────
     /** Full unfiltered list, loaded once from Firestore. */

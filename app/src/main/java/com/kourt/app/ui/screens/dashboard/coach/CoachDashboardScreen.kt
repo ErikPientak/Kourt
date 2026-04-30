@@ -80,6 +80,7 @@ import com.kourt.app.ui.screens.club.management.MemberFilter
 import com.kourt.app.ui.Tabs.MembersTab
 import com.kourt.app.ui.Tabs.ScheduleTab
 import com.kourt.app.ui.components.UpNextCard
+import com.kourt.app.ui.components.bottomSheets.GrowYourTeamBottomSheet
 import com.kourt.app.viewmodel.dashboard.CoachDashboardViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -139,6 +140,8 @@ fun CoachDashboardScreen(
         onLogStatistics = viewModel::onLogStatistics,
         onAddEvent = viewModel::onAddEvent,
         onCardClicked = viewModel::onCardClicked,
+        onGrowTeamClicked = viewModel::onGrowTeamClicked,
+        onGrowTeamDismissed = viewModel::onGrowTeamDismissed,
     )
 }
 
@@ -148,7 +151,7 @@ private fun CoachDashboardContent(
     onTeamDropdownToggle: () -> Unit,
     onTeamSelected: (String) -> Unit,
     onSettingsTap: () -> Unit,
-    onUpdateLineup: () -> Unit,
+    onUpdateLineup: (String) -> Unit,
     onRosterSearchQueryChange: (String) -> Unit,
     onRosterFilterChange: (MemberFilter) -> Unit,
     onPreviousMonth: () -> Unit,
@@ -157,9 +160,19 @@ private fun CoachDashboardContent(
     onLogAttendance: (String) -> Unit,
     onLogStatistics: (String) -> Unit,
     onAddEvent: () -> Unit,
-    onCardClicked: (String) -> Unit
+    onCardClicked: (String) -> Unit,
+    onGrowTeamClicked: () -> Unit,
+    onGrowTeamDismissed: () -> Unit,
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(TAB_HOME) }
+
+    if (uiState.showGrowTeamSheet) {
+        GrowYourTeamBottomSheet(
+            joinCode = uiState.activeTeam?.joinCode.orEmpty(),
+            teamName = uiState.activeTeam?.teamName.orEmpty(),
+            onDismiss = onGrowTeamDismissed,
+        )
+    }
 
     BaseScreenWithBottomNav(
         topBar = {
@@ -180,8 +193,8 @@ private fun CoachDashboardContent(
             )
         },
         floatingActionButton = {
-            if (selectedTab == TAB_SCHEDULE) {
-                FloatingActionButton(
+            when (selectedTab) {
+                TAB_SCHEDULE -> FloatingActionButton(
                     onClick = onAddEvent,
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -190,6 +203,17 @@ private fun CoachDashboardContent(
                     Icon(
                         imageVector = Icons.Filled.Add,
                         contentDescription = stringResource(R.string.schedule_add_event_cd),
+                    )
+                }
+                TAB_ROSTER -> FloatingActionButton(
+                    onClick = onGrowTeamClicked,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    shape = RoundedCornerShape(16.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = stringResource(R.string.roster_grow_team_cd),
                     )
                 }
             }
@@ -445,7 +469,7 @@ private fun CoachDashboardBottomNav(
 @Composable
 private fun HomeTab(
     uiState: CoachDashboardScreenUiState,
-    onUpdateLineup: () -> Unit,
+    onUpdateLineup: (String) -> Unit,
     onCardClicked: (String) -> Unit,
     ) {
     Column(
@@ -467,7 +491,7 @@ private fun HomeTab(
                 rosterSize = uiState.members.size,
                 attendeeNames = uiState.upNextAttendees,
                 ctaText = R.string.coach_dashboard_update_lineup,
-                onCtaClick = onUpdateLineup,
+                onCtaClick = { onUpdateLineup(uiState.upNextEvent.eventId) },
             )
         } else {
             Box(

@@ -76,7 +76,7 @@ class PlayerDashboardViewModel @Inject constructor(
         calendarYear: Int,
         calendarMonth: Int,
         todayEpochDay: Long,
-        eventDaysInView: Set<Long>,
+        eventDaysInView: Set<Long>
     ) {
         uiState = uiState.copy(
             isLoading = false,

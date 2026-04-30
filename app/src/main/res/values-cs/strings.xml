@@ -361,4 +361,25 @@
     <string name="attendance_filter_excused">Omluvení</string>
     <string name="attendance_filter_unexcused">Neomluvení</string>
     <string name="attendance_save_button">Uložit docházku</string>
+
+    <!-- Grow Your Team -->
+    <string name="grow_team_title">Rozšiř svůj tým</string>
+    <string name="grow_team_share_join_code">Sdílet přístupový kód</string>
+    <string name="grow_team_share_button">Sdílet kód</string>
+    <string name="grow_team_join_hint">Hráči mohou zadat tento kód po registraci a automaticky se připojit k týmu</string>
+    <string name="grow_team_copy_cd">Kopírovat kód</string>
+    <string name="grow_team_dismiss_cd">Zavřít</string>
+    <string name="grow_team_share_message">Připoj se k %1$s na Kourt!\n\nPo registraci zadej kód %2$s a automaticky se přidáš do týmu.</string>
+    <string name="roster_grow_team_cd">Rozšiř tým</string>
+
+    <!-- Profile — join or create -->
+    <string name="profile_join_or_create">Připojit se nebo vytvořit tým</string>
+
+    <!-- Team Action bottom sheet -->
+    <string name="team_action_edit">Upravit tým</string>
+    <string name="team_action_share_code">Sdílet přístupový kód</string>
+    <string name="team_action_delete">Smazat tým</string>
+    <string name="team_delete_confirm_title">Smazat tým?</string>
+    <string name="team_delete_confirm_message">Tím trvale odstraníte tým a všechny jeho členy. Tuto akci nelze vrátit zpět.</string>
+    <string name="team_delete_confirm_button">Smazat</string>
 </resources>

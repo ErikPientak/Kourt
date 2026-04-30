@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,6 +20,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -62,6 +65,13 @@ fun ProfileScreen(
 ) {
     val uiState = viewModel.uiState
 
+    LaunchedEffect(uiState.navigateToSetup) {
+        if (uiState.navigateToSetup) {
+            navigation.navigateToSetupScreen()
+            viewModel.onNavigationConsumed()
+        }
+    }
+
     LaunchedEffect(uiState.navigateToClubManagement) {
         if (uiState.navigateToClubManagement) {
             navigation.navigateToClubManagementScreen()
@@ -101,6 +111,7 @@ fun ProfileScreen(
         onRemoveChild = viewModel::onRemoveChild,
         onRemoveChildConfirm = viewModel::onRemoveChildConfirm,
         onRemoveChildDismiss = viewModel::onRemoveChildDismiss,
+        onJoinOrCreateTeam = viewModel::onJoinOrCreateTeam,
     )
 }
 
@@ -123,6 +134,7 @@ private fun ProfileScreenContent(
     onRemoveChild: () -> Unit = {},
     onRemoveChildConfirm: () -> Unit = {},
     onRemoveChildDismiss: () -> Unit = {},
+    onJoinOrCreateTeam: () -> Unit = {},
 ) {
     if (uiState.showAvatarPicker) {
         AvatarPickerBottomSheet(
@@ -268,6 +280,26 @@ private fun ProfileScreenContent(
                         } else {
                             items(uiState.memberships) { item ->
                                 MembershipRow(item = item, onClick = { onMembershipClick(item) })
+                            }
+                        }
+
+                        item {
+                            TextButton(
+                                onClick = onJoinOrCreateTeam,
+                                modifier = Modifier.padding(top = 4.dp),
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Add,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = stringResource(R.string.profile_join_or_create),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
                             }
                         }
                     }

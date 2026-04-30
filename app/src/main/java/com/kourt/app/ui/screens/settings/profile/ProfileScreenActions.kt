@@ -16,5 +16,6 @@ interface ProfileScreenActions {
     fun onRemoveChild()
     fun onRemoveChildConfirm()
     fun onRemoveChildDismiss()
+    fun onJoinOrCreateTeam()
     fun onNavigationConsumed()
 }

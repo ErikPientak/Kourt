@@ -21,6 +21,7 @@ data class ProfileScreenUiState(
     val navigateToClubManagement: Boolean = false,
     val navigateToPlayerDashboard: Boolean = false,
     val navigateToCoachDashboard: Boolean = false,
+    val navigateToSetup: Boolean = false,
     val isReadOnly: Boolean = false,
     val showAvatarPicker: Boolean = false,
 )

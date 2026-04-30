@@ -475,4 +475,44 @@ class ClubManagementViewModel @Inject constructor(
     override fun onSettingsTap() {
         Log.d(TAG, "onSettingsTap: Settings screen not yet implemented")
     }
+
+    override fun onTeamMenuClick(teamId: String) {
+        val team = uiState.teams.find { it.id == teamId } ?: return
+        uiState = uiState.copy(selectedTeam = team)
+    }
+
+    override fun onTeamActionDismiss() {
+        uiState = uiState.copy(selectedTeam = null)
+    }
+
+    override fun onShareTeamCode() {
+        uiState = uiState.copy(selectedTeam = null, showTeamCodeSheet = true, teamForCode = uiState.selectedTeam)
+    }
+
+    override fun onTeamCodeSheetDismiss() {
+        uiState = uiState.copy(showTeamCodeSheet = false, teamForCode = null)
+    }
+
+    override fun onDeleteTeamClick() {
+        uiState = uiState.copy(teamForDelete = uiState.selectedTeam, selectedTeam = null)
+    }
+
+    override fun onDeleteTeamConfirm() {
+        val team = uiState.teamForDelete ?: return
+        uiState = uiState.copy(teamForDelete = null)
+        viewModelScope.launch {
+            runCatching {
+                teamRepository.deleteTeam(team.id)
+                val updated = uiState.teams.filter { it.id != team.id }
+                uiState = uiState.copy(teams = updated)
+                Log.d(TAG, "Team deleted: ${team.id}")
+            }.onFailure { e ->
+                Log.e(TAG, "Failed to delete team ${team.id}", e)
+            }
+        }
+    }
+
+    override fun onDeleteTeamDismiss() {
+        uiState = uiState.copy(teamForDelete = null)
+    }
 }

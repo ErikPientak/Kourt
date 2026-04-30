@@ -1,0 +1,174 @@
+package com.kourt.app.ui.components.bottomSheets
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.kourt.app.R
+import com.kourt.app.ui.theme.KourtTheme
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TeamActionBottomSheet(
+    teamName: String,
+    onDismiss: () -> Unit,
+    onEditTeam: () -> Unit,
+    onShareCode: () -> Unit,
+    onDeleteTeam: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+    ) {
+        TeamActionSheetContent(
+            teamName = teamName,
+            onDismiss = onDismiss,
+            onEditTeam = onEditTeam,
+            onShareCode = onShareCode,
+            onDeleteTeam = onDeleteTeam,
+        )
+    }
+}
+
+@Composable
+private fun TeamActionSheetContent(
+    teamName: String,
+    onDismiss: () -> Unit,
+    onEditTeam: () -> Unit,
+    onShareCode: () -> Unit,
+    onDeleteTeam: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .padding(bottom = 8.dp),
+    ) {
+        Text(
+            text = teamName,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+        )
+
+        TeamActionRow(
+            icon = painterResource(R.drawable.edit),
+            label = stringResource(R.string.team_action_edit),
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            onClick = { onEditTeam(); onDismiss() },
+        )
+
+        TeamActionRow(
+            icon = painterResource(R.drawable.share),
+            label = stringResource(R.string.team_action_share_code),
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            onClick = { onShareCode(); onDismiss() },
+        )
+
+        TeamActionRow(
+            icon = painterResource(R.drawable.delete),
+            label = stringResource(R.string.team_action_delete),
+            contentColor = MaterialTheme.colorScheme.error,
+            onClick = { onDeleteTeam(); onDismiss() },
+        )
+    }
+}
+
+@Composable
+private fun TeamActionRow(
+    icon: Painter,
+    label: String,
+    contentColor: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    TextButton(
+        onClick = onClick,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                painter = icon,
+                contentDescription = null,
+                tint = contentColor,
+                modifier = Modifier.size(22.dp),
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyLarge,
+                color = contentColor,
+            )
+        }
+    }
+}
+
+// ── Previews ──────────────────────────────────────────────────────────────────
+
+@Preview(name = "TeamActionBottomSheet — Dark", showBackground = true, backgroundColor = 0xFF1C1917)
+@Composable
+private fun TeamActionSheetDarkPreview() {
+    KourtTheme(darkTheme = true) {
+        Surface(color = MaterialTheme.colorScheme.surface) {
+            TeamActionSheetContent(
+                teamName = "U19 Lakers",
+                onDismiss = {},
+                onEditTeam = {},
+                onShareCode = {},
+                onDeleteTeam = {},
+            )
+        }
+    }
+}
+
+@Preview(name = "TeamActionBottomSheet — Light", showBackground = true, backgroundColor = 0xFFEEF0F8)
+@Composable
+private fun TeamActionSheetLightPreview() {
+    KourtTheme(darkTheme = false) {
+        Surface(color = MaterialTheme.colorScheme.surface) {
+            TeamActionSheetContent(
+                teamName = "U19 Lakers",
+                onDismiss = {},
+                onEditTeam = {},
+                onShareCode = {},
+                onDeleteTeam = {},
+            )
+        }
+    }
+}

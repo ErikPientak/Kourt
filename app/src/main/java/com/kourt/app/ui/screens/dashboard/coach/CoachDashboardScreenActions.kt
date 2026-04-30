@@ -5,7 +5,7 @@ import com.kourt.app.ui.screens.club.management.MemberFilter
 interface CoachDashboardScreenActions {
     fun onTeamDropdownToggle()
     fun onTeamSelected(teamId: String)
-    fun onUpdateLineup()
+    fun onUpdateLineup(eventId: String)
     fun onRosterSearchQueryChange(query: String)
     fun onRosterFilterChange(filter: MemberFilter)
 
@@ -17,4 +17,6 @@ interface CoachDashboardScreenActions {
     fun onLogStatistics(eventId: String)
     fun onAddEvent()
     fun onCardClicked(eventId: String)
+    fun onGrowTeamClicked()
+    fun onGrowTeamDismissed()
 }

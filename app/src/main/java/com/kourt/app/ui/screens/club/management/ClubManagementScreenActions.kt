@@ -5,6 +5,13 @@ interface ClubManagementScreenActions {
     fun onAddTeam()
     fun onTeamClick(teamId: String)
     fun onSettingsTap()
+    fun onTeamMenuClick(teamId: String)
+    fun onTeamActionDismiss()
+    fun onShareTeamCode()
+    fun onTeamCodeSheetDismiss()
+    fun onDeleteTeamClick()
+    fun onDeleteTeamConfirm()
+    fun onDeleteTeamDismiss()
 
     // ── Members tab ──────────────────────────────────────────────────────────
     fun onMemberSearchQueryChange(query: String)

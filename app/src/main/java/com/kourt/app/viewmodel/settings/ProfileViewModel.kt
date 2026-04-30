@@ -396,11 +396,16 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    override fun onJoinOrCreateTeam() {
+        uiState = uiState.copy(navigateToSetup = true)
+    }
+
     override fun onNavigationConsumed() {
         uiState = uiState.copy(
             navigateToClubManagement = false,
             navigateToCoachDashboard = false,
             navigateToPlayerDashboard = false,
+            navigateToSetup = false,
         )
     }
 }

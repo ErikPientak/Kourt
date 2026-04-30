@@ -52,7 +52,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.data.model.Team
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.BaseScreenWithBottomNav
+import com.kourt.app.ui.components.bottomSheets.GrowYourTeamBottomSheet
 import com.kourt.app.ui.components.bottomSheets.MemberActionBottomSheet
+import com.kourt.app.ui.components.bottomSheets.TeamActionBottomSheet
 import com.kourt.app.ui.components.TeamCard
 import com.kourt.app.ui.Tabs.EventsTab
 import com.kourt.app.ui.Tabs.MembersTab
@@ -83,7 +85,14 @@ fun ClubManagementScreen(
             navigation.navigateToAddTeamScreen(uiState.clubId)
             viewModel.onAddTeam()
         },
-        onTeamClick = { teamId -> navigation.navigateToEditTeamScreen(teamId) },
+        onTeamMenuClick = viewModel::onTeamMenuClick,
+        onTeamActionDismiss = viewModel::onTeamActionDismiss,
+        onEditTeam = { teamId -> navigation.navigateToEditTeamScreen(teamId) },
+        onShareTeamCode = viewModel::onShareTeamCode,
+        onTeamCodeSheetDismiss = viewModel::onTeamCodeSheetDismiss,
+        onDeleteTeamClick = viewModel::onDeleteTeamClick,
+        onDeleteTeamConfirm = viewModel::onDeleteTeamConfirm,
+        onDeleteTeamDismiss = viewModel::onDeleteTeamDismiss,
         onSettingsTap = { navigation.navigateToSettingsScreen() },
         onMemberSearchQueryChange = viewModel::onMemberSearchQueryChange,
         onMemberFilterChange = viewModel::onMemberFilterChange,
@@ -110,7 +119,14 @@ fun ClubManagementScreen(
 private fun ClubManagementScreenContent(
     uiState: ClubManagementScreenUiState,
     onAddTeam: () -> Unit,
-    onTeamClick: (String) -> Unit,
+    onTeamMenuClick: (String) -> Unit,
+    onTeamActionDismiss: () -> Unit,
+    onEditTeam: (String) -> Unit,
+    onShareTeamCode: () -> Unit,
+    onTeamCodeSheetDismiss: () -> Unit,
+    onDeleteTeamClick: () -> Unit,
+    onDeleteTeamConfirm: () -> Unit,
+    onDeleteTeamDismiss: () -> Unit,
     onSettingsTap: () -> Unit,
     onMemberSearchQueryChange: (String) -> Unit,
     onMemberFilterChange: (MemberFilter) -> Unit,
@@ -203,6 +219,51 @@ private fun ClubManagementScreenContent(
         )
     }
 
+    // Team Action bottom sheet
+    val selectedTeam = uiState.selectedTeam
+    if (selectedTeam != null) {
+        TeamActionBottomSheet(
+            teamName = selectedTeam.name,
+            onDismiss = onTeamActionDismiss,
+            onEditTeam = { onEditTeam(selectedTeam.id) },
+            onShareCode = onShareTeamCode,
+            onDeleteTeam = onDeleteTeamClick,
+        )
+    }
+
+    // Grow Your Team bottom sheet (share join code)
+    val teamForCode = uiState.teamForCode
+    if (uiState.showTeamCodeSheet && teamForCode != null) {
+        GrowYourTeamBottomSheet(
+            joinCode = teamForCode.joinCode,
+            teamName = teamForCode.name,
+            onDismiss = onTeamCodeSheetDismiss,
+        )
+    }
+
+    // Delete Team confirmation dialog
+    val teamForDelete = uiState.teamForDelete
+    if (teamForDelete != null) {
+        AlertDialog(
+            onDismissRequest = onDeleteTeamDismiss,
+            title = { Text(stringResource(com.kourt.app.R.string.team_delete_confirm_title)) },
+            text = { Text(stringResource(com.kourt.app.R.string.team_delete_confirm_message)) },
+            confirmButton = {
+                TextButton(onClick = onDeleteTeamConfirm) {
+                    Text(
+                        text = stringResource(com.kourt.app.R.string.team_delete_confirm_button),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDeleteTeamDismiss) {
+                    Text(stringResource(com.kourt.app.R.string.action_cancel))
+                }
+            },
+        )
+    }
+
     BaseScreenWithBottomNav(
         topBar = {
             ClubManagementTopBar(
@@ -229,17 +290,6 @@ private fun ClubManagementScreenContent(
                         contentDescription = stringResource(com.kourt.app.R.string.club_management_add_team_cd),
                     )
                 }
-                TAB_MEMBERS -> FloatingActionButton(
-                    onClick = onAddMember,
-                    shape = RoundedCornerShape(16.dp),
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Add,
-                        contentDescription = stringResource(com.kourt.app.R.string.members_add_member_cd),
-                    )
-                }
             }
         },
     ) { padding ->
@@ -251,7 +301,7 @@ private fun ClubManagementScreenContent(
             when (selectedTab) {
                 TAB_TEAMS -> TeamsTab(
                     uiState = uiState,
-                    onTeamClick = onTeamClick,
+                    onTeamMenuClick = onTeamMenuClick,
                 )
                 TAB_MEMBERS -> MembersTab(
                     uiState = uiState,
@@ -359,7 +409,6 @@ private fun AssignTeamBottomSheet(
                     TeamCard(
                         teamName = team.name,
                         headCoach = team.headCoach,
-                        showChevron = false,
                         onClick = {
                             onTeamSelected(team.id)
                             onDismiss()

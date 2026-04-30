@@ -22,7 +22,7 @@ import com.kourt.app.ui.screens.club.management.ClubManagementScreenUiState
 @Composable
 fun TeamsTab(
     uiState: ClubManagementScreenUiState,
-    onTeamClick: (String) -> Unit,
+    onTeamMenuClick: (String) -> Unit,
 ) {
     when {
         uiState.isLoading -> {
@@ -80,7 +80,7 @@ fun TeamsTab(
                         accentColor = team.accentColor,
                         initials = team.initials,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        onClick = { onTeamClick(team.id) },
+                        onMenuClick = { onTeamMenuClick(team.id) },
                     )
                 }
             }

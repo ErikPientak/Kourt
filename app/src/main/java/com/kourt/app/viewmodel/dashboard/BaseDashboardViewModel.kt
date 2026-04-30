@@ -23,7 +23,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
@@ -71,6 +70,7 @@ abstract class BaseDashboardViewModel(
                                 clubId = team.clubId,
                                 accentColor = team.accentColor,
                                 initials = team.initials,
+                                joinCode = team.joinCode,
                             )
                         }
 
@@ -139,6 +139,7 @@ abstract class BaseDashboardViewModel(
                             avatarUrl = u.avatarId.ifBlank { u.photoURL },
                         )
                     }
+
 
                     Log.d(logTag, "Team data: upNext=${upNext?.title}, upcoming=${upcoming.size}, roster=${members.size}")
 
