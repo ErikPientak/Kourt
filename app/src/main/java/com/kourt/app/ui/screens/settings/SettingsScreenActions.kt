@@ -7,5 +7,7 @@ interface SettingsScreenActions {
     fun onLogOutClick()
     fun onConfirmLogOut()
     fun onDismissLogOutDialog()
+    fun onLanguageClick()
+    fun onDismissLanguageDialog()
     fun onSaveConsumed()
 }

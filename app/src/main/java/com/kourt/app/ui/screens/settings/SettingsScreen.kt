@@ -18,12 +18,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.annotation.StringRes
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -48,11 +50,20 @@ import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.BaseScreen
 import com.kourt.app.viewmodel.settings.SettingsViewModel
 
+private data class AppLanguage(val code: String, @StringRes val nameRes: Int)
+
+private val SUPPORTED_LANGUAGES = listOf(
+    AppLanguage("en", R.string.language_english),
+    AppLanguage("cs", R.string.language_czech),
+)
+
 @Composable
 fun SettingsScreen(
     navigation: INavigationRouter,
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
+    currentLanguage: String,
+    onSetLanguage: (String) -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
@@ -67,10 +78,13 @@ fun SettingsScreen(
     SettingsScreenContent(
         uiState = uiState,
         isDarkTheme = isDarkTheme,
+        currentLanguage = currentLanguage,
         onBack = navigation::returnBack,
         onToggleTheme = onToggleTheme,
         onProfileClick = navigation::navigateToProfileScreen,
-        onLanguageClick = { /* TODO: navigate to Language picker screen */ },
+        onLanguageClick = viewModel::onLanguageClick,
+        onDismissLanguageDialog = viewModel::onDismissLanguageDialog,
+        onSetLanguage = onSetLanguage,
         onDeleteAccountClick = viewModel::onDeleteAccountClick,
         onConfirmDeleteAccount = viewModel::onConfirmDeleteAccount,
         onDismissDeleteDialog = viewModel::onDismissDeleteDialog,
@@ -84,17 +98,20 @@ fun SettingsScreen(
 private fun SettingsScreenContent(
     uiState: SettingsScreenUiState,
     isDarkTheme: Boolean,
+    currentLanguage: String,
     onBack: () -> Unit,
     onToggleTheme: () -> Unit,
     onProfileClick: () -> Unit,
     onLanguageClick: () -> Unit,
+    onDismissLanguageDialog: () -> Unit,
+    onSetLanguage: (String) -> Unit,
     onDeleteAccountClick: () -> Unit,
     onConfirmDeleteAccount: () -> Unit,
     onDismissDeleteDialog: () -> Unit,
     onConfirmLogOut: () -> Unit,
     onDismissLogOutDialog: () -> Unit,
     onLogOutClick: () -> Unit,
-    ) {
+) {
     if (uiState.showDeleteDialog) {
         AlertDialog(
             onDismissRequest = onDismissDeleteDialog,
@@ -134,6 +151,49 @@ private fun SettingsScreenContent(
             },
             dismissButton = {
                 TextButton(onClick = onDismissLogOutDialog) {
+                    Text(
+                        text = stringResource(R.string.action_cancel),
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            },
+        )
+    }
+
+    if (uiState.showLanguageDialog) {
+        AlertDialog(
+            onDismissRequest = onDismissLanguageDialog,
+            title = { Text(stringResource(R.string.settings_language)) },
+            text = {
+                Column {
+                    SUPPORTED_LANGUAGES.forEach { lang ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onDismissLanguageDialog()
+                                    onSetLanguage(lang.code)
+                                },
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(
+                                selected = currentLanguage == lang.code,
+                                onClick = {
+                                    onDismissLanguageDialog()
+                                    onSetLanguage(lang.code)
+                                },
+                            )
+                            Text(
+                                text = stringResource(lang.nameRes),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = onDismissLanguageDialog) {
                     Text(
                         text = stringResource(R.string.action_cancel),
                         color = MaterialTheme.colorScheme.onSurface,
@@ -194,9 +254,14 @@ private fun SettingsScreenContent(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     // Language
+                    val currentLanguageName = SUPPORTED_LANGUAGES
+                        .firstOrNull { it.code == currentLanguage }
+                        ?.let { stringResource(it.nameRes) }
+                        ?: currentLanguage
                     SettingsTileChevron(
                         icon = painterResource(R.drawable.globe),
                         label = stringResource(R.string.settings_language),
+                        subtitle = currentLanguageName,
                         onClick = onLanguageClick,
                     )
 
@@ -245,11 +310,12 @@ private fun SettingsTileChevron(
     label: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    subtitle: String? = null,
 ) {
     SettingsTileBase(
         icon = icon,
         label = label,
-        subtitle = null,
+        subtitle = subtitle,
         modifier = modifier.clickable(onClick = onClick),
     ) {
         Icon(

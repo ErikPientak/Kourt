@@ -110,6 +110,10 @@ class NavigationRouterImpl(private val navController: NavController) : INavigati
         navController.navigate("attendance/${Uri.encode(eventId)}")
     }
 
+    override fun navigateToNomination(eventId: String) {
+        navController.navigate("nomination/${Uri.encode(eventId)}")
+    }
+
     override fun navigateToAddChild() {
         navController.navigate(Destination.AddChildScreen.route)
     }

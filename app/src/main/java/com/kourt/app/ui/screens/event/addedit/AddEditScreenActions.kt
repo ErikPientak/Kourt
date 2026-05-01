@@ -21,6 +21,7 @@ interface AddEditEventScreenActions {
     fun onOpponentChange(opponent: String)
     fun onVenueTypeChange(type: String)
     fun onNominationClick()
+    fun onNominationConsumed()
     fun onSave()
     fun onSaveConsumed()
     fun onSaveThisOnly()

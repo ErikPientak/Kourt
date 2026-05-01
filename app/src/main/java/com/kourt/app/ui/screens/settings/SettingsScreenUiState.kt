@@ -7,5 +7,6 @@ data class SettingsScreenUiState(
     val isLoggedOut: Boolean = false,
     val showDeleteDialog: Boolean = false,
     val showLogOutDialog: Boolean = false,
+    val showLanguageDialog: Boolean = false,
     @StringRes val error: Int? = null,
 )

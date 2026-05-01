@@ -130,7 +130,6 @@ fun CoachDashboardScreen(
         onTeamDropdownToggle = viewModel::onTeamDropdownToggle,
         onTeamSelected = viewModel::onTeamSelected,
         onSettingsTap = { navigation.navigateToSettingsScreen() },
-        onUpdateLineup = viewModel::onUpdateLineup,
         onRosterSearchQueryChange = viewModel::onRosterSearchQueryChange,
         onRosterFilterChange = viewModel::onRosterFilterChange,
         onPreviousMonth = viewModel::onPreviousMonth,
@@ -151,7 +150,6 @@ private fun CoachDashboardContent(
     onTeamDropdownToggle: () -> Unit,
     onTeamSelected: (String) -> Unit,
     onSettingsTap: () -> Unit,
-    onUpdateLineup: (String) -> Unit,
     onRosterSearchQueryChange: (String) -> Unit,
     onRosterFilterChange: (MemberFilter) -> Unit,
     onPreviousMonth: () -> Unit,
@@ -231,9 +229,10 @@ private fun CoachDashboardContent(
                 when (selectedTab) {
                     TAB_HOME -> HomeTab(
                         uiState = uiState,
-                        onUpdateLineup = onUpdateLineup,
-                        onCardClicked = onCardClicked
-                        )
+                        onLogAttendance = onLogAttendance,
+                        onLogStatistics = onLogStatistics,
+                        onCardClicked = onCardClicked,
+                    )
                     TAB_SCHEDULE -> ScheduleTab(
                         uiState = uiState,
                         onPreviousMonth = onPreviousMonth,
@@ -469,9 +468,10 @@ private fun CoachDashboardBottomNav(
 @Composable
 private fun HomeTab(
     uiState: CoachDashboardScreenUiState,
-    onUpdateLineup: (String) -> Unit,
+    onLogAttendance: (String) -> Unit,
+    onLogStatistics: (String) -> Unit,
     onCardClicked: (String) -> Unit,
-    ) {
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -490,8 +490,18 @@ private fun HomeTab(
                 event = uiState.upNextEvent,
                 rosterSize = uiState.members.size,
                 attendeeNames = uiState.upNextAttendees,
-                ctaText = R.string.coach_dashboard_update_lineup,
-                onCtaClick = { onUpdateLineup(uiState.upNextEvent.eventId) },
+                ctaText = if (uiState.upNextEvent.type.lowercase() == "match") {
+                    R.string.schedule_log_statistics
+                } else {
+                    R.string.schedule_log_attendance
+                },
+                onCtaClick = {
+                    if (uiState.upNextEvent.type.lowercase() == "match") {
+                        onLogStatistics(uiState.upNextEvent.eventId)
+                    } else {
+                        onLogAttendance(uiState.upNextEvent.eventId)
+                    }
+                },
             )
         } else {
             Box(

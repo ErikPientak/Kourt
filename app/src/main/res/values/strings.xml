@@ -197,6 +197,8 @@
     <string name="settings_delete_account_message">Are you sure you want to delete your account? This action cannot be undone.</string>
     <string name="settings_delete_account_confirm">Delete</string>
     <string name="settings_log_out_account_message">Are you sure you want to Log Out?</string>
+    <string name="language_english">English</string>
+    <string name="language_czech">Čeština</string>
 
     <!-- Profile -->
     <string name="profile_title">Profile</string>
@@ -359,6 +361,13 @@
     <string name="color_picker_subtitle">Select a primary color</string>
     <string name="color_picker_cancel">Cancel</string>
     <string name="color_picker_apply">Apply Color</string>
+
+    <!-- Nomination -->
+    <string name="nomination_title">Nomination</string>
+    <string name="nomination_roster_limit">ROSTER LIMIT</string>
+    <string name="nomination_selected">Selected: %1$d / %2$d</string>
+    <string name="nomination_attendance_rate">%1$d%% Attendance</string>
+    <string name="nomination_button">Nominate</string>
 
     <!-- Attendance -->
     <string name="attendance_screen_title">Log Attendance</string>

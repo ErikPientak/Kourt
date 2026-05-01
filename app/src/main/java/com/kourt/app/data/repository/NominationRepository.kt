@@ -15,8 +15,9 @@ class NominationRepository @Inject constructor(
     suspend fun getNomination(eventId: String): Nomination? =
         collection.document(eventId).get().await().toObject(Nomination::class.java)
 
-    suspend fun createNomination(nomination: Nomination) {
-        collection.document(nomination.eventId).set(nomination).await()
+    suspend fun createNomination(nomination: Nomination): String {
+        val ref = collection.add(nomination).await()
+        return ref.id
     }
 
     suspend fun updateNomination(nomination: Nomination) {

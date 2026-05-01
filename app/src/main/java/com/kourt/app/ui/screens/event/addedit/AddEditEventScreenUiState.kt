@@ -22,6 +22,7 @@ data class AddEditEventScreenUiState(
     val isEditScopeDialogOpen: Boolean = false,
     val isLoading: Boolean = false,
     val isSaved: Boolean = false,
+    val navigateToNominationEventId: String? = null,
     @StringRes val error: Int? = null,
 )
 

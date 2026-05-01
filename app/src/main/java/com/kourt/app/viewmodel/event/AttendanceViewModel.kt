@@ -8,11 +8,17 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.Timestamp
 import com.kourt.app.R
 import com.kourt.app.data.model.Attendance
+import com.kourt.app.data.model.PlayerStats
+import com.kourt.app.data.model.TeamStats
+import com.kourt.app.data.repository.AttendanceRepository
 import com.kourt.app.data.repository.AuthRepository
 import com.kourt.app.data.repository.EventRepository
+import com.kourt.app.data.repository.PlayerStatsRepository
 import com.kourt.app.data.repository.TeamMemberRepository
+import com.kourt.app.data.repository.TeamStatsRepository
 import com.kourt.app.data.repository.UserRepository
 import com.kourt.app.ui.screens.event.attendance.AttendanceFilter
 import com.kourt.app.ui.screens.event.attendance.AttendanceMemberUiItem
@@ -34,9 +40,16 @@ class AttendanceViewModel @Inject constructor(
     private val eventRepository: EventRepository,
     private val teamMemberRepository: TeamMemberRepository,
     private val userRepository: UserRepository,
+    private val attendanceRepository: AttendanceRepository,
+    private val playerStatsRepository: PlayerStatsRepository,
+    private val teamStatsRepository: TeamStatsRepository,
 ) : ViewModel(), AttendanceScreenActions {
 
     private val eventId: String = savedStateHandle["eventId"] ?: ""
+
+    private var teamId = ""
+    private var loadedAttendanceByUserId: Map<String, Attendance> = emptyMap()
+    private var memberIdByUserId: Map<String, String> = emptyMap()
 
     var uiState by mutableStateOf(AttendanceScreenUiState())
         private set
@@ -57,7 +70,7 @@ class AttendanceViewModel @Inject constructor(
             runCatching {
                 // Parallel: fetch event + existing attendance docs + RSVPs
                 val eventDeferred      = async { eventRepository.getEvent(eventId) }
-                val attendanceDeferred = async { eventRepository.getAttendance(eventId) }
+                val attendanceDeferred = async { attendanceRepository.getAttendanceByEvent(eventId) }
                 val rsvpDeferred       = async { eventRepository.getRsvps(eventId) }
 
                 val event          = eventDeferred.await()
@@ -90,6 +103,10 @@ class AttendanceViewModel @Inject constructor(
                     .filter { it.userId.isNotBlank() }
                     .associate { it.userId to it.status }
 
+                teamId = event.teamId
+                loadedAttendanceByUserId = attendanceDocs.associateBy { it.userId }
+                memberIdByUserId = teamMembers.associate { it.userId to it.id }
+
                 // RSVP-derived defaults (only used when no attendance doc exists)
                 val rsvpByUserId = rsvps.associateBy { it.id }
 
@@ -121,6 +138,42 @@ class AttendanceViewModel @Inject constructor(
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private suspend fun updateStats() {
+        val membersWithStatus = uiState.members.filter { it.status != null }
+        val isFirstSave = loadedAttendanceByUserId.isEmpty()
+
+        for (member in membersWithStatus) {
+            val memberId = memberIdByUserId[member.userId] ?: continue
+            val newStatus = member.status ?: continue
+            val oldStatus = loadedAttendanceByUserId[member.userId]?.status
+            if (oldStatus == newStatus) continue
+
+            val existing = playerStatsRepository.getPlayerStats(memberId, teamId)
+                ?: PlayerStats(teamMemberId = memberId, teamId = teamId)
+            var s = existing
+            when (oldStatus) {
+                "on_time"   -> s = s.copy(totalTrainingsOnTime = maxOf(0, s.totalTrainingsOnTime - 1))
+                "late"      -> s = s.copy(totalTrainingsLate = maxOf(0, s.totalTrainingsLate - 1))
+                "excused"   -> s = s.copy(totalTrainingsExcused = maxOf(0, s.totalTrainingsExcused - 1))
+                "unexcused" -> s = s.copy(totalTrainingsUnexcused = maxOf(0, s.totalTrainingsUnexcused - 1))
+            }
+            when (newStatus) {
+                "on_time"   -> s = s.copy(totalTrainingsOnTime = s.totalTrainingsOnTime + 1)
+                "late"      -> s = s.copy(totalTrainingsLate = s.totalTrainingsLate + 1)
+                "excused"   -> s = s.copy(totalTrainingsExcused = s.totalTrainingsExcused + 1)
+                "unexcused" -> s = s.copy(totalTrainingsUnexcused = s.totalTrainingsUnexcused + 1)
+            }
+            playerStatsRepository.updatePlayerStats(s.copy(updatedAt = Timestamp.now()))
+        }
+
+        if (isFirstSave && membersWithStatus.isNotEmpty()) {
+            val existing = teamStatsRepository.getTeamStats(teamId) ?: TeamStats(teamId = teamId)
+            teamStatsRepository.updateTeamStats(
+                existing.copy(totalTrainings = existing.totalTrainings + 1, updatedAt = Timestamp.now())
+            )
+        }
+    }
 
     private fun rsvpDefaultStatus(rsvpStatus: String?, reason: String?): String = when (rsvpStatus) {
         "yes", "late" -> "on_time"
@@ -155,17 +208,24 @@ class AttendanceViewModel @Inject constructor(
             uiState = uiState.copy(isSaving = true, error = null)
 
             runCatching {
+                val now = Timestamp.now()
                 val membersWithStatus = uiState.members.filter { it.status != null }
+                val newLoaded = mutableMapOf<String, Attendance>()
+
                 membersWithStatus.forEach { member ->
-                    eventRepository.upsertAttendance(
-                        eventId = eventId,
-                        attendance = Attendance(
-                            userId = member.userId,
-                            status = member.status ?: return@forEach,
-                            recordedBy = uid,
-                        ),
-                    )
+                    val status = member.status ?: return@forEach
+                    val existing = loadedAttendanceByUserId[member.userId]
+                    val toSave = if (existing != null) {
+                        existing.copy(status = status, updatedBy = uid, updatedAt = now)
+                    } else {
+                        Attendance(eventId = eventId, userId = member.userId, status = status, recordedBy = uid, recordedAt = now)
+                    }
+                    attendanceRepository.saveAttendance(toSave)
+                    newLoaded[member.userId] = toSave
                 }
+
+                updateStats()
+                loadedAttendanceByUserId = newLoaded
                 Log.d(TAG, "Saved attendance for ${membersWithStatus.size} members on event $eventId")
                 uiState = uiState.copy(isSaving = false, isSaved = true)
             }.onFailure { e ->

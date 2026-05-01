@@ -16,7 +16,6 @@ data class PlayerStats(
     val totalMinutes: Double = 0.0,
     val totalFreeThrowsAttempted: Int = 0,
     val totalFreeThrowsMade: Int = 0,
-    val totalTrainings: Int = 0,
     val totalTrainingsOnTime: Int = 0,
     val totalTrainingsLate: Int = 0,
     val totalTrainingsExcused: Int = 0,

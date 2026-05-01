@@ -14,4 +14,12 @@ class TeamStatsRepository @Inject constructor(
 
     suspend fun getTeamStats(teamId: String): TeamStats? =
         collection.document(teamId).get().await().toObject(TeamStats::class.java)
+
+    suspend fun createTeamStats(stats: TeamStats): String  {
+        val ref = collection.add(stats).await()
+        return ref.id
+    }
+    suspend fun updateTeamStats(stats: TeamStats) {
+        collection.document(stats.teamId).set(stats).await()
+    }
 }

@@ -122,7 +122,13 @@ class AddEditEventViewModel @Inject constructor(
     override fun onVenueTypeChange(type: String) { uiState = uiState.copy(venueType = type) }
 
     override fun onNominationClick() {
-        Log.d(TAG, "onNominationClick — not yet implemented")
+        if (eventId.isNotEmpty()) {
+            uiState = uiState.copy(navigateToNominationEventId = eventId)
+        }
+    }
+
+    override fun onNominationConsumed() {
+        uiState = uiState.copy(navigateToNominationEventId = null)
     }
 
     override fun onSave() {
@@ -155,6 +161,7 @@ class AddEditEventViewModel @Inject constructor(
                 if (state.isEditMode) {
                     eventRepository.updateEvent(buildEvent(state, uid))
                     Log.d(TAG, "Event updated: $eventId")
+                    uiState = uiState.copy(isLoading = false, isSaved = true)
                 } else {
                     val newSeriesId = if (state.repeatDays.isNotEmpty()) UUID.randomUUID().toString() else ""
                     val occurrenceDays = if (state.repeatDays.isNotEmpty()) {
@@ -163,12 +170,18 @@ class AddEditEventViewModel @Inject constructor(
                         listOf(state.selectedEpochDay)
                     }
                     val event = buildEvent(state, uid).copy(id = "", seriesId = newSeriesId)
+                    var createdMatchId = ""
                     occurrenceDays.forEach { day ->
                         val newId = eventRepository.createEvent(event.copy(date = epochDayToTimestamp(day)))
+                        if (state.eventType == "match") createdMatchId = newId
                         Log.d(TAG, "Event created: $newId")
                     }
+                    if (createdMatchId.isNotEmpty()) {
+                        uiState = uiState.copy(isLoading = false, navigateToNominationEventId = createdMatchId)
+                    } else {
+                        uiState = uiState.copy(isLoading = false, isSaved = true)
+                    }
                 }
-                uiState = uiState.copy(isLoading = false, isSaved = true)
             }.onFailure { e ->
                 Log.e(TAG, "Failed to save event", e)
                 uiState = uiState.copy(isLoading = false, error = R.string.error_load_failed)

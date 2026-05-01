@@ -17,7 +17,6 @@ interface ClubManagementScreenActions {
     fun onMemberSearchQueryChange(query: String)
     fun onMemberFilterChange(filter: MemberFilter)
     fun onMemberMenuClick(memberId: String)
-    fun onAddMember()
 
     // ── Member Action bottom sheet ────────────────────────────────────────────
     fun onMemberActionDismiss()

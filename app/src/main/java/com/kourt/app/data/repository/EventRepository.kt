@@ -1,7 +1,6 @@
 package com.kourt.app.data.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
-import com.kourt.app.data.model.Attendance
 import com.kourt.app.data.model.Event
 import com.kourt.app.data.model.Rsvp
 import kotlinx.coroutines.tasks.await
@@ -61,18 +60,4 @@ class EventRepository @Inject constructor(
         collection.document(eventId).collection("rsvps")
             .document(uid).get().await().toObject(Rsvp::class.java)
 
-    // Attendance subcollection
-    suspend fun getAttendance(eventId: String): List<Attendance> =
-        collection.document(eventId).collection("attendance").get().await()
-            .toObjects(Attendance::class.java)
-
-    suspend fun addAttendance(eventId: String, attendance: Attendance): String {
-        val ref = collection.document(eventId).collection("attendance").add(attendance).await()
-        return ref.id
-    }
-
-    suspend fun upsertAttendance(eventId: String, attendance: Attendance) {
-        collection.document(eventId).collection("attendance")
-            .document(attendance.userId).set(attendance).await()
-    }
 }

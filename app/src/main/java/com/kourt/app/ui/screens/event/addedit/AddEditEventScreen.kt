@@ -77,6 +77,19 @@ fun AddEditEventScreen(
         }
     }
 
+    LaunchedEffect(uiState.navigateToNominationEventId) {
+        uiState.navigateToNominationEventId?.let { id ->
+            if (uiState.isEditMode) {
+                navigation.navigateToNomination(id)
+                viewModel.onNominationConsumed()
+            } else {
+                // Pop AddEditEvent so back from nomination skips the form
+                navigation.returnBack()
+                navigation.navigateToNomination(id)
+            }
+        }
+    }
+
     AddEditEventContent(
         uiState = uiState,
         actions = viewModel,
@@ -213,7 +226,9 @@ private fun AddEditEventContent(
                     modifier = Modifier.fillMaxWidth(),
                 )
 
-                NominationRow(onClick = actions::onNominationClick)
+                if (uiState.isEditMode) {
+                    NominationRow(onClick = actions::onNominationClick)
+                }
             }
 
             // ── Date ─────────────────────────────────────────────────────

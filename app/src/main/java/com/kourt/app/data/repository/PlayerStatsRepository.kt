@@ -16,7 +16,16 @@ class PlayerStatsRepository @Inject constructor(
         collection.document("${teamMemberId}_${teamId}").get().await()
             .toObject(PlayerStats::class.java)
 
-    suspend fun getPlayerStatsByTeam(teamId: String): List<PlayerStats> =
+    suspend fun getPlayersStatsByTeam(teamId: String): List<PlayerStats> =
         collection.whereEqualTo("teamId", teamId).get().await()
             .toObjects(PlayerStats::class.java)
+
+    suspend fun createPlayerStats(stats: PlayerStats): String  {
+        val ref = collection.add(stats).await()
+        return ref.id
+    }
+
+    suspend fun updatePlayerStats(stats: PlayerStats) {
+        collection.document("${stats.teamMemberId}_${stats.teamId}").set(stats).await()
+    }
 }

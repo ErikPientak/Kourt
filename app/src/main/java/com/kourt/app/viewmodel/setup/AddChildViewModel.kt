@@ -106,12 +106,12 @@ class AddChildViewModel @Inject constructor(
                     return@launch
                 }
 
-                teamMemberRepository.addMember(
+                teamMemberRepository.createMember(
                     TeamMember(userId = uiState.childUid, teamId = team.id, role = "player")
                 )
                 val parentUid = authRepository.currentUser?.uid
                 if (parentUid != null && !teamMemberRepository.isMember(parentUid, team.id)) {
-                    teamMemberRepository.addMember(
+                    teamMemberRepository.createMember(
                         TeamMember(userId = parentUid, teamId = team.id, role = "parent")
                     )
                 }

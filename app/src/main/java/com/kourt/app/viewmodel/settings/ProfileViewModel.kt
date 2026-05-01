@@ -231,12 +231,12 @@ class ProfileViewModel @Inject constructor(
                     uiState = uiState.copy(isLoading = false, joinCodeForChildError = R.string.error_already_member)
                     return@launch
                 }
-                teamMemberRepository.addMember(
+                teamMemberRepository.createMember(
                     TeamMember(userId = childId, teamId = team.id, role = "player")
                 )
                 val parentUid = authRepository.currentUser?.uid
                 if (parentUid != null && !teamMemberRepository.isMember(parentUid, team.id)) {
-                    teamMemberRepository.addMember(
+                    teamMemberRepository.createMember(
                         TeamMember(userId = parentUid, teamId = team.id, role = "parent")
                     )
                 }

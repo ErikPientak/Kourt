@@ -191,6 +191,8 @@
     <string name="settings_delete_account_message">Opravdu chcete smazat svůj účet? Tuto akci nelze vrátit.</string>
     <string name="settings_delete_account_confirm">Smazat</string>
     <string name="settings_log_out_account_message">Opravdu se chcete odhlásit?</string>
+    <string name="language_english">English</string>
+    <string name="language_czech">Čeština</string>
 
     <!-- Profile -->
     <string name="profile_title">Profil</string>
@@ -354,6 +356,13 @@
     <string name="color_picker_subtitle">Vyberte hlavní barvu</string>
     <string name="color_picker_cancel">Zrušit</string>
     <string name="color_picker_apply">Použít barvu</string>
+
+    <!-- Nomination -->
+    <string name="nomination_title">Nominace</string>
+    <string name="nomination_roster_limit">LIMIT SOUPISKY</string>
+    <string name="nomination_selected">Vybráno: %1$d / %2$d</string>
+    <string name="nomination_attendance_rate">%1$d%% Docházka</string>
+    <string name="nomination_button">Nominovat</string>
 
     <!-- Attendance -->
     <string name="attendance_screen_title">Zapsat docházku</string>

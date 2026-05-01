@@ -7,9 +7,11 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kourt.app.R
+import com.kourt.app.data.model.PlayerStats
 import com.kourt.app.data.model.TeamMember
 import com.kourt.app.data.repository.AppPreferencesRepository
 import com.kourt.app.data.repository.AuthRepository
+import com.kourt.app.data.repository.PlayerStatsRepository
 import com.kourt.app.data.repository.TeamMemberRepository
 import com.kourt.app.data.repository.TeamRepository
 import com.kourt.app.ui.screens.setup.SetupScreenActions
@@ -25,6 +27,7 @@ class SetupViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val teamRepository: TeamRepository,
     private val teamMemberRepository: TeamMemberRepository,
+    private val playerStatsRepository: PlayerStatsRepository,
     private val appPreferencesRepository: AppPreferencesRepository,
 ) : ViewModel(), SetupScreenActions {
 
@@ -67,7 +70,7 @@ class SetupViewModel @Inject constructor(
                     return@launch
                 }
 
-                teamMemberRepository.addMember(
+                val memberId = teamMemberRepository.createMember(
                     TeamMember(
                         userId = uid,
                         teamId = team.id,
@@ -75,7 +78,16 @@ class SetupViewModel @Inject constructor(
                     )
                 )
 
+                playerStatsRepository.createPlayerStats(
+                    PlayerStats(
+                        teamMemberId = memberId,
+                        teamId = team.id,
+                    )
+                )
+
+
                 appPreferencesRepository.activeClubId = team.clubId
+                appPreferencesRepository.activeTeamId = team.id
 
                 Log.d(TAG, "Joined team ${team.id} in club ${team.clubId}")
                 uiState = uiState.copy(isLoading = false, isSuccess = true)

@@ -1,6 +1,7 @@
 package com.kourt.app.data.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
+import com.kourt.app.data.model.Attendance
 import com.kourt.app.data.model.MatchStats
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -15,11 +16,12 @@ class MatchStatsRepository @Inject constructor(
     suspend fun getMatchStats(eventId: String): MatchStats? =
         collection.document(eventId).get().await().toObject(MatchStats::class.java)
 
-    suspend fun createMatchStats(matchStats: MatchStats) {
+    suspend fun updateMatchStats(matchStats: MatchStats) {
         collection.document(matchStats.eventId).set(matchStats).await()
     }
 
-    suspend fun updateMatchStats(matchStats: MatchStats) {
-        collection.document(matchStats.eventId).set(matchStats).await()
+    suspend fun createMatchStats(matchStats: MatchStats): String  {
+        val ref = collection.add(matchStats).await()
+        return ref.id
     }
 }

@@ -60,6 +60,14 @@ class SettingsViewModel @Inject constructor(
         uiState = uiState.copy(showLogOutDialog = false)
     }
 
+    override fun onLanguageClick() {
+        uiState = uiState.copy(showLanguageDialog = true)
+    }
+
+    override fun onDismissLanguageDialog() {
+        uiState = uiState.copy(showLanguageDialog = false)
+    }
+
     override fun onSaveConsumed() {
         uiState = uiState.copy(isLoggedOut = false)
     }

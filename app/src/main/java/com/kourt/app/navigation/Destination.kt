@@ -21,5 +21,6 @@ sealed class Destination(val route: String) {
     object AddEditEventScreen   : Destination("add_edit_event?teamId={teamId}&eventId={eventId}")
     object EventDetailScreen    : Destination("event_detail/{eventId}")
     object AttendanceScreen     : Destination("attendance/{eventId}")
+    object NominationScreen     : Destination("nomination/{eventId}")
     object AddChildScreen       : Destination("add_child")
 }

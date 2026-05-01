@@ -227,10 +227,6 @@ class ClubManagementViewModel @Inject constructor(
         uiState = uiState.copy(selectedMember = member)
     }
 
-    override fun onAddMember() {
-        Log.d(TAG, "onAddMember: stub")
-    }
-
     // ── Member Action bottom sheet ────────────────────────────────────────────
 
     override fun onMemberActionDismiss() {
@@ -249,7 +245,7 @@ class ClubManagementViewModel @Inject constructor(
         uiState = uiState.copy(memberForAssignTeam = null)
         viewModelScope.launch {
             runCatching {
-                teamMemberRepository.addMember(
+                teamMemberRepository.createMember(
                     com.kourt.app.data.model.TeamMember(
                         userId = member.userId,
                         teamId = teamId,

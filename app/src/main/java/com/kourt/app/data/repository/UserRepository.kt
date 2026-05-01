@@ -22,6 +22,7 @@ class UserRepository @Inject constructor(
         collection.document(user.id).set(user).await()
     }
 
+
     suspend fun updateUser(user: User) {
         collection.document(user.id).set(user).await()
     }

@@ -24,6 +24,7 @@ import com.kourt.app.ui.screens.team.create.AddTeamScreen
 import com.kourt.app.ui.screens.event.addedit.AddEditEventScreen
 import com.kourt.app.ui.screens.event.attendance.AttendanceScreen
 import com.kourt.app.ui.screens.event.detail.EventDetailScreen
+import com.kourt.app.ui.screens.event.nomination.NominationScreen
 import com.kourt.app.ui.screens.setup.addchild.AddChildScreen
 
 @Composable
@@ -91,6 +92,8 @@ fun NavGraph(
                 navigation = navigation,
                 isDarkTheme = isDarkTheme,
                 onToggleTheme = onToggleTheme,
+                currentLanguage = currentLanguage,
+                onSetLanguage = onSetLanguage,
             )
         }
 
@@ -141,6 +144,15 @@ fun NavGraph(
             ),
         ) {
             AttendanceScreen(navigation = navigation)
+        }
+
+        composable(
+            route = Destination.NominationScreen.route,
+            arguments = listOf(
+                navArgument("eventId") { type = NavType.StringType; defaultValue = "" },
+            ),
+        ) {
+            NominationScreen(navigation = navigation)
         }
 
         composable(

@@ -40,7 +40,7 @@ class RegisterViewModel @Inject constructor(
                 val firebaseUser = result.getOrNull()!!
                 Log.d(TAG, "Firebase Auth registration successful: ${firebaseUser.email}")
                 runCatching {
-                    userRepository.createUser(
+                    userRepository.updateUser(
                         User(
                             id = firebaseUser.uid,
                             displayName = fullName.trim(),

@@ -20,7 +20,7 @@ class TeamMemberRepository @Inject constructor(
         collection.whereEqualTo("userId", userId).get().await()
             .toObjects(TeamMember::class.java)
 
-    suspend fun addMember(member: TeamMember): String {
+    suspend fun createMember(member: TeamMember): String {
         val ref = collection.add(member).await()
         return ref.id
     }
