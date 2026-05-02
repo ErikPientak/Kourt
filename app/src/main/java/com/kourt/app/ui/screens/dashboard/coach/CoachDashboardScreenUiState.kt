@@ -70,4 +70,6 @@ data class CoachDashboardScreenUiState(
     val showRemoveMemberConfirm: Boolean = false,
     val currentUserRole: String = "",
     val selectedRole: String = "",
+    val showJerseyNumberDialog: Boolean = false,
+    val jerseyNumberInput: String = "",
 )

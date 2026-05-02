@@ -137,6 +137,7 @@ abstract class BaseDashboardViewModel(
                             role = role,
                             subtitle = subtitle,
                             avatarUrl = u.avatarId.ifBlank { u.photoURL },
+                            jerseyNumber = m.jerseyNumber,
                         )
                     }
 

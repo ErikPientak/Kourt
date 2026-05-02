@@ -34,6 +34,7 @@ data class ClubMemberUiItem(
     /** Pre-formatted subtitle line shown below the name on the card. */
     val subtitle: String,
     val avatarUrl: String = "",
+    val jerseyNumber: Int = 0,
 )
 
 // ── Screen UI state ───────────────────────────────────────────────────────────

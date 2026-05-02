@@ -19,6 +19,8 @@ interface CoachDashboardScreenActions {
     fun onChangeRole(memberId: String, newRole: String)
     fun onRemoveMember(memberId: String)
     fun onChangeJerseyNumberClick(memberId: String)
+    fun onJerseyNumberInputChange(value: String)
+    fun onJerseyNumberDialogDismiss()
     fun onChangeJerseyNumber(memberId: String, newJerseyNumber: Int)
     // Schedule tab
     fun onPreviousMonth()

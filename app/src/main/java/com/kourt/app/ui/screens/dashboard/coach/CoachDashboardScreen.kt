@@ -59,8 +59,11 @@ import com.kourt.app.ui.screens.club.management.MemberFilter
 import com.kourt.app.ui.Tabs.MembersTab
 import com.kourt.app.ui.Tabs.ScheduleTab
 import com.kourt.app.ui.components.UpNextCard
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextButton
+import androidx.compose.ui.text.input.KeyboardType
 import com.kourt.app.ui.components.bottomSheets.ChangeRoleBottomSheet
 import com.kourt.app.ui.components.bottomSheets.GrowYourTeamBottomSheet
 import com.kourt.app.ui.components.bottomSheets.RosterActionBottomSheet
@@ -135,6 +138,10 @@ fun CoachDashboardScreen(
         onRoleMenuDismiss = viewModel::onRosterMenuDismiss,
         onRoleSelected = viewModel::onRoleSelected,
         onChangeRole = viewModel::onChangeRole,
+        onChangeJerseyNumberClick = viewModel::onChangeJerseyNumberClick,
+        onJerseyNumberInputChange = viewModel::onJerseyNumberInputChange,
+        onJerseyNumberDialogDismiss = viewModel::onJerseyNumberDialogDismiss,
+        onChangeJerseyNumber = viewModel::onChangeJerseyNumber,
     )
 }
 
@@ -164,8 +171,11 @@ private fun CoachDashboardContent(
     onRoleSelected: (String) -> Unit,
     onChangeRole: (String, String) -> Unit,
     onChangeRoleClicked: () -> Unit,
-
-    ) {
+    onChangeJerseyNumberClick: (String) -> Unit,
+    onJerseyNumberInputChange: (String) -> Unit,
+    onJerseyNumberDialogDismiss: () -> Unit,
+    onChangeJerseyNumber: (String, Int) -> Unit,
+) {
     var selectedTab by rememberSaveable { mutableIntStateOf(TAB_HOME) }
 
     if (uiState.showGrowTeamSheet) {
@@ -189,12 +199,23 @@ private fun CoachDashboardContent(
     }
 
     // ACTION MENU
-    if (selectedMemberId != null && !uiState.showRemoveMemberConfirm && !uiState.showChangeRoleSheet) {
+    if (selectedMemberId != null && !uiState.showRemoveMemberConfirm && !uiState.showChangeRoleSheet && !uiState.showJerseyNumberDialog) {
         RosterActionBottomSheet(
             memberId = selectedMemberId,
             onDismiss = onRosterMenuDismiss,
             onRemoveMember = { onRemoveMemberConfirmShow() },
             onChangeRole = onChangeRoleClicked,
+            onChangeJerseyNumber = { onChangeJerseyNumberClick(selectedMemberId) },
+        )
+    }
+
+    // JERSEY NUMBER
+    if (uiState.showJerseyNumberDialog && selectedMemberId != null) {
+        ChangeJerseyNumberDialog(
+            input = uiState.jerseyNumberInput,
+            onInputChange = onJerseyNumberInputChange,
+            onConfirm = { onChangeJerseyNumber(selectedMemberId, it) },
+            onDismiss = onJerseyNumberDialogDismiss,
         )
     }
     // REMOVE MEMBER
@@ -592,3 +613,46 @@ private fun HomeTab(
     }
 }
 
+@Composable
+private fun ChangeJerseyNumberDialog(
+    input: String,
+    onInputChange: (String) -> Unit,
+    onConfirm: (Int) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val number = input.toIntOrNull()
+    val isValid = input.isNotEmpty() && number != null && number >= 0
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(R.string.jersey_number_dialog_title),
+                style = MaterialTheme.typography.headlineSmall,
+            )
+        },
+        text = {
+            OutlinedTextField(
+                value = input,
+                onValueChange = { new ->
+                    if (new.all { it.isDigit() } && new.length <= 3) onInputChange(new)
+                },
+                label = { Text(stringResource(R.string.jersey_number_hint)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = { if (isValid) onConfirm(number!!) }, enabled = isValid) {
+                Text(stringResource(R.string.jersey_number_update))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.action_cancel))
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.surface,
+    )
+}

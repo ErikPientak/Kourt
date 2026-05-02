@@ -178,7 +178,7 @@ class CoachDashboardViewModel @Inject constructor(
     }
 
     override fun onRosterMenuDismiss() {
-        if (!uiState.showChangeRoleSheet && !uiState.showRemoveMemberConfirm) {
+        if (!uiState.showChangeRoleSheet && !uiState.showRemoveMemberConfirm && !uiState.showJerseyNumberDialog) {
             uiState = uiState.copy(selectedMember = null)
         }
     }
@@ -226,13 +226,29 @@ class CoachDashboardViewModel @Inject constructor(
     }
 
     override fun onChangeJerseyNumberClick(memberId: String) {
-        TODO("Not yet implemented")
+        val current = uiState.members.firstOrNull { it.memberId == memberId }?.jerseyNumber ?: 0
+        uiState = uiState.copy(
+            showJerseyNumberDialog = true,
+            jerseyNumberInput = if (current > 0) current.toString() else "",
+        )
+    }
+
+    override fun onJerseyNumberInputChange(value: String) {
+        uiState = uiState.copy(jerseyNumberInput = value)
+    }
+
+    override fun onJerseyNumberDialogDismiss() {
+        uiState = uiState.copy(showJerseyNumberDialog = false, jerseyNumberInput = "", selectedMember = null)
     }
 
     override fun onChangeJerseyNumber(memberId: String, newJerseyNumber: Int) {
         viewModelScope.launch {
             runCatching {
                 teamMemberRepository.changeJerseyNumber(memberId, newJerseyNumber)
+                onJerseyNumberDialogDismiss()
+                refreshEvents()
+            }.onFailure { e ->
+                Log.e(logTag, "Failed to change jersey number for $memberId", e)
             }
         }
     }
