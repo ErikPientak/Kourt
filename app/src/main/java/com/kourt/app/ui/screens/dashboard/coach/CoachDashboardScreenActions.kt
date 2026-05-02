@@ -6,8 +6,15 @@ interface CoachDashboardScreenActions {
     fun onTeamDropdownToggle()
     fun onTeamSelected(teamId: String)
     fun onUpdateLineup(eventId: String)
+    // Roster Tab
     fun onRosterSearchQueryChange(query: String)
     fun onRosterFilterChange(filter: MemberFilter)
+    fun onRosterMenuClick(memberId: String)
+    fun onRosterMenuDismiss()
+    fun onRemoveMemberConfirmShow()
+    fun onRemoveMemberConfirmDismiss()
+    fun onChangeRole(memberId: String, newRole: String)
+    fun onRemoveMember(memberId: String)
 
     // Schedule tab
     fun onPreviousMonth()

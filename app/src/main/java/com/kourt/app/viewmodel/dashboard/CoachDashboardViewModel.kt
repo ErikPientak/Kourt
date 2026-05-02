@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.kourt.app.data.repository.AppPreferencesRepository
 import com.kourt.app.data.repository.AuthRepository
 import com.kourt.app.data.repository.EventRepository
+import com.kourt.app.data.repository.RsvpRepository
 import com.kourt.app.data.repository.TeamMemberRepository
 import com.kourt.app.data.repository.TeamRepository
 import com.kourt.app.data.repository.UserRepository
@@ -29,6 +30,7 @@ class CoachDashboardViewModel @Inject constructor(
     teamMemberRepository: TeamMemberRepository,
     teamRepository: TeamRepository,
     eventRepository: EventRepository,
+    private val rsvpRepository: RsvpRepository,
     appPreferencesRepository: AppPreferencesRepository,
 ) : BaseDashboardViewModel(
     authRepository, userRepository, teamMemberRepository,
@@ -97,7 +99,7 @@ class CoachDashboardViewModel @Inject constructor(
     private fun loadRsvpCounts(eventId: String) {
         viewModelScope.launch {
             val rsvps = runCatching {
-                val rsvps = eventRepository.getRsvps(eventId)
+                val rsvps = rsvpRepository.getRsvpsByEvent(eventId)
                 val yes = rsvps.count { it.status == "yes" }
                 val late = rsvps.count { it.status == "late" }
                 val no = rsvps.count { it.status == "no" }
@@ -113,7 +115,7 @@ class CoachDashboardViewModel @Inject constructor(
                 ?: return@launch
 
             runCatching {
-                val yesUids = rsvps.filter { it.status == "yes" }.map { it.id }.filter { it.isNotBlank() }
+                val yesUids = rsvps.filter { it.status == "yes" }.map { it.submittedBy }.filter { it.isNotBlank() }
                 val attendees = if (yesUids.isNotEmpty()) {
                     userRepository.getUsersByIds(yesUids).map { user ->
                         ClubMemberUiItem(
@@ -151,6 +153,7 @@ class CoachDashboardViewModel @Inject constructor(
     override fun onUpdateLineup(eventId: String) {
         uiState = uiState.copy(navigateToAttendanceEventId = eventId)
     }
+    // ── Roster Actions ───────────────────────────────────────────
 
     override fun onRosterSearchQueryChange(query: String) {
         uiState = uiState.copy(
@@ -166,6 +169,43 @@ class CoachDashboardViewModel @Inject constructor(
         )
     }
 
+    override fun onRosterMenuClick(memberId: String) {
+        uiState = uiState.copy(selectedMember = memberId)
+    }
+
+    override fun onRosterMenuDismiss() {
+        uiState = uiState.copy(selectedMember = null, showRemoveMemberConfirm = false)
+    }
+
+    override fun onRemoveMemberConfirmShow() {
+        uiState = uiState.copy(showRemoveMemberConfirm = true)
+    }
+
+    override fun onRemoveMemberConfirmDismiss() {
+        uiState = uiState.copy(showRemoveMemberConfirm = false, selectedMember = null)
+    }
+
+    override fun onChangeRole(memberId: String, newRole: String) {
+        viewModelScope.launch {
+            runCatching {
+                teamMemberRepository.changeRole(memberId, newRole)
+            }
+        }
+    }
+
+    override fun onRemoveMember(memberId: String) {
+        viewModelScope.launch {
+            runCatching {
+                teamMemberRepository.removeMember(memberId)
+                uiState = uiState.copy(selectedMember = null)
+                refreshEvents()
+            }.onFailure { e ->
+                Log.e(logTag, "Failed to remove member $memberId", e)
+            }
+        }
+    }
+
+    //── Schedule Actions ───────────────────────────────────────────
     override fun onPreviousMonth() {
         val cal = Calendar.getInstance().apply {
             set(uiState.calendarYear, uiState.calendarMonth, 1)
@@ -205,7 +245,11 @@ class CoachDashboardViewModel @Inject constructor(
     }
 
     override fun onLogStatistics(eventId: String) {
-        Log.d(logTag, "onLogStatistics: $eventId — not yet implemented")
+        uiState = uiState.copy(navigateToMatchStatsEventId = eventId)
+    }
+
+    fun onMatchStatsNavigated() {
+        uiState = uiState.copy(navigateToMatchStatsEventId = null)
     }
 
     override fun onAddEvent() {

@@ -57,7 +57,7 @@ fun RegisterScreen(
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
             viewModel.onSaveConsumed()
-            navigation.navigateToHome()
+            navigation.navigateToSetupScreen()
         }
     }
 

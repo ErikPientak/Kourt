@@ -2,6 +2,7 @@ package com.kourt.app.ui.screens.dashboard.coach
 
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
+import com.kourt.app.data.model.TeamMember
 import com.kourt.app.ui.screens.club.management.ClubMemberUiItem
 import com.kourt.app.ui.screens.club.management.MemberFilter
 import java.util.Calendar
@@ -62,5 +63,8 @@ data class CoachDashboardScreenUiState(
     val navigateToAddEvent: Boolean = false,
     val navigateToEventDetailId: String? = null,
     val navigateToAttendanceEventId: String? = null,
+    val navigateToMatchStatsEventId: String? = null,
     val showGrowTeamSheet: Boolean = false,
+    val selectedMember: String? = null,
+    val showRemoveMemberConfirm: Boolean = false,
 )

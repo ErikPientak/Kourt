@@ -59,6 +59,7 @@ import com.kourt.app.ui.components.TeamCard
 import com.kourt.app.ui.Tabs.EventsTab
 import com.kourt.app.ui.Tabs.MembersTab
 import com.kourt.app.ui.Tabs.TeamsTab
+import com.kourt.app.ui.components.bottomSheets.AssignTeamBottomSheet
 import com.kourt.app.viewmodel.club.ClubManagementViewModel
 
 private const val TAB_TEAMS = 0
@@ -360,77 +361,7 @@ private fun ClubManagementTopBar(
     )
 }
 
-// ── Assign Team bottom sheet ──────────────────────────────────────────────────
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun AssignTeamBottomSheet(
-    teams: List<Team>,
-    onTeamSelected: (String) -> Unit,
-    onDismiss: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.onSurface,
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .navigationBarsPadding()
-                .padding(bottom = 8.dp),
-        ) {
-            // Title row — matches MemberActionBottomSheet header style
-            Text(
-                text = stringResource(com.kourt.app.R.string.assign_team_title),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 16.dp),
-            )
-
-            // Scrollable team list
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f, fill = false),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-            ) {
-                items(items = teams, key = { it.id }) { team ->
-                    TeamCard(
-                        teamName = team.name,
-                        headCoach = team.headCoach,
-                        onClick = {
-                            onTeamSelected(team.id)
-                            onDismiss()
-                        },
-                    )
-                }
-            }
-
-            // Cancel button — full-width, matches sheet's dismiss style
-            TextButton(
-                onClick = onDismiss,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-            ) {
-                Text(
-                    text = stringResource(com.kourt.app.R.string.action_cancel),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            }
-        }
-    }
-}
 
 // ── Bottom navigation ─────────────────────────────────────────────────────────
 

@@ -10,6 +10,7 @@ import com.kourt.app.data.model.Rsvp
 import com.kourt.app.data.repository.AppPreferencesRepository
 import com.kourt.app.data.repository.AuthRepository
 import com.kourt.app.data.repository.EventRepository
+import com.kourt.app.data.repository.RsvpRepository
 import com.kourt.app.data.repository.TeamMemberRepository
 import com.kourt.app.data.repository.TeamRepository
 import com.kourt.app.data.repository.UserRepository
@@ -31,6 +32,7 @@ class PlayerDashboardViewModel @Inject constructor(
     teamMemberRepository: TeamMemberRepository,
     teamRepository: TeamRepository,
     eventRepository: EventRepository,
+    private val rsvpRepository: RsvpRepository,
     appPreferencesRepository: AppPreferencesRepository,
 ) : BaseDashboardViewModel(
     authRepository, userRepository, teamMemberRepository,
@@ -39,6 +41,8 @@ class PlayerDashboardViewModel @Inject constructor(
 
     override val memberRoles = setOf("player", "parent")
     override val logTag = "PlayerDashboardViewModel"
+
+    private var loadedMyRsvp: Rsvp? = null
 
     var uiState by mutableStateOf(PlayerDashboardScreenUiState())
         private set
@@ -101,25 +105,26 @@ class PlayerDashboardViewModel @Inject constructor(
         val uid = authRepository.currentUser?.uid ?: return
         viewModelScope.launch {
             val rsvps = runCatching {
-                val myStatus = eventRepository.getMyRsvp(eventId, uid)?.status
-                val rsvps = eventRepository.getRsvps(eventId)
+                val myRsvp = rsvpRepository.getMyRsvp(eventId, uid)
+                loadedMyRsvp = myRsvp
+                val rsvps = rsvpRepository.getRsvpsByEvent(eventId)
                 val yes = rsvps.count { it.status == "yes" }
                 val late = rsvps.count { it.status == "late" }
                 val no = rsvps.count { it.status == "no" }
                 val current = uiState.upNextEvent
                 uiState = uiState.copy(
-                    myRsvpStatus = myStatus,
+                    myRsvpStatus = myRsvp?.status,
                     upNextEvent = current?.takeIf { it.eventId == eventId }
                         ?.copy(rsvpYes = yes, rsvpLate = late, rsvpNo = no)
                         ?: current,
                 )
-                Log.d(logTag, "RSVP data for $eventId: mine=$myStatus yes=$yes late=$late no=$no")
+                Log.d(logTag, "RSVP data for $eventId: mine=${myRsvp?.status} yes=$yes late=$late no=$no")
                 rsvps
             }.onFailure { Log.w(logTag, "Failed to load RSVP data for $eventId") }.getOrNull()
                 ?: return@launch
 
             runCatching {
-                val attendees = buildAttendees(rsvps.filter { it.status == "yes" }.map { it.id }.filter { it.isNotBlank() })
+                val attendees = buildAttendees(rsvps.filter { it.status == "yes" }.map { it.submittedBy }.filter { it.isNotBlank() })
                 if (uiState.upNextEvent?.eventId == eventId) {
                     uiState = uiState.copy(upNextAttendees = attendees)
                 }
@@ -130,7 +135,7 @@ class PlayerDashboardViewModel @Inject constructor(
     private fun refreshRsvpCounts(eventId: String) {
         viewModelScope.launch {
             val rsvps = runCatching {
-                val rsvps = eventRepository.getRsvps(eventId)
+                val rsvps = rsvpRepository.getRsvpsByEvent(eventId)
                 val yes = rsvps.count { it.status == "yes" }
                 val late = rsvps.count { it.status == "late" }
                 val no = rsvps.count { it.status == "no" }
@@ -146,7 +151,7 @@ class PlayerDashboardViewModel @Inject constructor(
                 ?: return@launch
 
             runCatching {
-                val attendees = buildAttendees(rsvps.filter { it.status == "yes" }.map { it.id }.filter { it.isNotBlank() })
+                val attendees = buildAttendees(rsvps.filter { it.status == "yes" }.map { it.submittedBy }.filter { it.isNotBlank() })
                 if (uiState.upNextEvent?.eventId == eventId) {
                     uiState = uiState.copy(upNextAttendees = attendees)
                 }
@@ -175,16 +180,16 @@ class PlayerDashboardViewModel @Inject constructor(
         viewModelScope.launch {
             uiState = uiState.copy(isRsvpSubmitting = true)
             runCatching {
-                eventRepository.upsertRsvp(
-                    eventId,
-                    Rsvp(
-                        status = status,
-                        reason = reason.orEmpty(),
-                        reasonNote = note.orEmpty(),
-                        submittedBy = uid,
-                        submittedAt = Timestamp.now(),
-                    ),
-                )
+                val existing = loadedMyRsvp
+                if (existing != null) {
+                    rsvpRepository.updateRsvp(
+                        existing.copy(status = status, reason = reason.orEmpty(), reasonNote = note.orEmpty())
+                    )
+                } else {
+                    rsvpRepository.saveRsvp(
+                        Rsvp(eventId = eventId, status = status, reason = reason.orEmpty(), reasonNote = note.orEmpty(), submittedBy = uid)
+                    )
+                }
                 uiState = uiState.copy(
                     isRsvpSubmitting = false,
                     myRsvpStatus = if (isUpNext) status else uiState.myRsvpStatus,

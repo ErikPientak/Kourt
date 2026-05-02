@@ -117,4 +117,8 @@ class NavigationRouterImpl(private val navController: NavController) : INavigati
     override fun navigateToAddChild() {
         navController.navigate(Destination.AddChildScreen.route)
     }
+
+    override fun navigateToMatchStats(eventId: String) {
+        navController.navigate("match_stats/${Uri.encode(eventId)}")
+    }
 }

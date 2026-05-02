@@ -17,6 +17,7 @@ import com.kourt.app.data.repository.AttendanceRepository
 import com.kourt.app.data.repository.AuthRepository
 import com.kourt.app.data.repository.EventRepository
 import com.kourt.app.data.repository.PlayerStatsRepository
+import com.kourt.app.data.repository.RsvpRepository
 import com.kourt.app.data.repository.TeamMemberRepository
 import com.kourt.app.data.repository.TeamStatsRepository
 import com.kourt.app.data.repository.UserRepository
@@ -38,6 +39,7 @@ class AttendanceViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val authRepository: AuthRepository,
     private val eventRepository: EventRepository,
+    private val rsvpRepository: RsvpRepository,
     private val teamMemberRepository: TeamMemberRepository,
     private val userRepository: UserRepository,
     private val attendanceRepository: AttendanceRepository,
@@ -71,7 +73,7 @@ class AttendanceViewModel @Inject constructor(
                 // Parallel: fetch event + existing attendance docs + RSVPs
                 val eventDeferred      = async { eventRepository.getEvent(eventId) }
                 val attendanceDeferred = async { attendanceRepository.getAttendanceByEvent(eventId) }
-                val rsvpDeferred       = async { eventRepository.getRsvps(eventId) }
+                val rsvpDeferred       = async { rsvpRepository.getRsvpsByEvent(eventId) }
 
                 val event          = eventDeferred.await()
                 val attendanceDocs = attendanceDeferred.await()
@@ -108,7 +110,7 @@ class AttendanceViewModel @Inject constructor(
                 memberIdByUserId = teamMembers.associate { it.userId to it.id }
 
                 // RSVP-derived defaults (only used when no attendance doc exists)
-                val rsvpByUserId = rsvps.associateBy { it.id }
+                val rsvpByUserId = rsvps.associateBy { it.submittedBy }
 
                 val memberItems = teamMembers.mapNotNull { member ->
                     val user = users[member.userId] ?: return@mapNotNull null

@@ -51,7 +51,7 @@ fun SetupScreen(
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
             viewModel.onSaveConsumed()
-            navigation.navigateToSettingsScreen()
+            navigation.navigateToPlayerDashboard()
         }
     }
 

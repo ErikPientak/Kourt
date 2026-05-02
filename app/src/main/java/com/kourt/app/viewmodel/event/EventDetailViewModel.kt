@@ -12,6 +12,7 @@ import com.kourt.app.R
 import com.kourt.app.data.model.Rsvp
 import com.kourt.app.data.repository.AuthRepository
 import com.kourt.app.data.repository.EventRepository
+import com.kourt.app.data.repository.RsvpRepository
 import com.kourt.app.data.repository.TeamMemberRepository
 import com.kourt.app.data.repository.UserRepository
 import com.kourt.app.ui.screens.event.detail.EventDetailScreenActions
@@ -32,11 +33,13 @@ class EventDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val authRepository: AuthRepository,
     private val eventRepository: EventRepository,
+    private val rsvpRepository: RsvpRepository,
     private val userRepository: UserRepository,
     private val teamMemberRepository: TeamMemberRepository,
 ) : ViewModel(), EventDetailScreenActions {
 
     private val eventId: String = savedStateHandle["eventId"] ?: ""
+    private var loadedMyRsvp: Rsvp? = null
 
     var uiState by mutableStateOf(EventDetailScreenUiState())
         private set
@@ -56,7 +59,7 @@ class EventDetailViewModel @Inject constructor(
             runCatching {
                 // Parallel fetch
                 val eventDeferred = async { eventRepository.getEvent(eventId) }
-                val rsvpsDeferred = async { eventRepository.getRsvps(eventId) }
+                val rsvpsDeferred = async { rsvpRepository.getRsvpsByEvent(eventId) }
                 val membershipsDeferred = async { teamMemberRepository.getMembersByUser(uid) }
 
                 val event = eventDeferred.await()
@@ -97,8 +100,8 @@ class EventDetailViewModel @Inject constructor(
                 val rsvpLate = rsvps.count { it.status == "late" }
                 val rsvpNo = rsvps.count { it.status == "no" }
 
-                // My own RSVP (Rsvp.id == uid because we use uid as doc ID)
-                val myRsvp = rsvps.firstOrNull { it.id == uid }
+                val myRsvp = rsvps.firstOrNull { it.submittedBy == uid }
+                loadedMyRsvp = myRsvp
                 val myRsvpStatus = myRsvp?.status
 
                 // Fetch user details for going/not-going members
@@ -106,7 +109,7 @@ class EventDetailViewModel @Inject constructor(
                 val notGoingRsvps = rsvps.filter { it.status == "no" }
 
                 val allRelevantUids = (goingRsvps + notGoingRsvps)
-                    .map { it.id }
+                    .map { it.submittedBy }
                     .filter { it.isNotBlank() }
                     .distinct()
 
@@ -124,7 +127,7 @@ class EventDetailViewModel @Inject constructor(
                 // membership of the current user. For other members we show their user role.
                 // As a fallback, we show the user's email domain or an empty string.
                 val goingMembers = goingRsvps.mapNotNull { rsvp ->
-                    val user = userMap[rsvp.id] ?: return@mapNotNull null
+                    val user = userMap[rsvp.submittedBy] ?: return@mapNotNull null
                     RsvpMemberUiItem(
                         userId = user.id,
                         displayName = user.displayName.ifBlank { user.email },
@@ -135,7 +138,7 @@ class EventDetailViewModel @Inject constructor(
                 }
 
                 val notGoingMembers = notGoingRsvps.mapNotNull { rsvp ->
-                    val user = userMap[rsvp.id] ?: return@mapNotNull null
+                    val user = userMap[rsvp.submittedBy] ?: return@mapNotNull null
                     val reasonDisplay = rsvp.reason
                         .replace("_", " ")
                         .replaceFirstChar { it.uppercase() }
@@ -225,14 +228,16 @@ class EventDetailViewModel @Inject constructor(
         viewModelScope.launch {
             uiState = uiState.copy(isRsvpSubmitting = true, error = null)
             runCatching {
-                val rsvp = Rsvp(
-                    id = uid,
-                    status = status,
-                    reason = reason,
-                    reasonNote = note,
-                    submittedBy = uid,
-                )
-                eventRepository.upsertRsvp(eventId, rsvp)
+                val existing = loadedMyRsvp
+                if (existing != null) {
+                    rsvpRepository.updateRsvp(
+                        existing.copy(status = status, reason = reason, reasonNote = note)
+                    )
+                } else {
+                    rsvpRepository.saveRsvp(
+                        Rsvp(eventId = eventId, status = status, reason = reason, reasonNote = note, submittedBy = uid)
+                    )
+                }
                 Log.d(TAG, "RSVP submitted: status=$status for event=$eventId")
                 uiState = uiState.copy(isRsvpSubmitting = false)
                 loadEventDetail()

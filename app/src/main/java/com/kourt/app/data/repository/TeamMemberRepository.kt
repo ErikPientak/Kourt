@@ -8,7 +8,8 @@ import javax.inject.Singleton
 
 @Singleton
 class TeamMemberRepository @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val rsvpRepository: RsvpRepository,
 ) {
     private val collection = firestore.collection("Team_member")
 
@@ -26,6 +27,9 @@ class TeamMemberRepository @Inject constructor(
     }
 
     suspend fun removeMember(id: String) {
+        val userId = collection.document(id).get().await()
+            .toObject(TeamMember::class.java)?.userId
+        if (!userId.isNullOrBlank()) rsvpRepository.deleteRsvpsByUser(userId)
         collection.document(id).delete().await()
     }
 
@@ -40,4 +44,8 @@ class TeamMemberRepository @Inject constructor(
             .whereEqualTo("teamId", teamId)
             .get().await()
             .isEmpty.not()
+
+    fun changeRole(memberId: String, newRole: String) {
+        collection.document(memberId).update("role", newRole)
+    }
 }

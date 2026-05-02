@@ -6,6 +6,7 @@ import com.google.firebase.firestore.PropertyName
 
 data class Rsvp(
     @DocumentId val id: String = "",
+    val eventId: String = "",
     val status: String = "",
     val reason: String = "",
     val reasonNote: String = "",

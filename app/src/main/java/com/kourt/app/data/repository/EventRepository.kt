@@ -2,7 +2,6 @@ package com.kourt.app.data.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.kourt.app.data.model.Event
-import com.kourt.app.data.model.Rsvp
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -40,24 +39,5 @@ class EventRepository @Inject constructor(
     suspend fun deleteEvent(id: String) {
         collection.document(id).delete().await()
     }
-
-    // RSVP subcollection
-    suspend fun getRsvps(eventId: String): List<Rsvp> =
-        collection.document(eventId).collection("rsvps").get().await()
-            .toObjects(Rsvp::class.java)
-
-    suspend fun addRsvp(eventId: String, rsvp: Rsvp): String {
-        val ref = collection.document(eventId).collection("rsvps").add(rsvp).await()
-        return ref.id
-    }
-
-    suspend fun upsertRsvp(eventId: String, rsvp: Rsvp) {
-        collection.document(eventId).collection("rsvps")
-            .document(rsvp.submittedBy).set(rsvp).await()
-    }
-
-    suspend fun getMyRsvp(eventId: String, uid: String): Rsvp? =
-        collection.document(eventId).collection("rsvps")
-            .document(uid).get().await().toObject(Rsvp::class.java)
 
 }

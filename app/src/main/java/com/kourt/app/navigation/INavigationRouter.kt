@@ -35,4 +35,5 @@ interface INavigationRouter {
     fun navigateToAttendance(eventId: String)
     fun navigateToNomination(eventId: String)
     fun navigateToAddChild()
+    fun navigateToMatchStats(eventId: String)
 }

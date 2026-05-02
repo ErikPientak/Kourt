@@ -80,7 +80,10 @@ import com.kourt.app.ui.screens.club.management.MemberFilter
 import com.kourt.app.ui.Tabs.MembersTab
 import com.kourt.app.ui.Tabs.ScheduleTab
 import com.kourt.app.ui.components.UpNextCard
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import com.kourt.app.ui.components.bottomSheets.GrowYourTeamBottomSheet
+import com.kourt.app.ui.components.bottomSheets.RosterActionBottomSheet
 import com.kourt.app.viewmodel.dashboard.CoachDashboardViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -125,6 +128,12 @@ fun CoachDashboardScreen(
         viewModel.onAttendanceNavigated()
     }
 
+    LaunchedEffect(uiState.navigateToMatchStatsEventId) {
+        val id = uiState.navigateToMatchStatsEventId ?: return@LaunchedEffect
+        navigation.navigateToMatchStats(id)
+        viewModel.onMatchStatsNavigated()
+    }
+
     CoachDashboardContent(
         uiState = uiState,
         onTeamDropdownToggle = viewModel::onTeamDropdownToggle,
@@ -132,6 +141,10 @@ fun CoachDashboardScreen(
         onSettingsTap = { navigation.navigateToSettingsScreen() },
         onRosterSearchQueryChange = viewModel::onRosterSearchQueryChange,
         onRosterFilterChange = viewModel::onRosterFilterChange,
+        onRosterMenuClick = viewModel::onRosterMenuClick,
+        onRosterMenuDismiss = viewModel::onRosterMenuDismiss,
+        onRemoveMemberConfirmShow = viewModel::onRemoveMemberConfirmShow,
+        onRemoveMemberConfirmDismiss = viewModel::onRemoveMemberConfirmDismiss,
         onPreviousMonth = viewModel::onPreviousMonth,
         onNextMonth = viewModel::onNextMonth,
         onDateSelected = viewModel::onDateSelected,
@@ -141,6 +154,8 @@ fun CoachDashboardScreen(
         onCardClicked = viewModel::onCardClicked,
         onGrowTeamClicked = viewModel::onGrowTeamClicked,
         onGrowTeamDismissed = viewModel::onGrowTeamDismissed,
+        onChangeRole = viewModel::onChangeRole,
+        onRemoveMember = viewModel::onRemoveMember,
     )
 }
 
@@ -152,6 +167,12 @@ private fun CoachDashboardContent(
     onSettingsTap: () -> Unit,
     onRosterSearchQueryChange: (String) -> Unit,
     onRosterFilterChange: (MemberFilter) -> Unit,
+    onRosterMenuClick: (String) -> Unit,
+    onRosterMenuDismiss: () -> Unit,
+    onRemoveMemberConfirmShow: () -> Unit,
+    onRemoveMemberConfirmDismiss: () -> Unit,
+    onChangeRole: (String, String) -> Unit,
+    onRemoveMember: (String) -> Unit,
     onPreviousMonth: () -> Unit,
     onNextMonth: () -> Unit,
     onDateSelected: (Long) -> Unit,
@@ -169,6 +190,38 @@ private fun CoachDashboardContent(
             joinCode = uiState.activeTeam?.joinCode.orEmpty(),
             teamName = uiState.activeTeam?.teamName.orEmpty(),
             onDismiss = onGrowTeamDismissed,
+        )
+    }
+
+    val selectedMemberId = uiState.selectedMember
+    if (selectedMemberId != null && !uiState.showRemoveMemberConfirm) {
+        RosterActionBottomSheet(
+            memberId = selectedMemberId,
+            onDismiss = onRosterMenuDismiss,
+            onRemoveMember = { onRemoveMemberConfirmShow() },
+            onChangeRole = onChangeRole,
+        )
+    }
+
+    if (uiState.showRemoveMemberConfirm && selectedMemberId != null) {
+        AlertDialog(
+            onDismissRequest = onRemoveMemberConfirmDismiss,
+            title = { Text(stringResource(R.string.remove_member_title)) },
+            text = { Text(stringResource(R.string.remove_member_message)) },
+            confirmButton = {
+                TextButton(onClick = { onRemoveMember(selectedMemberId) }) {
+                    Text(
+                        text = stringResource(R.string.remove_member_confirm),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onRemoveMemberConfirmDismiss) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
         )
     }
 
@@ -251,7 +304,7 @@ private fun CoachDashboardContent(
                         ),
                         onSearchQueryChange = onRosterSearchQueryChange,
                         onFilterChange = onRosterFilterChange,
-                        onMenuClick = {},
+                        onMenuClick = onRosterMenuClick,
                     )
                 }
             }
