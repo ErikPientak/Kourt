@@ -128,6 +128,7 @@ fun MembersList(
     members: List<ClubMemberUiItem>,
     totalCount: Int,
     onMenuClick: (String) -> Unit,
+    showMenu: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -152,8 +153,8 @@ fun MembersList(
                 role = member.role,
                 teamName = member.subtitle,
                 avatarUrl = member.avatarUrl,
-                showMenu = true,
-                onMenuClick = { onMenuClick(member.memberId) },
+                showMenu = showMenu,
+                onMenuClick = if (showMenu) ({ onMenuClick(member.memberId) }) else null,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
             )
         }

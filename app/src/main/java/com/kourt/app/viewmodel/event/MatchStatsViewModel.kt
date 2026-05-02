@@ -27,6 +27,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.math.max
+import kotlin.math.min
 
 private const val TAG = "MatchStatsViewModel"
 
@@ -91,12 +93,12 @@ class MatchStatsViewModel @Inject constructor(
                 // Fetch all team members and filter to nominated ones
                 val allMembers = teamMemberRepository.getMembersByTeam(event.teamId)
                 val nominatedMembers = if (nominatedMemberIds.isNotEmpty()) {
-                    allMembers.filter { it.id in nominatedMemberIds }
+                    allMembers.filter { it.userId in nominatedMemberIds }
                 } else {
                     // Fallback: all players if no nomination exists
                     allMembers.filter { it.role == "player" }
                 }
-
+                Log.d(TAG, "Loaded ${nominatedMembers.size} nominatedMembers")
                 // Fetch user display names and avatars
                 val userIds = nominatedMembers.map { it.userId }.filter { it.isNotBlank() }
                 val usersById = if (userIds.isNotEmpty()) {
@@ -153,7 +155,7 @@ class MatchStatsViewModel @Inject constructor(
                 StatField.POINTS                -> player.copy(points = maxOf(0, player.points + delta))
                 StatField.REBOUNDS              -> player.copy(rebounds = maxOf(0, player.rebounds + delta))
                 StatField.ASSISTS               -> player.copy(assists = maxOf(0, player.assists + delta))
-                StatField.FOULS                 -> player.copy(fouls = maxOf(0, player.fouls + delta))
+                StatField.FOULS                 -> player.copy(fouls = maxOf(0, min(player.fouls + delta,5)))
                 StatField.FREE_THROWS_ATTEMPTED -> player.copy(freeThrowsAttempted = maxOf(0, player.freeThrowsAttempted + delta))
                 StatField.FREE_THROWS_MADE      -> player.copy(freeThrowsMade = maxOf(0, player.freeThrowsMade + delta))
             }

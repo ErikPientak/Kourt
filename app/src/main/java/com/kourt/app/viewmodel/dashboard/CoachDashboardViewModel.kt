@@ -78,20 +78,24 @@ class CoachDashboardViewModel @Inject constructor(
         todayEpochDay: Long,
         eventDaysInView: Set<Long>
     ) {
+        val uid = authRepository.currentUser?.uid
+        val myRole = members.firstOrNull { it.userId == uid }?.role ?: ""
+        val rosterMembers = if (uid != null) members.filter { it.userId != uid } else members
         uiState = uiState.copy(
             isLoading = false,
             isMembersLoading = false,
             upNextEvent = upNextEvent,
             upcomingEvents = upcomingEvents,
             allEvents = allEvents,
-            members = members,
-            filteredMembers = applyMemberFilter(members, "", MemberFilter.ALL),
+            members = rosterMembers,
+            filteredMembers = applyMemberFilter(rosterMembers, "", MemberFilter.ALL),
             memberSearchQuery = "",
             memberFilter = MemberFilter.ALL,
             calendarYear = calendarYear,
             calendarMonth = calendarMonth,
             selectedEpochDay = todayEpochDay,
             eventDaysInView = eventDaysInView,
+            currentUserRole = myRole,
         )
         if (upNextEvent != null) loadRsvpCounts(upNextEvent.eventId)
     }
@@ -174,7 +178,31 @@ class CoachDashboardViewModel @Inject constructor(
     }
 
     override fun onRosterMenuDismiss() {
-        uiState = uiState.copy(selectedMember = null, showRemoveMemberConfirm = false)
+        if (!uiState.showChangeRoleSheet && !uiState.showRemoveMemberConfirm) {
+            uiState = uiState.copy(selectedMember = null)
+        }
+    }
+    override fun onChangeRoleClicked() {
+        val currentRole = uiState.members.firstOrNull { it.memberId == uiState.selectedMember }?.role ?: ""
+        uiState = uiState.copy(showChangeRoleSheet = true, selectedRole = currentRole)
+    }
+
+    override fun onRoleMenuDismiss() {
+        uiState = uiState.copy(showChangeRoleSheet = false, selectedMember = null)
+    }
+
+    override fun onRoleSelected(role: String) {
+        uiState = uiState.copy(selectedRole = role)
+    }
+
+    override fun onChangeRole(memberId: String, newRole: String) {
+        viewModelScope.launch {
+            runCatching {
+                teamMemberRepository.changeRole(memberId, newRole)
+                onRoleMenuDismiss()
+                refreshEvents()
+            }
+        }
     }
 
     override fun onRemoveMemberConfirmShow() {
@@ -185,14 +213,6 @@ class CoachDashboardViewModel @Inject constructor(
         uiState = uiState.copy(showRemoveMemberConfirm = false, selectedMember = null)
     }
 
-    override fun onChangeRole(memberId: String, newRole: String) {
-        viewModelScope.launch {
-            runCatching {
-                teamMemberRepository.changeRole(memberId, newRole)
-            }
-        }
-    }
-
     override fun onRemoveMember(memberId: String) {
         viewModelScope.launch {
             runCatching {
@@ -201,6 +221,18 @@ class CoachDashboardViewModel @Inject constructor(
                 refreshEvents()
             }.onFailure { e ->
                 Log.e(logTag, "Failed to remove member $memberId", e)
+            }
+        }
+    }
+
+    override fun onChangeJerseyNumberClick(memberId: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onChangeJerseyNumber(memberId: String, newJerseyNumber: Int) {
+        viewModelScope.launch {
+            runCatching {
+                teamMemberRepository.changeJerseyNumber(memberId, newJerseyNumber)
             }
         }
     }

@@ -179,6 +179,7 @@ private fun PlayerDashboardContent(
                         ),
                         onSearchQueryChange = actions::onRosterSearchQueryChange,
                         onFilterChange = actions::onRosterFilterChange,
+                        showMenu = false,
                         onMenuClick = {},
                     )
                 }

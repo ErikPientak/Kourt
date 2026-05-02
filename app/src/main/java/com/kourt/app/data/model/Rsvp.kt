@@ -10,6 +10,6 @@ data class Rsvp(
     val status: String = "",
     val reason: String = "",
     val reasonNote: String = "",
-    @PropertyName("submitted_by") val submittedBy: String = "",
-    @PropertyName("submitted_at") val submittedAt: Timestamp = Timestamp.now()
+    val submittedBy: String = "",
+    val submittedAt: Timestamp = Timestamp.now()
 )

@@ -32,9 +32,9 @@ fun RosterActionBottomSheet(
     memberId: String,
     onDismiss: () -> Unit,
     onRemoveMember: (String) -> Unit,
-    onChangeRole: (String, String) -> Unit,
+    onChangeRole: () -> Unit,
     modifier: Modifier = Modifier,
-    ){
+) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
@@ -48,7 +48,7 @@ fun RosterActionBottomSheet(
             memberId = memberId,
             onDismiss = onDismiss,
             onRemoveMember = onRemoveMember,
-            onChangeRole = onChangeRole
+            onChangeRole = onChangeRole,
         )
     }
 }
@@ -58,7 +58,7 @@ fun RosterActionSheetContent(
     memberId: String,
     onDismiss: () -> Unit,
     onRemoveMember: (String) -> Unit,
-    onChangeRole: (String,String) -> Unit
+    onChangeRole: () -> Unit
     ){
     Column(
         modifier = Modifier
@@ -79,7 +79,7 @@ fun RosterActionSheetContent(
             icon = painterResource(R.drawable.edit),
             label = stringResource(R.string.member_action_assign_role),
             contentColor = MaterialTheme.colorScheme.onSurface,
-            onClick = { {}; onDismiss() },
+            onClick = { onChangeRole(); onDismiss() },
         )
 
         RosterActionRow(

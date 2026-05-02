@@ -405,4 +405,6 @@
     <string name="team_delete_confirm_title">Delete Team?</string>
     <string name="team_delete_confirm_message">This will permanently remove the team and all its members. This cannot be undone.</string>
     <string name="team_delete_confirm_button">Delete</string>
+    <string name="role_update">Update Role</string>
+    <string name="role_sheet_title">Update Member Role</string>
 </resources>

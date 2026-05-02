@@ -65,6 +65,9 @@ data class CoachDashboardScreenUiState(
     val navigateToAttendanceEventId: String? = null,
     val navigateToMatchStatsEventId: String? = null,
     val showGrowTeamSheet: Boolean = false,
+    val showChangeRoleSheet: Boolean = false,
     val selectedMember: String? = null,
     val showRemoveMemberConfirm: Boolean = false,
+    val currentUserRole: String = "",
+    val selectedRole: String = "",
 )

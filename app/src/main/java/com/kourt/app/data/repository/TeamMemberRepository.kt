@@ -48,4 +48,8 @@ class TeamMemberRepository @Inject constructor(
     fun changeRole(memberId: String, newRole: String) {
         collection.document(memberId).update("role", newRole)
     }
+
+    fun changeJerseyNumber(memberId: String, newJerseyNumber: Int) {
+        collection.document(memberId).update("jerseyNumber", newJerseyNumber)
+    }
 }

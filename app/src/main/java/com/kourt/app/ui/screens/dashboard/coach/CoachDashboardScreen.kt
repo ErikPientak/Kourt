@@ -1,28 +1,19 @@
 package com.kourt.app.ui.screens.dashboard.coach
 
-import android.text.format.DateFormat
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -34,7 +25,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -47,34 +37,23 @@ import androidx.compose.runtime.getValue
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.kourt.app.navigation.Destination
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.R
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.EventCard
 import com.kourt.app.ui.components.KourtAvatarLeading
 import com.kourt.app.ui.components.KourtTeamAvatar
-import com.kourt.app.ui.components.KourtButton
-import com.kourt.app.ui.components.KourtCalendar
-import com.kourt.app.ui.components.ScheduleEventCard
 import com.kourt.app.ui.screens.club.management.ClubManagementScreenUiState
 import com.kourt.app.ui.screens.club.management.MemberFilter
 import com.kourt.app.ui.Tabs.MembersTab
@@ -82,13 +61,10 @@ import com.kourt.app.ui.Tabs.ScheduleTab
 import com.kourt.app.ui.components.UpNextCard
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
+import com.kourt.app.ui.components.bottomSheets.ChangeRoleBottomSheet
 import com.kourt.app.ui.components.bottomSheets.GrowYourTeamBottomSheet
 import com.kourt.app.ui.components.bottomSheets.RosterActionBottomSheet
 import com.kourt.app.viewmodel.dashboard.CoachDashboardViewModel
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
-import java.util.concurrent.TimeUnit
 
 private const val TAB_HOME = 0
 private const val TAB_SCHEDULE = 1
@@ -145,6 +121,7 @@ fun CoachDashboardScreen(
         onRosterMenuDismiss = viewModel::onRosterMenuDismiss,
         onRemoveMemberConfirmShow = viewModel::onRemoveMemberConfirmShow,
         onRemoveMemberConfirmDismiss = viewModel::onRemoveMemberConfirmDismiss,
+        onRemoveMember = viewModel::onRemoveMember,
         onPreviousMonth = viewModel::onPreviousMonth,
         onNextMonth = viewModel::onNextMonth,
         onDateSelected = viewModel::onDateSelected,
@@ -154,8 +131,10 @@ fun CoachDashboardScreen(
         onCardClicked = viewModel::onCardClicked,
         onGrowTeamClicked = viewModel::onGrowTeamClicked,
         onGrowTeamDismissed = viewModel::onGrowTeamDismissed,
+        onChangeRoleClicked = viewModel::onChangeRoleClicked,
+        onRoleMenuDismiss = viewModel::onRosterMenuDismiss,
+        onRoleSelected = viewModel::onRoleSelected,
         onChangeRole = viewModel::onChangeRole,
-        onRemoveMember = viewModel::onRemoveMember,
     )
 }
 
@@ -171,7 +150,6 @@ private fun CoachDashboardContent(
     onRosterMenuDismiss: () -> Unit,
     onRemoveMemberConfirmShow: () -> Unit,
     onRemoveMemberConfirmDismiss: () -> Unit,
-    onChangeRole: (String, String) -> Unit,
     onRemoveMember: (String) -> Unit,
     onPreviousMonth: () -> Unit,
     onNextMonth: () -> Unit,
@@ -182,7 +160,12 @@ private fun CoachDashboardContent(
     onCardClicked: (String) -> Unit,
     onGrowTeamClicked: () -> Unit,
     onGrowTeamDismissed: () -> Unit,
-) {
+    onRoleMenuDismiss: () -> Unit,
+    onRoleSelected: (String) -> Unit,
+    onChangeRole: (String, String) -> Unit,
+    onChangeRoleClicked: () -> Unit,
+
+    ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(TAB_HOME) }
 
     if (uiState.showGrowTeamSheet) {
@@ -192,17 +175,29 @@ private fun CoachDashboardContent(
             onDismiss = onGrowTeamDismissed,
         )
     }
-
+    //ROLE CHANGE
     val selectedMemberId = uiState.selectedMember
-    if (selectedMemberId != null && !uiState.showRemoveMemberConfirm) {
+
+    if (selectedMemberId != null && uiState.showChangeRoleSheet) {
+        ChangeRoleBottomSheet(
+            selectedMember = selectedMemberId,
+            selectedRole = uiState.selectedRole,
+            onRoleSelected = onRoleSelected,
+            onUpdateRole = { onChangeRole(selectedMemberId, uiState.selectedRole) },
+            onDismiss = onRoleMenuDismiss
+        )
+    }
+
+    // ACTION MENU
+    if (selectedMemberId != null && !uiState.showRemoveMemberConfirm && !uiState.showChangeRoleSheet) {
         RosterActionBottomSheet(
             memberId = selectedMemberId,
             onDismiss = onRosterMenuDismiss,
             onRemoveMember = { onRemoveMemberConfirmShow() },
-            onChangeRole = onChangeRole,
+            onChangeRole = onChangeRoleClicked,
         )
     }
-
+    // REMOVE MEMBER
     if (uiState.showRemoveMemberConfirm && selectedMemberId != null) {
         AlertDialog(
             onDismissRequest = onRemoveMemberConfirmDismiss,
@@ -305,6 +300,7 @@ private fun CoachDashboardContent(
                         onSearchQueryChange = onRosterSearchQueryChange,
                         onFilterChange = onRosterFilterChange,
                         onMenuClick = onRosterMenuClick,
+                        showMenu = uiState.currentUserRole == "coach",
                     )
                 }
             }
