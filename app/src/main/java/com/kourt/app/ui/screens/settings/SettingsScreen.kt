@@ -77,20 +77,13 @@ fun SettingsScreen(
 
     SettingsScreenContent(
         uiState = uiState,
+        onToggleTheme = onToggleTheme,
+        onSetLanguage = onSetLanguage,
         isDarkTheme = isDarkTheme,
         currentLanguage = currentLanguage,
         onBack = navigation::returnBack,
-        onToggleTheme = onToggleTheme,
         onProfileClick = navigation::navigateToProfileScreen,
-        onLanguageClick = viewModel::onLanguageClick,
-        onDismissLanguageDialog = viewModel::onDismissLanguageDialog,
-        onSetLanguage = onSetLanguage,
-        onDeleteAccountClick = viewModel::onDeleteAccountClick,
-        onConfirmDeleteAccount = viewModel::onConfirmDeleteAccount,
-        onDismissDeleteDialog = viewModel::onDismissDeleteDialog,
-        onLogOutClick = viewModel::onLogOutClick,
-        onConfirmLogOut = viewModel::onConfirmLogOut,
-        onDismissLogOutDialog = viewModel::onDismissLogOutDialog,
+        actions = viewModel
     )
 }
 
@@ -99,26 +92,19 @@ private fun SettingsScreenContent(
     uiState: SettingsScreenUiState,
     isDarkTheme: Boolean,
     currentLanguage: String,
-    onBack: () -> Unit,
+    onSetLanguage: (String) -> Unit,
     onToggleTheme: () -> Unit,
     onProfileClick: () -> Unit,
-    onLanguageClick: () -> Unit,
-    onDismissLanguageDialog: () -> Unit,
-    onSetLanguage: (String) -> Unit,
-    onDeleteAccountClick: () -> Unit,
-    onConfirmDeleteAccount: () -> Unit,
-    onDismissDeleteDialog: () -> Unit,
-    onConfirmLogOut: () -> Unit,
-    onDismissLogOutDialog: () -> Unit,
-    onLogOutClick: () -> Unit,
+    onBack: () -> Unit,
+    actions: SettingsScreenActions,
 ) {
     if (uiState.showDeleteDialog) {
         AlertDialog(
-            onDismissRequest = onDismissDeleteDialog,
+            onDismissRequest = actions::onDismissDeleteDialog,
             title = { Text(stringResource(R.string.settings_delete_account_title)) },
             text = { Text(stringResource(R.string.settings_delete_account_message)) },
             confirmButton = {
-                TextButton(onClick = onConfirmDeleteAccount) {
+                TextButton(onClick = actions::onConfirmDeleteAccount) {
                     Text(
                         text = stringResource(R.string.settings_delete_account_confirm),
                         color = MaterialTheme.colorScheme.error,
@@ -126,7 +112,7 @@ private fun SettingsScreenContent(
                 }
             },
             dismissButton = {
-                TextButton(onClick = onDismissDeleteDialog) {
+                TextButton(onClick = actions::onDismissDeleteDialog) {
                     Text(
                         text = stringResource(R.string.action_cancel),
                         color = MaterialTheme.colorScheme.onSurface,
@@ -138,11 +124,11 @@ private fun SettingsScreenContent(
 
     if (uiState.showLogOutDialog) {
         AlertDialog(
-            onDismissRequest = onDismissLogOutDialog,
+            onDismissRequest = actions::onDismissLogOutDialog,
             title = { Text(stringResource(R.string.settings_log_out)) },
             text = { Text(stringResource(R.string.settings_log_out_account_message)) },
             confirmButton = {
-                TextButton(onClick = onConfirmLogOut) {
+                TextButton(onClick = actions::onConfirmLogOut) {
                     Text(
                         text = stringResource(R.string.settings_log_out),
                         color = MaterialTheme.colorScheme.error,
@@ -150,7 +136,7 @@ private fun SettingsScreenContent(
                 }
             },
             dismissButton = {
-                TextButton(onClick = onDismissLogOutDialog) {
+                TextButton(onClick = actions::onDismissLogOutDialog) {
                     Text(
                         text = stringResource(R.string.action_cancel),
                         color = MaterialTheme.colorScheme.onSurface,
@@ -162,7 +148,7 @@ private fun SettingsScreenContent(
 
     if (uiState.showLanguageDialog) {
         AlertDialog(
-            onDismissRequest = onDismissLanguageDialog,
+            onDismissRequest = actions::onDismissLanguageDialog,
             title = { Text(stringResource(R.string.settings_language)) },
             text = {
                 Column {
@@ -171,7 +157,7 @@ private fun SettingsScreenContent(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    onDismissLanguageDialog()
+                                    actions.onDismissLanguageDialog()
                                     onSetLanguage(lang.code)
                                 },
                             verticalAlignment = Alignment.CenterVertically,
@@ -179,7 +165,7 @@ private fun SettingsScreenContent(
                             RadioButton(
                                 selected = currentLanguage == lang.code,
                                 onClick = {
-                                    onDismissLanguageDialog()
+                                    actions.onDismissLanguageDialog()
                                     onSetLanguage(lang.code)
                                 },
                             )
@@ -193,7 +179,7 @@ private fun SettingsScreenContent(
                 }
             },
             confirmButton = {
-                TextButton(onClick = onDismissLanguageDialog) {
+                TextButton(onClick = actions::onDismissLanguageDialog) {
                     Text(
                         text = stringResource(R.string.action_cancel),
                         color = MaterialTheme.colorScheme.onSurface,
@@ -262,19 +248,19 @@ private fun SettingsScreenContent(
                         icon = painterResource(R.drawable.globe),
                         label = stringResource(R.string.settings_language),
                         subtitle = currentLanguageName,
-                        onClick = onLanguageClick,
+                        onClick = actions::onLanguageClick,
                     )
 
                     Spacer(modifier = Modifier.weight(1f))
 
                     // Log Out button
-                    LogOutButton(onClick = onLogOutClick)
+                    LogOutButton(onClick = actions::onLogOutClick)
 
                     Spacer(modifier = Modifier.height(12.dp))
 
                     // Delete Account
                     TextButton(
-                        onClick = onDeleteAccountClick,
+                        onClick = actions::onDeleteAccountClick,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text(

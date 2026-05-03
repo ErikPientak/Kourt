@@ -97,75 +97,39 @@ fun ProfileScreen(
 
     ProfileScreenContent(
         uiState = uiState,
-        onBack = navigation::returnBack,
-        onEditAvatarClick = viewModel::onEditAvatarClick,
-        onAvatarSelected = viewModel::onAvatarSelected,
-        onAvatarPickerDismiss = viewModel::onAvatarPickerDismiss,
-        onMembershipClick = viewModel::onMembershipClick,
-        onChildRowClick = viewModel::onChildRowClick,
-        onSwitchToChild = viewModel::onSwitchToChild,
-        onChildActionSheetDismiss = viewModel::onChildActionSheetDismiss,
-        onChildJoinTeamDialogShow = viewModel::onChildJoinTeamDialogShow,
-        onChildJoinTeamDialogDismiss = viewModel::onChildJoinTeamDialogDismiss,
-        onChildJoinCodeChange = viewModel::onChildJoinCodeChange,
-        onChildJoinTeam = viewModel::onChildJoinTeam,
-        onChildLeaveTeam = viewModel::onChildLeaveTeam,
-        onRemoveChild = viewModel::onRemoveChild,
-        onRemoveChildConfirm = viewModel::onRemoveChildConfirm,
-        onRemoveChildDismiss = viewModel::onRemoveChildDismiss,
-        onJoinOrCreateTeam = viewModel::onJoinOrCreateTeam,
-        onLeaveTeamLongPress = viewModel::onLeaveTeamLongPress,
-        onLeaveTeamConfirm = viewModel::onLeaveTeamConfirm,
-        onLeaveTeamDismiss = viewModel::onLeaveTeamDismiss,
+        actions = viewModel,
+        navigation = navigation
     )
 }
 
 @Composable
 private fun ProfileScreenContent(
     uiState: ProfileScreenUiState,
-    onBack: () -> Unit,
-    onEditAvatarClick: () -> Unit,
-    onAvatarSelected: (String) -> Unit = {},
-    onAvatarPickerDismiss: () -> Unit = {},
-    onMembershipClick: (MembershipRowUiItem) -> Unit = {},
-    onChildRowClick: (ManagedChildUiItem) -> Unit = {},
-    onSwitchToChild: (String) -> Unit = {},
-    onChildActionSheetDismiss: () -> Unit = {},
-    onChildJoinTeamDialogShow: () -> Unit = {},
-    onChildJoinTeamDialogDismiss: () -> Unit = {},
-    onChildJoinCodeChange: (String) -> Unit = {},
-    onChildJoinTeam: () -> Unit = {},
-    onChildLeaveTeam: (String) -> Unit = {},
-    onRemoveChild: () -> Unit = {},
-    onRemoveChildConfirm: () -> Unit = {},
-    onRemoveChildDismiss: () -> Unit = {},
-    onJoinOrCreateTeam: () -> Unit = {},
-    onLeaveTeamLongPress: (MembershipRowUiItem) -> Unit = {},
-    onLeaveTeamConfirm: () -> Unit = {},
-    onLeaveTeamDismiss: () -> Unit = {},
+    actions: ProfileScreenActions,
+    navigation: INavigationRouter,
 ) {
     if (uiState.showAvatarPicker) {
         AvatarPickerBottomSheet(
             currentAvatarId = uiState.avatarId,
-            onAvatarSelected = onAvatarSelected,
-            onDismiss = onAvatarPickerDismiss,
+            onAvatarSelected = actions::onAvatarSelected,
+            onDismiss = actions::onAvatarPickerDismiss,
         )
     }
 
     if (uiState.showChildActionSheet && uiState.selectedChild != null) {
         ChildActionBottomSheet(
             child = uiState.selectedChild,
-            onSwitchToChild = { onSwitchToChild(uiState.selectedChild.userId) },
-            onJoinTeam = onChildJoinTeamDialogShow,
-            onLeaveTeam = onChildLeaveTeam,
-            onRemoveChild = onRemoveChild,
-            onDismiss = onChildActionSheetDismiss,
+            onSwitchToChild = { actions.onSwitchToChild(uiState.selectedChild.userId) },
+            onJoinTeam = actions::onChildJoinTeamDialogShow,
+            onLeaveTeam = actions::onChildLeaveTeam,
+            onRemoveChild = actions::onRemoveChild,
+            onDismiss = actions::onChildActionSheetDismiss,
         )
     }
 
     if (uiState.showRemoveChildConfirm && uiState.childToRemove != null) {
         AlertDialog(
-            onDismissRequest = onRemoveChildDismiss,
+            onDismissRequest = actions::onRemoveChildDismiss,
             title = {
                 Text(
                     text = stringResource(R.string.child_remove_confirm_title, uiState.childToRemove.displayName),
@@ -180,7 +144,7 @@ private fun ProfileScreenContent(
                 )
             },
             confirmButton = {
-                TextButton(onClick = onRemoveChildConfirm) {
+                TextButton(onClick = actions::onRemoveChildConfirm) {
                     Text(
                         text = stringResource(R.string.child_remove_confirm_button),
                         color = MaterialTheme.colorScheme.error,
@@ -189,7 +153,7 @@ private fun ProfileScreenContent(
                 }
             },
             dismissButton = {
-                TextButton(onClick = onRemoveChildDismiss) {
+                TextButton(onClick = actions::onRemoveChildDismiss) {
                     Text(stringResource(android.R.string.cancel))
                 }
             },
@@ -199,7 +163,7 @@ private fun ProfileScreenContent(
 
     if (uiState.showLeaveTeamConfirm && uiState.membershipToLeave != null) {
         AlertDialog(
-            onDismissRequest = onLeaveTeamDismiss,
+            onDismissRequest = actions::onLeaveTeamDismiss,
             title = {
                 Text(
                     text = stringResource(R.string.leave_team_confirm_title, uiState.membershipToLeave.subtitle),
@@ -214,7 +178,7 @@ private fun ProfileScreenContent(
                 )
             },
             confirmButton = {
-                TextButton(onClick = onLeaveTeamConfirm) {
+                TextButton(onClick = actions::onLeaveTeamConfirm) {
                     Text(
                         text = stringResource(R.string.leave_team_confirm_button),
                         color = MaterialTheme.colorScheme.error,
@@ -223,7 +187,7 @@ private fun ProfileScreenContent(
                 }
             },
             dismissButton = {
-                TextButton(onClick = onLeaveTeamDismiss) {
+                TextButton(onClick = actions::onLeaveTeamDismiss) {
                     Text(stringResource(android.R.string.cancel))
                 }
             },
@@ -237,15 +201,15 @@ private fun ProfileScreenContent(
             joinCode = uiState.joinCodeForChild,
             joinError = uiState.joinCodeForChildError,
             isLoading = uiState.isLoading,
-            onJoinCodeChange = onChildJoinCodeChange,
-            onConfirm = onChildJoinTeam,
-            onDismiss = onChildJoinTeamDialogDismiss,
+            onJoinCodeChange = actions::onChildJoinCodeChange,
+            onConfirm = actions::onChildJoinTeam,
+            onDismiss = actions::onChildJoinTeamDialogDismiss,
         )
     }
 
     BaseScreen(
         title = stringResource(R.string.profile_title),
-        onBack = onBack,
+        onBack = { navigation.returnBack() },
     ) { padding ->
         Box(
             modifier = Modifier
@@ -283,7 +247,7 @@ private fun ProfileScreenContent(
                                 email = uiState.email,
                                 avatarId = uiState.avatarId,
                                 isReadOnly = uiState.isReadOnly,
-                                onEditAvatarClick = onEditAvatarClick,
+                                onEditAvatarClick = actions::onEditAvatarClick,
                             )
                         }
 
@@ -297,7 +261,7 @@ private fun ProfileScreenContent(
                                 )
                             }
                             items(uiState.managedChildren) { child ->
-                                ChildRow(item = child, onClick = { onChildRowClick(child) })
+                                ChildRow(item = child, onClick = { actions.onChildRowClick(child) })
                             }
                         }
 
@@ -323,9 +287,9 @@ private fun ProfileScreenContent(
                             items(uiState.memberships) { item ->
                                 MembershipRow(
                                     item = item,
-                                    onClick = { onMembershipClick(item) },
+                                    onClick = { actions.onMembershipClick(item) },
                                     onLongClick = if (!uiState.isReadOnly && item.teamId != null) {
-                                        { onLeaveTeamLongPress(item) }
+                                        { actions.onLeaveTeamLongPress(item) }
                                     } else null,
                                 )
                             }
@@ -333,7 +297,7 @@ private fun ProfileScreenContent(
 
                         item {
                             TextButton(
-                                onClick = onJoinOrCreateTeam,
+                                onClick = actions::onJoinOrCreateTeam,
                                 modifier = Modifier.padding(top = 4.dp),
                             ) {
                                 Icon(

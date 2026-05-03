@@ -116,66 +116,16 @@ fun CoachDashboardScreen(
 
     CoachDashboardContent(
         uiState = uiState,
-        onTeamDropdownToggle = viewModel::onTeamDropdownToggle,
-        onTeamSelected = viewModel::onTeamSelected,
-        onSettingsTap = { navigation.navigateToSettingsScreen() },
-        onRosterSearchQueryChange = viewModel::onRosterSearchQueryChange,
-        onRosterFilterChange = viewModel::onRosterFilterChange,
-        onRosterMenuClick = viewModel::onRosterMenuClick,
-        onRosterMenuDismiss = viewModel::onRosterMenuDismiss,
-        onRemoveMemberConfirmShow = viewModel::onRemoveMemberConfirmShow,
-        onRemoveMemberConfirmDismiss = viewModel::onRemoveMemberConfirmDismiss,
-        onRemoveMember = viewModel::onRemoveMember,
-        onPreviousMonth = viewModel::onPreviousMonth,
-        onNextMonth = viewModel::onNextMonth,
-        onDateSelected = viewModel::onDateSelected,
-        onLogAttendance = viewModel::onLogAttendance,
-        onLogStatistics = viewModel::onLogStatistics,
-        onAddEvent = viewModel::onAddEvent,
-        onCardClicked = viewModel::onCardClicked,
-        onGrowTeamClicked = viewModel::onGrowTeamClicked,
-        onGrowTeamDismissed = viewModel::onGrowTeamDismissed,
-        onChangeRoleClicked = viewModel::onChangeRoleClicked,
-        onRoleMenuDismiss = viewModel::onRosterMenuDismiss,
-        onRoleSelected = viewModel::onRoleSelected,
-        onChangeRole = viewModel::onChangeRole,
-        onChangeJerseyNumberClick = viewModel::onChangeJerseyNumberClick,
-        onJerseyNumberInputChange = viewModel::onJerseyNumberInputChange,
-        onJerseyNumberDialogDismiss = viewModel::onJerseyNumberDialogDismiss,
-        onChangeJerseyNumber = viewModel::onChangeJerseyNumber,
+        actions = viewModel,
+        navigation = navigation
     )
 }
 
 @Composable
 private fun CoachDashboardContent(
     uiState: CoachDashboardScreenUiState,
-    onTeamDropdownToggle: () -> Unit,
-    onTeamSelected: (String) -> Unit,
-    onSettingsTap: () -> Unit,
-    onRosterSearchQueryChange: (String) -> Unit,
-    onRosterFilterChange: (MemberFilter) -> Unit,
-    onRosterMenuClick: (String) -> Unit,
-    onRosterMenuDismiss: () -> Unit,
-    onRemoveMemberConfirmShow: () -> Unit,
-    onRemoveMemberConfirmDismiss: () -> Unit,
-    onRemoveMember: (String) -> Unit,
-    onPreviousMonth: () -> Unit,
-    onNextMonth: () -> Unit,
-    onDateSelected: (Long) -> Unit,
-    onLogAttendance: (String) -> Unit,
-    onLogStatistics: (String) -> Unit,
-    onAddEvent: () -> Unit,
-    onCardClicked: (String) -> Unit,
-    onGrowTeamClicked: () -> Unit,
-    onGrowTeamDismissed: () -> Unit,
-    onRoleMenuDismiss: () -> Unit,
-    onRoleSelected: (String) -> Unit,
-    onChangeRole: (String, String) -> Unit,
-    onChangeRoleClicked: () -> Unit,
-    onChangeJerseyNumberClick: (String) -> Unit,
-    onJerseyNumberInputChange: (String) -> Unit,
-    onJerseyNumberDialogDismiss: () -> Unit,
-    onChangeJerseyNumber: (String, Int) -> Unit,
+    actions: CoachDashboardScreenActions,
+    navigation: INavigationRouter,
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(TAB_HOME) }
 
@@ -183,7 +133,7 @@ private fun CoachDashboardContent(
         GrowYourTeamBottomSheet(
             joinCode = uiState.activeTeam?.joinCode.orEmpty(),
             teamName = uiState.activeTeam?.teamName.orEmpty(),
-            onDismiss = onGrowTeamDismissed,
+            onDismiss = { actions.onGrowTeamDismissed() },
         )
     }
     //ROLE CHANGE
@@ -193,9 +143,9 @@ private fun CoachDashboardContent(
         ChangeRoleBottomSheet(
             selectedMember = selectedMemberId,
             selectedRole = uiState.selectedRole,
-            onRoleSelected = onRoleSelected,
-            onUpdateRole = { onChangeRole(selectedMemberId, uiState.selectedRole) },
-            onDismiss = onRoleMenuDismiss
+            onRoleSelected = { actions.onRoleSelected(it) },
+            onUpdateRole = { actions.onChangeRole(selectedMemberId, uiState.selectedRole) },
+            onDismiss = { actions.onRoleMenuDismiss() }
         )
     }
 
@@ -203,10 +153,10 @@ private fun CoachDashboardContent(
     if (selectedMemberId != null && !uiState.showRemoveMemberConfirm && !uiState.showChangeRoleSheet && !uiState.showJerseyNumberDialog) {
         RosterActionBottomSheet(
             memberId = selectedMemberId,
-            onDismiss = onRosterMenuDismiss,
-            onRemoveMember = { onRemoveMemberConfirmShow() },
-            onChangeRole = onChangeRoleClicked,
-            onChangeJerseyNumber = { onChangeJerseyNumberClick(selectedMemberId) },
+            onDismiss = { actions.onRosterMenuDismiss() },
+            onRemoveMember = { actions.onRemoveMemberConfirmShow() },
+            onChangeRole = { actions.onChangeRoleClicked() },
+            onChangeJerseyNumber = { actions.onChangeJerseyNumberClick(selectedMemberId) },
         )
     }
 
@@ -214,19 +164,19 @@ private fun CoachDashboardContent(
     if (uiState.showJerseyNumberDialog && selectedMemberId != null) {
         ChangeJerseyNumberDialog(
             input = uiState.jerseyNumberInput,
-            onInputChange = onJerseyNumberInputChange,
-            onConfirm = { onChangeJerseyNumber(selectedMemberId, it) },
-            onDismiss = onJerseyNumberDialogDismiss,
+            onInputChange = { actions.onJerseyNumberInputChange(it) },
+            onConfirm = { actions.onChangeJerseyNumber(selectedMemberId, it) },
+            onDismiss = { actions.onJerseyNumberDialogDismiss() },
         )
     }
     // REMOVE MEMBER
     if (uiState.showRemoveMemberConfirm && selectedMemberId != null) {
         AlertDialog(
-            onDismissRequest = onRemoveMemberConfirmDismiss,
+            onDismissRequest = { actions.onRemoveMemberConfirmDismiss() },
             title = { Text(stringResource(R.string.remove_member_title)) },
             text = { Text(stringResource(R.string.remove_member_message)) },
             confirmButton = {
-                TextButton(onClick = { onRemoveMember(selectedMemberId) }) {
+                TextButton(onClick = { actions.onRemoveMember(selectedMemberId) }) {
                     Text(
                         text = stringResource(R.string.remove_member_confirm),
                         color = MaterialTheme.colorScheme.error,
@@ -234,7 +184,7 @@ private fun CoachDashboardContent(
                 }
             },
             dismissButton = {
-                TextButton(onClick = onRemoveMemberConfirmDismiss) {
+                TextButton(onClick = { actions.onRemoveMemberConfirmDismiss() }) {
                     Text(stringResource(R.string.action_cancel))
                 }
             },
@@ -249,9 +199,9 @@ private fun CoachDashboardContent(
                 activeTeam = uiState.activeTeam,
                 teams = uiState.teams,
                 isDropdownOpen = uiState.isTeamDropdownOpen,
-                onToggleDropdown = onTeamDropdownToggle,
-                onTeamSelected = onTeamSelected,
-                onSettingsTap = onSettingsTap,
+                onToggleDropdown = { actions.onTeamDropdownToggle() },
+                onTeamSelected = { actions.onTeamSelected(it) },
+                onSettingsTap = { navigation.navigateToSettingsScreen() },
             )
         },
         bottomBar = {
@@ -263,7 +213,7 @@ private fun CoachDashboardContent(
         floatingActionButton = {
             when (selectedTab) {
                 TAB_SCHEDULE -> FloatingActionButton(
-                    onClick = onAddEvent,
+                    onClick = { actions.onAddEvent() },
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                     shape = RoundedCornerShape(16.dp),
@@ -274,7 +224,7 @@ private fun CoachDashboardContent(
                     )
                 }
                 TAB_ROSTER -> FloatingActionButton(
-                    onClick = onGrowTeamClicked,
+                    onClick = { actions.onGrowTeamClicked() },
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                     shape = RoundedCornerShape(16.dp),
@@ -299,18 +249,18 @@ private fun CoachDashboardContent(
                 when (selectedTab) {
                     TAB_HOME -> CoachHomeTab(
                         uiState = uiState,
-                        onLogAttendance = onLogAttendance,
-                        onLogStatistics = onLogStatistics,
-                        onCardClicked = onCardClicked,
+                        onLogAttendance = { actions.onLogAttendance(it) },
+                        onLogStatistics = { actions.onLogStatistics(it) },
+                        onCardClicked = { actions.onCardClicked(it) },
                     )
                     TAB_SCHEDULE -> ScheduleTab(
                         uiState = uiState,
-                        onPreviousMonth = onPreviousMonth,
-                        onNextMonth = onNextMonth,
-                        onDateSelected = onDateSelected,
-                        onLogAttendance = onLogAttendance,
-                        onLogStatistics = onLogStatistics,
-                        onCardClicked = onCardClicked,
+                        onPreviousMonth = { actions.onPreviousMonth() },
+                        onNextMonth = { actions.onNextMonth() },
+                        onDateSelected = { actions.onDateSelected(it) },
+                        onLogAttendance = { actions.onLogAttendance(it) },
+                        onLogStatistics = { actions.onLogStatistics(it) },
+                        onCardClicked = { actions.onCardClicked(it) },
                     )
                     TAB_ROSTER -> MembersTab(
                         uiState = ClubManagementScreenUiState(
@@ -319,9 +269,9 @@ private fun CoachDashboardContent(
                             memberFilter = uiState.memberFilter,
                             isMembersLoading = uiState.isMembersLoading,
                         ),
-                        onSearchQueryChange = onRosterSearchQueryChange,
-                        onFilterChange = onRosterFilterChange,
-                        onMenuClick = onRosterMenuClick,
+                        onSearchQueryChange = { actions.onRosterSearchQueryChange(it) },
+                        onFilterChange = { actions.onRosterFilterChange(it) },
+                        onMenuClick = { actions.onRosterMenuClick(it) },
                         showMenu = uiState.currentUserRole == "coach",
                     )
                 }

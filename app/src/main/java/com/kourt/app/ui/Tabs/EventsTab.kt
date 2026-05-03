@@ -49,7 +49,7 @@ import com.kourt.app.ui.screens.dashboard.coach.EventUiItem
 fun EventsTab(
     uiState: ClubManagementScreenUiState,
     actions: ClubManagementScreenActions,
-    onEditEvent: (eventId: String, teamId: String) -> Unit,
+    onEditEvent: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         EventStatusFilterRow(
@@ -110,7 +110,7 @@ fun EventsTab(
         EventActionBottomSheet(
             event = selectedEvent,
             onDismiss = actions::onEventActionDismiss,
-            onEdit = { onEditEvent(selectedEvent.eventId, selectedEvent.teamId) },
+            onEdit = { onEditEvent() },
             onCancel = { actions.onEventCancelClick(selectedEvent.eventId) },
             onDelete = { actions.onEventDeleteClick(selectedEvent.eventId) },
         )
