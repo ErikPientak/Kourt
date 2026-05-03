@@ -64,6 +64,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextButton
 import androidx.compose.ui.text.input.KeyboardType
+import com.kourt.app.ui.Tabs.CoachHomeTab
 import com.kourt.app.ui.components.bottomSheets.ChangeRoleBottomSheet
 import com.kourt.app.ui.components.bottomSheets.GrowYourTeamBottomSheet
 import com.kourt.app.ui.components.bottomSheets.RosterActionBottomSheet
@@ -296,7 +297,7 @@ private fun CoachDashboardContent(
         } else {
             Box(modifier = Modifier.fillMaxSize().padding(padding)) {
                 when (selectedTab) {
-                    TAB_HOME -> HomeTab(
+                    TAB_HOME -> CoachHomeTab(
                         uiState = uiState,
                         onLogAttendance = onLogAttendance,
                         onLogStatistics = onLogStatistics,
@@ -528,86 +529,6 @@ private fun CoachDashboardBottomNav(
                         color = tint,
                     )
                 }
-            }
-        }
-    }
-}
-
-// ── Tab content ───────────────────────────────────────────────────────────────
-
-@Composable
-private fun HomeTab(
-    uiState: CoachDashboardScreenUiState,
-    onLogAttendance: (String) -> Unit,
-    onLogStatistics: (String) -> Unit,
-    onCardClicked: (String) -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Text(
-            text = stringResource(R.string.coach_dashboard_up_next),
-            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-
-        if (uiState.upNextEvent != null) {
-            UpNextCard(
-                event = uiState.upNextEvent,
-                rosterSize = uiState.members.size,
-                attendeeNames = uiState.upNextAttendees,
-                ctaText = if (uiState.upNextEvent.type.lowercase() == "match") {
-                    R.string.schedule_log_statistics
-                } else {
-                    R.string.schedule_log_attendance
-                },
-                onCtaClick = {
-                    if (uiState.upNextEvent.type.lowercase() == "match") {
-                        onLogStatistics(uiState.upNextEvent.eventId)
-                    } else {
-                        onLogAttendance(uiState.upNextEvent.eventId)
-                    }
-                },
-            )
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = stringResource(R.string.coach_dashboard_no_events),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                )
-            }
-        }
-
-        if (uiState.upcomingEvents.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = stringResource(R.string.coach_dashboard_upcoming),
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-            uiState.upcomingEvents.forEach { event ->
-                EventCard(
-                    title = event.title,
-                    eventType = event.type,
-                    status = event.status,
-                    epochDay = event.epochDay,
-                    dayOfWeek = event.dayOfWeek,
-                    dayOfMonth = event.dayOfMonth,
-                    startTime = event.startTime,
-                    location = event.location,
-                    showChevron = false,
-                    onClick = { onCardClicked(event.eventId) }
-                    )
             }
         }
     }

@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -142,12 +143,18 @@ private fun AddTeamScreenContent(
             }
         } else null,
     ) { padding ->
-        Column(
+        if (uiState.isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(padding),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            }
+        } else Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp),
+                .padding(padding),
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -570,13 +577,17 @@ private fun AddTeamScreenContent(
             KourtButton(
                 text = stringResource(if (uiState.isEditMode) R.string.add_team_save_changes_button else R.string.add_team_save_button),
                 onClick = { actions.onSaveTeam() },
-                enabled = !uiState.isLoading,
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(modifier = Modifier.height(40.dp))
+
         }
     }
+
+
+
 }
+
 
 // ── Private composables ───────────────────────────────────────────────────────
 

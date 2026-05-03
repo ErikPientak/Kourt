@@ -1,4 +1,4 @@
-package com.kourt.app.data.repository
+package com.kourt.app.data.repository.remote
 
 import android.content.Context
 import androidx.credentials.CredentialManager

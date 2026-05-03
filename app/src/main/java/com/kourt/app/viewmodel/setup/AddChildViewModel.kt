@@ -8,11 +8,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kourt.app.R
 import com.kourt.app.data.model.TeamMember
-import com.kourt.app.data.repository.AppPreferencesRepository
-import com.kourt.app.data.repository.AuthRepository
-import com.kourt.app.data.repository.TeamMemberRepository
-import com.kourt.app.data.repository.TeamRepository
-import com.kourt.app.data.repository.UserRepository
+import com.kourt.app.data.repository.local.AppPreferencesRepository
+import com.kourt.app.data.repository.remote.AuthRepository
+import com.kourt.app.data.repository.remote.TeamMemberRepository
+import com.kourt.app.data.repository.remote.TeamRepository
+import com.kourt.app.data.repository.remote.UserRepository
 import com.kourt.app.ui.screens.setup.addchild.AddChildScreenActions
 import com.kourt.app.ui.screens.setup.addchild.AddChildScreenUiState
 import dagger.hilt.android.lifecycle.HiltViewModel

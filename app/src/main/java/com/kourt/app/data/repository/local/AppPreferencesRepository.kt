@@ -1,4 +1,4 @@
-package com.kourt.app.data.repository
+package com.kourt.app.data.repository.local
 
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext

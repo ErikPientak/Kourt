@@ -11,8 +11,8 @@ import com.android.identity.util.UUID
 import com.google.firebase.Timestamp
 import com.kourt.app.R
 import com.kourt.app.data.model.Event
-import com.kourt.app.data.repository.AuthRepository
-import com.kourt.app.data.repository.EventRepository
+import com.kourt.app.data.repository.remote.AuthRepository
+import com.kourt.app.data.repository.remote.EventRepository
 import com.kourt.app.ui.screens.event.addedit.AddEditEventScreenActions
 import com.kourt.app.ui.screens.event.addedit.AddEditEventScreenUiState
 import dagger.hilt.android.lifecycle.HiltViewModel

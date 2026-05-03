@@ -1,4 +1,4 @@
-package com.kourt.app.data.repository
+package com.kourt.app.data.repository.remote
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.kourt.app.data.model.TeamMember

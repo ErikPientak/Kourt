@@ -6,7 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kourt.app.data.repository.AuthRepository
+import com.kourt.app.data.repository.remote.AuthRepository
 import com.kourt.app.ui.screens.settings.SettingsScreenActions
 import com.kourt.app.ui.screens.settings.SettingsScreenUiState
 import dagger.hilt.android.lifecycle.HiltViewModel

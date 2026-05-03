@@ -13,11 +13,11 @@ import com.kourt.app.R
 import com.kourt.app.data.model.Team
 import com.kourt.app.data.model.TeamMember
 import com.kourt.app.data.model.User
-import com.kourt.app.data.repository.AuthRepository
-import com.kourt.app.data.repository.ClubRepository
-import com.kourt.app.data.repository.TeamMemberRepository
-import com.kourt.app.data.repository.TeamRepository
-import com.kourt.app.data.repository.UserRepository
+import com.kourt.app.data.repository.remote.AuthRepository
+import com.kourt.app.data.repository.remote.ClubRepository
+import com.kourt.app.data.repository.remote.TeamMemberRepository
+import com.kourt.app.data.repository.remote.TeamRepository
+import com.kourt.app.data.repository.remote.UserRepository
 import com.kourt.app.ui.screens.team.create.AddTeamScreenActions
 import com.kourt.app.ui.screens.team.create.AddTeamScreenUiState
 import dagger.hilt.android.lifecycle.HiltViewModel

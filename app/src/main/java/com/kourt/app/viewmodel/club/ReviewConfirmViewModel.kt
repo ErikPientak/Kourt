@@ -10,8 +10,8 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
 import com.kourt.app.R
 import com.kourt.app.data.model.Club
-import com.kourt.app.data.repository.AuthRepository
-import com.kourt.app.data.repository.ClubRepository
+import com.kourt.app.data.repository.remote.AuthRepository
+import com.kourt.app.data.repository.remote.ClubRepository
 import com.kourt.app.ui.screens.club.review.ReviewConfirmScreenActions
 import com.kourt.app.ui.screens.club.review.ReviewConfirmScreenUiState
 import dagger.hilt.android.lifecycle.HiltViewModel

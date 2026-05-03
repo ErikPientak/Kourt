@@ -8,8 +8,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kourt.app.R
 import com.kourt.app.data.model.User
-import com.kourt.app.data.repository.AuthRepository
-import com.kourt.app.data.repository.UserRepository
+import com.kourt.app.data.repository.remote.AuthRepository
+import com.kourt.app.data.repository.remote.UserRepository
 import com.kourt.app.ui.screens.auth.register.RegisterScreenActions
 import com.kourt.app.ui.screens.auth.register.RegisterScreenUiState
 import dagger.hilt.android.lifecycle.HiltViewModel

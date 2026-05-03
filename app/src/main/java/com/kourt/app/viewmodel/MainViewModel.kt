@@ -4,8 +4,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.kourt.app.data.repository.AppPreferencesRepository
-import com.kourt.app.data.repository.AuthRepository
+import com.kourt.app.data.repository.local.AppPreferencesRepository
+import com.kourt.app.data.repository.remote.AuthRepository
 import com.kourt.app.navigation.Destination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject

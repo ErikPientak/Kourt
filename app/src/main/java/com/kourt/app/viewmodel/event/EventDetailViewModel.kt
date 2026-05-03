@@ -10,11 +10,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kourt.app.R
 import com.kourt.app.data.model.Rsvp
-import com.kourt.app.data.repository.AuthRepository
-import com.kourt.app.data.repository.EventRepository
-import com.kourt.app.data.repository.RsvpRepository
-import com.kourt.app.data.repository.TeamMemberRepository
-import com.kourt.app.data.repository.UserRepository
+import com.kourt.app.data.repository.remote.AuthRepository
+import com.kourt.app.data.repository.remote.EventRepository
+import com.kourt.app.data.repository.remote.RsvpRepository
+import com.kourt.app.data.repository.remote.TeamMemberRepository
+import com.kourt.app.data.repository.remote.UserRepository
 import com.kourt.app.ui.screens.event.detail.EventDetailScreenActions
 import com.kourt.app.ui.screens.event.detail.EventDetailScreenUiState
 import com.kourt.app.ui.screens.event.detail.EventDetailUiItem
@@ -23,7 +23,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.util.Locale
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 private const val TAG = "EventDetailViewModel"

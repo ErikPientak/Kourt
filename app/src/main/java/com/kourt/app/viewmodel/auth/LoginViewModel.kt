@@ -9,10 +9,10 @@ import androidx.lifecycle.viewModelScope
 import android.util.Log
 import com.kourt.app.R
 import com.kourt.app.data.model.User
-import com.kourt.app.data.repository.AuthRepository
-import com.kourt.app.data.repository.ClubRepository
-import com.kourt.app.data.repository.TeamMemberRepository
-import com.kourt.app.data.repository.UserRepository
+import com.kourt.app.data.repository.remote.AuthRepository
+import com.kourt.app.data.repository.remote.ClubRepository
+import com.kourt.app.data.repository.remote.TeamMemberRepository
+import com.kourt.app.data.repository.remote.UserRepository
 import com.kourt.app.ui.screens.auth.login.LoginDestination
 import com.kourt.app.ui.screens.auth.login.LoginScreenActions
 import com.kourt.app.ui.screens.auth.login.LoginScreenUiState

@@ -1,7 +1,6 @@
-package com.kourt.app.data.repository
+package com.kourt.app.data.repository.remote
 
 import com.google.firebase.firestore.FirebaseFirestore
-import com.kourt.app.data.model.Attendance
 import com.kourt.app.data.model.MatchStats
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
