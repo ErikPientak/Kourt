@@ -101,6 +101,7 @@ class ProfileViewModel @Inject constructor(
                         val team = teamRepository.getTeam(member.teamId)
                         val club = team?.clubId?.let { clubRepository.getClub(it) }
                         MembershipRowUiItem(
+                            memberId = member.id,
                             clubId = team?.clubId.orEmpty(),
                             teamId = member.teamId,
                             clubName = club?.name.orEmpty().ifEmpty { team?.name.orEmpty() },
@@ -398,6 +399,30 @@ class ProfileViewModel @Inject constructor(
 
     override fun onJoinOrCreateTeam() {
         uiState = uiState.copy(navigateToSetup = true)
+    }
+
+    override fun onLeaveTeamLongPress(item: MembershipRowUiItem) {
+        uiState = uiState.copy(membershipToLeave = item, showLeaveTeamConfirm = true)
+    }
+
+    override fun onLeaveTeamConfirm() {
+        val membership = uiState.membershipToLeave ?: return
+        uiState = uiState.copy(showLeaveTeamConfirm = false, membershipToLeave = null)
+        viewModelScope.launch {
+            runCatching {
+                teamMemberRepository.removeMember(membership.memberId)
+                Log.d(TAG, "onLeaveTeamConfirm: left team memberId=${membership.memberId}")
+                uiState = uiState.copy(
+                    memberships = uiState.memberships.filter { it.memberId != membership.memberId },
+                )
+            }.onFailure { e ->
+                Log.e(TAG, "onLeaveTeamConfirm: failed", e)
+            }
+        }
+    }
+
+    override fun onLeaveTeamDismiss() {
+        uiState = uiState.copy(showLeaveTeamConfirm = false, membershipToLeave = null)
     }
 
     override fun onNavigationConsumed() {

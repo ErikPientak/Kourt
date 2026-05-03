@@ -2,7 +2,9 @@ package com.kourt.app.ui.screens.settings.profile
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -112,6 +114,9 @@ fun ProfileScreen(
         onRemoveChildConfirm = viewModel::onRemoveChildConfirm,
         onRemoveChildDismiss = viewModel::onRemoveChildDismiss,
         onJoinOrCreateTeam = viewModel::onJoinOrCreateTeam,
+        onLeaveTeamLongPress = viewModel::onLeaveTeamLongPress,
+        onLeaveTeamConfirm = viewModel::onLeaveTeamConfirm,
+        onLeaveTeamDismiss = viewModel::onLeaveTeamDismiss,
     )
 }
 
@@ -135,6 +140,9 @@ private fun ProfileScreenContent(
     onRemoveChildConfirm: () -> Unit = {},
     onRemoveChildDismiss: () -> Unit = {},
     onJoinOrCreateTeam: () -> Unit = {},
+    onLeaveTeamLongPress: (MembershipRowUiItem) -> Unit = {},
+    onLeaveTeamConfirm: () -> Unit = {},
+    onLeaveTeamDismiss: () -> Unit = {},
 ) {
     if (uiState.showAvatarPicker) {
         AvatarPickerBottomSheet(
@@ -182,6 +190,40 @@ private fun ProfileScreenContent(
             },
             dismissButton = {
                 TextButton(onClick = onRemoveChildDismiss) {
+                    Text(stringResource(android.R.string.cancel))
+                }
+            },
+            shape = RoundedCornerShape(24.dp),
+        )
+    }
+
+    if (uiState.showLeaveTeamConfirm && uiState.membershipToLeave != null) {
+        AlertDialog(
+            onDismissRequest = onLeaveTeamDismiss,
+            title = {
+                Text(
+                    text = stringResource(R.string.leave_team_confirm_title, uiState.membershipToLeave.subtitle),
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.leave_team_confirm_body, uiState.membershipToLeave.subtitle),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = onLeaveTeamConfirm) {
+                    Text(
+                        text = stringResource(R.string.leave_team_confirm_button),
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onLeaveTeamDismiss) {
                     Text(stringResource(android.R.string.cancel))
                 }
             },
@@ -279,7 +321,13 @@ private fun ProfileScreenContent(
                             }
                         } else {
                             items(uiState.memberships) { item ->
-                                MembershipRow(item = item, onClick = { onMembershipClick(item) })
+                                MembershipRow(
+                                    item = item,
+                                    onClick = { onMembershipClick(item) },
+                                    onLongClick = if (!uiState.isReadOnly && item.teamId != null) {
+                                        { onLeaveTeamLongPress(item) }
+                                    } else null,
+                                )
                             }
                         }
 
@@ -487,19 +535,22 @@ private fun ProfileHeader(
 
 // ── Membership row ─────────────────────────────────────────────────────────────
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun MembershipRow(
     item: MembershipRowUiItem,
     onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     val roleColor = roleBadgeColor(item.role)
 
     Surface(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
         shape = RoundedCornerShape(52.dp),
         color = MaterialTheme.colorScheme.surface,
-        onClick = onClick,
     ) {
         Row(
             modifier = Modifier

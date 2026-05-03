@@ -24,6 +24,8 @@ data class ProfileScreenUiState(
     val navigateToSetup: Boolean = false,
     val isReadOnly: Boolean = false,
     val showAvatarPicker: Boolean = false,
+    val showLeaveTeamConfirm: Boolean = false,
+    val membershipToLeave: MembershipRowUiItem? = null,
 )
 
 data class ChildTeamUiItem(
@@ -41,6 +43,7 @@ data class ManagedChildUiItem(
 )
 
 data class MembershipRowUiItem(
+    val memberId: String = "",
     val clubId: String,
     val teamId: String?,
     val clubName: String,

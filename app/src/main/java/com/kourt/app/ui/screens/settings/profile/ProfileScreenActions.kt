@@ -17,5 +17,8 @@ interface ProfileScreenActions {
     fun onRemoveChildConfirm()
     fun onRemoveChildDismiss()
     fun onJoinOrCreateTeam()
+    fun onLeaveTeamLongPress(item: MembershipRowUiItem)
+    fun onLeaveTeamConfirm()
+    fun onLeaveTeamDismiss()
     fun onNavigationConsumed()
 }

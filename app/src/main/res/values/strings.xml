@@ -220,6 +220,9 @@
     <string name="child_remove_confirm_title">Remove %1$s?</string>
     <string name="child_remove_confirm_body">%1$s will be removed from your account and all their teams. This cannot be undone.</string>
     <string name="child_remove_confirm_button">Remove</string>
+    <string name="leave_team_confirm_title">Leave %1$s?</string>
+    <string name="leave_team_confirm_body">You will be removed from %1$s. You can rejoin using a join code.</string>
+    <string name="leave_team_confirm_button">Leave</string>
     <string name="child_join_team_dialog_subtitle">Enter the join code from %1$s\'s coach.</string>
     <string name="profile_subtitle_club">Club</string>
     <string name="profile_error_load_failed">Failed to load profile data</string>
