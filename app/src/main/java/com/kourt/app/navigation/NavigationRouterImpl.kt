@@ -121,4 +121,12 @@ class NavigationRouterImpl(private val navController: NavController) : INavigati
     override fun navigateToMatchStats(eventId: String) {
         navController.navigate("match_stats/${Uri.encode(eventId)}")
     }
+
+    override fun navigateToAfterMatchStats(eventId: String) {
+        navController.navigate("after_match_stats/${Uri.encode(eventId)}")
+    }
+
+    override fun navigateToAttendanceAnalytics() {
+        navController.navigate(Destination.AttendanceAnalyticsScreen.route)
+    }
 }

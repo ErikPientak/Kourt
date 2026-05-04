@@ -37,6 +37,7 @@ fun ScheduleTab(
     onDateSelected: (Long) -> Unit,
     onLogAttendance: (String) -> Unit,
     onLogStatistics: (String) -> Unit,
+    onShowStatistics: (String) -> Unit = {},
     onCardClicked: (String) -> Unit,
     ctaTextOverride: String? = null,
 ) {
@@ -116,16 +117,25 @@ fun ScheduleTab(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 items(visibleEvents, key = { it.eventId }) { event ->
+                    val today = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())
+                    val isPastMatch = event.type.lowercase() == "match" &&
+                        event.epochDay >= 0 && event.epochDay < today
+                    val hasStats = event.eventId in uiState.matchStatsEventIds
+
                     ScheduleEventCard(
                         event = event,
                         onCtaClick = {
-                            if (event.type.lowercase() == "match") {
-                                onLogStatistics(event.eventId)
-                            } else {
-                                onLogAttendance(event.eventId)
+                            when {
+                                isPastMatch && hasStats -> onShowStatistics(event.eventId)
+                                event.type.lowercase() == "match" -> onLogStatistics(event.eventId)
+                                else -> onLogAttendance(event.eventId)
                             }
                         },
-                        ctaText = ctaTextOverride,
+                        ctaText = ctaTextOverride ?: when {
+                            isPastMatch && hasStats -> stringResource(R.string.after_match_stats_show_statistics)
+                            event.type.lowercase() == "match" -> stringResource(R.string.schedule_log_statistics)
+                            else -> stringResource(R.string.schedule_log_attendance)
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         onClick = { onCardClicked(event.eventId) },
                     )

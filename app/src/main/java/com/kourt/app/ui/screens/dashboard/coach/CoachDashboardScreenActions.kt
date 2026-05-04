@@ -28,8 +28,10 @@ interface CoachDashboardScreenActions {
     fun onDateSelected(epochDay: Long)
     fun onLogAttendance(eventId: String)
     fun onLogStatistics(eventId: String)
+    fun onShowStatistics(eventId: String)
     fun onAddEvent()
     fun onCardClicked(eventId: String)
     fun onGrowTeamClicked()
     fun onGrowTeamDismissed()
+    fun onAnalyticsTap()
 }

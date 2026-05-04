@@ -64,6 +64,8 @@ data class CoachDashboardScreenUiState(
     val navigateToEventDetailId: String? = null,
     val navigateToAttendanceEventId: String? = null,
     val navigateToMatchStatsEventId: String? = null,
+    val navigateToAfterMatchStatsEventId: String? = null,
+    val matchStatsEventIds: Set<String> = emptySet(),
     val showGrowTeamSheet: Boolean = false,
     val showChangeRoleSheet: Boolean = false,
     val selectedMember: String? = null,
@@ -72,4 +74,5 @@ data class CoachDashboardScreenUiState(
     val selectedRole: String = "",
     val showJerseyNumberDialog: Boolean = false,
     val jerseyNumberInput: String = "",
+    val navigateToAttendanceAnalytics: Boolean = false,
 )

@@ -217,7 +217,7 @@ private fun ClubManagementScreenContent(
         topBar = {
             ClubManagementTopBar(
                 title = uiState.clubName.ifBlank { stringResource(com.kourt.app.R.string.club_management_title) },
-                onSettingsTap = { actions.onSettingsTap() },
+                onSettingsTap = { navigation.navigateToSettingsScreen() },
             )
         },
         bottomBar = {

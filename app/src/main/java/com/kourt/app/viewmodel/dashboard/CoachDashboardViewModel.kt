@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.kourt.app.data.repository.local.AppPreferencesRepository
 import com.kourt.app.data.repository.remote.AuthRepository
 import com.kourt.app.data.repository.remote.EventRepository
+import com.kourt.app.data.repository.remote.MatchStatsRepository
 import com.kourt.app.data.repository.remote.RsvpRepository
 import com.kourt.app.data.repository.remote.TeamMemberRepository
 import com.kourt.app.data.repository.remote.TeamRepository
@@ -21,6 +22,7 @@ import com.kourt.app.ui.screens.dashboard.coach.TeamUiItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,6 +33,7 @@ class CoachDashboardViewModel @Inject constructor(
     teamRepository: TeamRepository,
     eventRepository: EventRepository,
     private val rsvpRepository: RsvpRepository,
+    private val matchStatsRepository: MatchStatsRepository,
     appPreferencesRepository: AppPreferencesRepository,
 ) : BaseDashboardViewModel(
     authRepository, userRepository, teamMemberRepository,
@@ -98,6 +101,26 @@ class CoachDashboardViewModel @Inject constructor(
             currentUserRole = myRole,
         )
         if (upNextEvent != null) loadRsvpCounts(upNextEvent.eventId)
+        loadMatchStatsPresence(allEvents)
+    }
+
+    private fun loadMatchStatsPresence(allEvents: List<EventUiItem>) {
+        viewModelScope.launch {
+            val today = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())
+            val pastMatchEventIds = allEvents
+                .filter { it.type.lowercase() == "match" && it.epochDay < today }
+                .map { it.eventId }
+            if (pastMatchEventIds.isEmpty()) return@launch
+            runCatching {
+                val withStats = pastMatchEventIds.filter { eventId ->
+                    matchStatsRepository.getMatchStats(eventId) != null
+                }.toSet()
+                uiState = uiState.copy(matchStatsEventIds = withStats)
+                Log.d(logTag, "Found match stats for ${withStats.size} past events")
+            }.onFailure { e ->
+                Log.w(logTag, "Failed to check match stats presence", e)
+            }
+        }
     }
 
     private fun loadRsvpCounts(eventId: String) {
@@ -300,6 +323,14 @@ class CoachDashboardViewModel @Inject constructor(
         uiState = uiState.copy(navigateToMatchStatsEventId = null)
     }
 
+    override fun onShowStatistics(eventId: String) {
+        uiState = uiState.copy(navigateToAfterMatchStatsEventId = eventId)
+    }
+
+    fun onAfterMatchStatsNavigated() {
+        uiState = uiState.copy(navigateToAfterMatchStatsEventId = null)
+    }
+
     override fun onAddEvent() {
         uiState = uiState.copy(navigateToAddEvent = true)
     }
@@ -314,6 +345,14 @@ class CoachDashboardViewModel @Inject constructor(
 
     override fun onGrowTeamDismissed() {
         uiState = uiState.copy(showGrowTeamSheet = false)
+    }
+
+    override fun onAnalyticsTap() {
+        uiState = uiState.copy(navigateToAttendanceAnalytics = true)
+    }
+
+    fun onAttendanceAnalyticsNavigated() {
+        uiState = uiState.copy(navigateToAttendanceAnalytics = false)
     }
 
     fun onAddEventNavigated() {

@@ -468,10 +468,6 @@ class ClubManagementViewModel @Inject constructor(
         Log.d(TAG, "onTeamClick: teamId=$teamId")
     }
 
-    override fun onSettingsTap() {
-        Log.d(TAG, "onSettingsTap: Settings screen not yet implemented")
-    }
-
     override fun onTeamMenuClick(teamId: String) {
         val team = uiState.teams.find { it.id == teamId } ?: return
         uiState = uiState.copy(selectedTeam = team)

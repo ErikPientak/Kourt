@@ -379,6 +379,18 @@
     <string name="nomination_attendance_rate">%1$d%% Attendance</string>
     <string name="nomination_button">Nominate</string>
 
+    <!-- After Match Stats (read-only result screen) -->
+    <string name="after_match_stats_title">Match Result</string>
+    <string name="after_match_stats_back_cd">Navigate back</string>
+    <string name="after_match_stats_win_badge">WIN</string>
+    <string name="after_match_stats_loss_badge">LOSS</string>
+    <string name="after_match_stats_player_of_match">PLAYER OF THE MATCH</string>
+    <string name="after_match_stats_mvp_badge">MVP</string>
+    <string name="after_match_stats_player_stats_title">Player Stats</string>
+    <string name="after_match_stats_top_performers">TOP PERFORMERS</string>
+    <string name="after_match_stats_show_statistics">Show Statistics</string>
+    <string name="after_match_stats_edit_cd">Edit match stats</string>
+
     <!-- Match Stats -->
     <string name="match_stats_title">Match Stats</string>
     <string name="match_stats_my_team_label">MY TEAM</string>
@@ -416,4 +428,18 @@
     <string name="team_delete_confirm_button">Delete</string>
     <string name="role_update">Update Role</string>
     <string name="role_sheet_title">Update Member Role</string>
+
+    <!-- Attendance Analytics -->
+    <string name="attendance_analytics_title">Attendance Analytics</string>
+    <string name="attendance_analytics_rate_label">ATTENDANCE RATE</string>
+    <string name="attendance_analytics_most_reliable">MOST RELIABLE</string>
+    <string name="attendance_analytics_trend_label">ATTENDANCE TREND</string>
+    <string name="attendance_analytics_trend_improving">Improving</string>
+    <string name="attendance_analytics_trend_declining">Declining</string>
+    <string name="attendance_analytics_trend_vs_period">%1$s vs last period</string>
+    <string name="attendance_analytics_player_breakdown">Player Breakdown</string>
+    <string name="attendance_analytics_reliability_score">RELIABILITY SCORE</string>
+    <string name="coach_dashboard_analytics_cd">View attendance analytics</string>
+    <string name="error_no_team">No active team selected</string>
+    <string name="attendance_analytics_no_data">No Analytics to be shown yet</string>
 </resources>

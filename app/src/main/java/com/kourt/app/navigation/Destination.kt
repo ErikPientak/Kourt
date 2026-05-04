@@ -23,5 +23,7 @@ sealed class Destination(val route: String) {
     object AttendanceScreen     : Destination("attendance/{eventId}")
     object NominationScreen     : Destination("nomination/{eventId}")
     object AddChildScreen       : Destination("add_child")
-    object MatchStatsScreen     : Destination("match_stats/{eventId}")
+    object MatchStatsScreen           : Destination("match_stats/{eventId}")
+    object AfterMatchStatsScreen      : Destination("after_match_stats/{eventId}")
+    object AttendanceAnalyticsScreen  : Destination("attendance_analytics")
 }

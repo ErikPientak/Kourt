@@ -114,6 +114,19 @@ fun CoachDashboardScreen(
         viewModel.onMatchStatsNavigated()
     }
 
+    LaunchedEffect(uiState.navigateToAfterMatchStatsEventId) {
+        val id = uiState.navigateToAfterMatchStatsEventId ?: return@LaunchedEffect
+        navigation.navigateToAfterMatchStats(id)
+        viewModel.onAfterMatchStatsNavigated()
+    }
+
+    LaunchedEffect(uiState.navigateToAttendanceAnalytics) {
+        if (uiState.navigateToAttendanceAnalytics) {
+            navigation.navigateToAttendanceAnalytics()
+            viewModel.onAttendanceAnalyticsNavigated()
+        }
+    }
+
     CoachDashboardContent(
         uiState = uiState,
         actions = viewModel,
@@ -202,6 +215,7 @@ private fun CoachDashboardContent(
                 onToggleDropdown = { actions.onTeamDropdownToggle() },
                 onTeamSelected = { actions.onTeamSelected(it) },
                 onSettingsTap = { navigation.navigateToSettingsScreen() },
+                onAnalyticsTap = { actions.onAnalyticsTap() },
             )
         },
         bottomBar = {
@@ -260,6 +274,7 @@ private fun CoachDashboardContent(
                         onDateSelected = { actions.onDateSelected(it) },
                         onLogAttendance = { actions.onLogAttendance(it) },
                         onLogStatistics = { actions.onLogStatistics(it) },
+                        onShowStatistics = { actions.onShowStatistics(it) },
                         onCardClicked = { actions.onCardClicked(it) },
                     )
                     TAB_ROSTER -> MembersTab(
@@ -291,6 +306,7 @@ private fun CoachDashboardTopBar(
     onToggleDropdown: () -> Unit,
     onTeamSelected: (String) -> Unit,
     onSettingsTap: () -> Unit,
+    onAnalyticsTap: () -> Unit,
 ) {
     val outlineColor = MaterialTheme.colorScheme.surface
 
@@ -399,6 +415,15 @@ private fun CoachDashboardTopBar(
             }
 
             Spacer(modifier = Modifier.weight(1f))
+
+            IconButton(onClick = onAnalyticsTap) {
+                Icon(
+                    painter = painterResource(R.drawable.analytics),
+                    contentDescription = stringResource(R.string.coach_dashboard_analytics_cd),
+                    tint = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.size(24.dp),
+                )
+            }
 
             IconButton(onClick = onSettingsTap) {
                 Icon(

@@ -4,7 +4,6 @@ interface ClubManagementScreenActions {
     // ── Teams tab ────────────────────────────────────────────────────────────
     fun onAddTeam()
     fun onTeamClick(teamId: String)
-    fun onSettingsTap()
     fun onTeamMenuClick(teamId: String)
     fun onTeamActionDismiss()
     fun onShareTeamCode()
