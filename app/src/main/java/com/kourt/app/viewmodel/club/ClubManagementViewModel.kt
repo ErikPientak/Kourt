@@ -471,6 +471,7 @@ class ClubManagementViewModel @Inject constructor(
     override fun onTeamMenuClick(teamId: String) {
         val team = uiState.teams.find { it.id == teamId } ?: return
         uiState = uiState.copy(selectedTeam = team)
+        Log.d(TAG, "onTeamMenuClick: teamId=$teamId")
     }
 
     override fun onTeamActionDismiss() {

@@ -12,7 +12,6 @@ import com.kourt.app.data.repository.remote.EventRepository
 import com.kourt.app.data.repository.remote.MatchStatsRepository
 import com.kourt.app.data.repository.remote.TeamMemberRepository
 import com.kourt.app.data.repository.remote.UserRepository
-import com.kourt.app.ui.screens.event.aftermatch.AfterMatchStatsScreenActions
 import com.kourt.app.ui.screens.event.aftermatch.AfterMatchStatsScreenUiState
 import com.kourt.app.ui.screens.event.aftermatch.PlayerStatRowItem
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,16 +31,14 @@ class AfterMatchStatsViewModel @Inject constructor(
     private val matchStatsRepository: MatchStatsRepository,
     private val teamMemberRepository: TeamMemberRepository,
     private val userRepository: UserRepository,
-) : ViewModel(), AfterMatchStatsScreenActions {
+) : ViewModel() {
 
     val eventId: String = savedStateHandle["eventId"] ?: ""
 
     var uiState by mutableStateOf(AfterMatchStatsScreenUiState())
         private set
 
-    init {
-        loadData()
-    }
+    init { loadData() }
 
     // ── Data loading ──────────────────────────────────────────────────────────
 
@@ -103,7 +100,6 @@ class AfterMatchStatsViewModel @Inject constructor(
                         rebounds = stat.rebounds,
                         assists = stat.assists,
                         fouls = stat.fouls,
-                        minutesPlayed = stat.minutesPlayed,
                         freeThrowsAttempted = stat.freeThrowsAttempted,
                         freeThrowsMade = stat.freeThrowsMade,
                     )

@@ -31,6 +31,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,10 +48,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.kourt.app.R
+import com.kourt.app.navigation.Destination
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.BaseScreenWithBottomNav
 import com.kourt.app.ui.components.KourtAvatarLeading
+import com.kourt.app.ui.components.MvpCard
 import com.kourt.app.ui.theme.KourtTheme
 import com.kourt.app.ui.theme.OrangeDark
 import com.kourt.app.ui.theme.OrangeLight
@@ -69,7 +74,6 @@ private val readStatColumns = listOf(
     ReadStatCol("FLS")  { it.fouls.toString() },
     ReadStatCol("FTA")  { it.freeThrowsAttempted.toString() },
     ReadStatCol("FTM")  { it.freeThrowsMade.toString() },
-    ReadStatCol("MIN")  { it.minutesPlayed.toInt().toString() },
 )
 
 // ── Entry point ───────────────────────────────────────────────────────────────
@@ -83,7 +87,6 @@ fun AfterMatchStatsScreen(
 
     AfterMatchStatsScreenContent(
         uiState = uiState,
-        actions = viewModel,
         onBack = navigation::returnBack,
         onEditStats = { navigation.navigateToMatchStats(viewModel.eventId) },
     )
@@ -95,7 +98,6 @@ fun AfterMatchStatsScreen(
 @Composable
 internal fun AfterMatchStatsScreenContent(
     uiState: AfterMatchStatsScreenUiState,
-    actions: AfterMatchStatsScreenActions,
     onBack: () -> Unit,
     onEditStats: () -> Unit = {},
 ) {
@@ -351,114 +353,6 @@ private fun ResultScoreCard(
     }
 }
 
-// ── MVP card ──────────────────────────────────────────────────────────────────
-
-@Composable
-private fun MvpCard(
-    player: PlayerStatRowItem,
-    modifier: Modifier = Modifier,
-) {
-    val isDark = MaterialTheme.colorScheme.background.blue < 0.5f
-    val accentColor = if (isDark) OrangeDark else OrangeLight
-
-    Surface(
-        modifier = modifier.border(
-            width = 1.5.dp,
-            color = accentColor.copy(alpha = 0.7f),
-            shape = RoundedCornerShape(16.dp),
-        ),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surface,
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(accentColor.copy(alpha = 0.08f), Color.Transparent),
-                        radius = 700f,
-                    )
-                )
-                .padding(horizontal = 16.dp, vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            // ── Left: avatar with orange ring + MVP badge ──────────────────────
-            Box(contentAlignment = Alignment.BottomCenter) {
-                Box(
-                    modifier = Modifier
-                        .size(88.dp)
-                        .border(2.dp, accentColor, CircleShape)
-                        .padding(3.dp)
-                        .clip(CircleShape),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    KourtAvatarLeading(
-                        fallbackText = player.displayName,
-                        photoUrl = player.avatarUrl,
-                        size = 82.dp,
-                    )
-                }
-            }
-
-            // ── Right: label + name + stats ────────────────────────────────────
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.after_match_stats_player_of_match),
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.5.sp,
-                    ),
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                )
-                Text(
-                    text = player.displayName,
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.Bottom,
-                ) {
-                    MvpStatChip(value = player.points, label = "PTS", accentColor = accentColor)
-                    MvpStatChip(value = player.rebounds, label = "REB", accentColor = accentColor)
-                    MvpStatChip(value = player.assists, label = "AST", accentColor = accentColor)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun MvpStatChip(
-    value: Int,
-    label: String,
-    accentColor: Color,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-    ) {
-        Text(
-            text = value.toString(),
-            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
-            color = accentColor,
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-            letterSpacing = 1.sp,
-        )
-    }
-}
-
 // ── Player stats section header ───────────────────────────────────────────────
 
 @Composable
@@ -593,7 +487,6 @@ private val previewMvp = PlayerStatRowItem(
     rebounds = 8,
     assists = 5,
     fouls = 2,
-    minutesPlayed = 36.0,
     freeThrowsAttempted = 8,
     freeThrowsMade = 7,
 )
@@ -608,7 +501,6 @@ private val previewPlayers = listOf(
         rebounds = 5,
         assists = 3,
         fouls = 3,
-        minutesPlayed = 30.0,
         freeThrowsAttempted = 4,
         freeThrowsMade = 3,
     ),
@@ -620,7 +512,6 @@ private val previewPlayers = listOf(
         rebounds = 4,
         assists = 7,
         fouls = 1,
-        minutesPlayed = 28.0,
         freeThrowsAttempted = 2,
         freeThrowsMade = 2,
     ),
@@ -632,13 +523,12 @@ private val previewPlayers = listOf(
         rebounds = 3,
         assists = 2,
         fouls = 4,
-        minutesPlayed = 22.0,
         freeThrowsAttempted = 0,
         freeThrowsMade = 0,
     ),
 )
 
-private val previewActions = object : AfterMatchStatsScreenActions {}
+
 
 @Preview(name = "AfterMatchStats — dark, win", showBackground = true)
 @Composable
@@ -655,7 +545,6 @@ private fun AfterMatchStatsDarkWinPreview() {
                 mvpItem = previewMvp,
                 players = previewPlayers,
             ),
-            actions = previewActions,
             onBack = {},
         )
     }
@@ -676,7 +565,6 @@ private fun AfterMatchStatsDarkLossPreview() {
                 mvpItem = previewMvp,
                 players = previewPlayers,
             ),
-            actions = previewActions,
             onBack = {},
         )
     }
@@ -697,7 +585,6 @@ private fun AfterMatchStatsLightWinPreview() {
                 mvpItem = previewMvp,
                 players = previewPlayers,
             ),
-            actions = previewActions,
             onBack = {},
         )
     }
@@ -709,7 +596,6 @@ private fun AfterMatchStatsLoadingPreview() {
     KourtTheme(darkTheme = true) {
         AfterMatchStatsScreenContent(
             uiState = AfterMatchStatsScreenUiState(isLoading = true),
-            actions = previewActions,
             onBack = {},
         )
     }

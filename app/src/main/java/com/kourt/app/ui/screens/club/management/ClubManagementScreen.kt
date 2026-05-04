@@ -229,7 +229,7 @@ private fun ClubManagementScreenContent(
         floatingActionButton = {
             when (selectedTab) {
                 TAB_TEAMS -> FloatingActionButton(
-                    onClick = { actions.onAddTeam() },
+                    onClick = { navigation.navigateToAddTeamScreen(uiState.clubId) },
                     shape = RoundedCornerShape(16.dp),
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -250,13 +250,13 @@ private fun ClubManagementScreenContent(
             when (selectedTab) {
                 TAB_TEAMS -> TeamsTab(
                     uiState = uiState,
-                    onTeamMenuClick = { actions.onTeamMenuClick(uiState.selectedTeam?.id ?: "") },
+                    onTeamMenuClick = { actions.onTeamMenuClick(it) },
                 )
                 TAB_MEMBERS -> MembersTab(
                     uiState = uiState,
-                    onSearchQueryChange = { actions.onMemberSearchQueryChange(uiState.memberSearchQuery) },
-                    onFilterChange = { actions.onMemberFilterChange(uiState.memberFilter) },
-                    onMenuClick = { actions.onMemberMenuClick(uiState.selectedMember?.memberId ?: "") },
+                    onSearchQueryChange = { actions.onMemberSearchQueryChange(it) },
+                    onFilterChange = { actions.onMemberFilterChange(it) },
+                    onMenuClick = { actions.onMemberMenuClick(it) },
                 )
                 TAB_EVENTS -> EventsTab(
                     uiState = uiState,

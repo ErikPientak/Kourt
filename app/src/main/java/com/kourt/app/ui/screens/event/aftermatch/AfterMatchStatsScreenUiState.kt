@@ -12,7 +12,6 @@ data class PlayerStatRowItem(
     val rebounds: Int,
     val assists: Int,
     val fouls: Int,
-    val minutesPlayed: Double,
     val freeThrowsAttempted: Int,
     val freeThrowsMade: Int,
 ) {

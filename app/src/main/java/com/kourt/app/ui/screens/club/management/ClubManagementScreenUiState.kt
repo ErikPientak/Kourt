@@ -16,13 +16,6 @@ enum class EventStatusFilter { ALL, UPCOMING, PAST, CANCELLED }
 
 // ── Members tab — UI projection ───────────────────────────────────────────────
 
-/**
- * A flat, UI-ready projection of a club member.
- *
- * Assembled in the ViewModel by joining [TeamMember] + [User] + [Team] data.
- * [subtitle] is pre-formatted ("Team: X" for coaches/players, "Athlete: X"
- * for parents) so the composable layer stays logic-free.
- */
 @Immutable
 data class ClubMemberUiItem(
     /** Firestore document ID of the TeamMember record — used as the list key. */

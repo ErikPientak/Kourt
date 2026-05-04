@@ -48,7 +48,7 @@ class UserRepository @Inject constructor(
             id = childUid,
             displayName = displayName,
             avatarId = avatarId,
-            isManagedProfile = true,
+            managedProfile = true,
             managedBy = parentUid,
         )
         collection.document(childUid).set(child).await()
