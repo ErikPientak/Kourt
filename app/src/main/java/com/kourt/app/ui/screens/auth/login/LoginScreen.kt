@@ -80,7 +80,7 @@ fun LoginScreen(
 }
 
 @Composable
-private fun LoginScreenContent(
+internal fun LoginScreenContent(
     uiState: LoginScreenUiState,
     actions: LoginScreenActions,
     onNavigateToRegister: () -> Unit,

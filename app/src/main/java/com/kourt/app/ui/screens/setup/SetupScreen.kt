@@ -69,7 +69,7 @@ fun SetupScreen(
 }
 
 @Composable
-private fun SetupScreenContent(
+internal fun SetupScreenContent(
     uiState: SetupScreenUiState,
     actions: SetupScreenActions,
     onNavigateToCreateClub: () -> Unit,
