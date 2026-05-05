@@ -8,4 +8,5 @@ data class LoginScreenUiState(
     val isLoading: Boolean = false,
     @StringRes val error: Int? = null,
     val destination: LoginDestination = LoginDestination.NONE,
+    val passwordResetSent: Boolean = false,
 )

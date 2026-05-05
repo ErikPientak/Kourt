@@ -245,6 +245,8 @@
     <string name="error_display_name_required">Please enter a name</string>
     <string name="error_login_failed">Login failed. Please check your credentials.</string>
     <string name="error_google_sign_in_failed">Google sign-in failed. Please try again.</string>
+    <string name="error_reset_failed">Failed to send reset email. Check the email address and try again.</string>
+    <string name="auth_reset_email_sent">Reset email sent! Check your inbox.</string>
     <string name="error_registration_failed">Registration failed. Please try again.</string>
     <string name="error_create_club_failed">Failed to create club. Please try again.</string>
 

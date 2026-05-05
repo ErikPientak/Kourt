@@ -244,8 +244,17 @@ private fun LoginScreenContent(
 
         Spacer(modifier = Modifier.height(28.dp))
 
-        // Error message
-        if (uiState.error != null) {
+        if (uiState.passwordResetSent) {
+            LaunchedEffect(Unit) { actions.onPasswordResetConsumed() }
+            Text(
+                text = stringResource(R.string.auth_reset_email_sent),
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.labelSmall,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 52.dp),
+            )
+        } else if (uiState.error != null) {
             Text(
                 text = stringResource(uiState.error),
                 color = MaterialTheme.colorScheme.error,

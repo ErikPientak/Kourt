@@ -1,7 +1,7 @@
 package com.kourt.app.ui.screens.setup
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.R
+import com.kourt.app.navigation.Destination
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.KourtButton
 import com.kourt.app.ui.components.SetupOptionCard
@@ -55,14 +56,15 @@ fun SetupScreen(
         }
     }
 
-    val hasPreviousScreen = navigation.getNavController().previousBackStackEntry != null
+    val previousRoute = navigation.getNavController().previousBackStackEntry?.destination?.route
+    val showBack = previousRoute == Destination.ProfileScreen.route
 
     SetupScreenContent(
         uiState = uiState,
         actions = viewModel,
         onNavigateToCreateClub = { navigation.navigateToCreateClubScreen() },
         onNavigateToAddChild = { navigation.navigateToAddChild() },
-        onBack = if (hasPreviousScreen) navigation::returnBack else null,
+        onBack = if (showBack) navigation::returnBack else null,
     )
 }
 
@@ -80,25 +82,7 @@ private fun SetupScreenContent(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp),
     ) {
-        if (onBack != null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                contentAlignment = Alignment.CenterStart,
-            ) {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Navigate back",
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(24.dp),
-                    )
-                }
-            }
-        } else {
-            Spacer(modifier = Modifier.height(48.dp))
-        }
+        Spacer(modifier = Modifier.height(48.dp))
 
         Text(
             text = stringResource(R.string.setup_greeting),
@@ -108,11 +92,26 @@ private fun SetupScreenContent(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        Text(
-            text = stringResource(R.string.setup_title),
-            style = MaterialTheme.typography.displayMedium,
-            color = MaterialTheme.colorScheme.primary,
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (onBack != null) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Navigate back",
+                        tint = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.size(24.dp),
+                    )
+                }
+            }
+            Text(
+                text = stringResource(R.string.setup_title),
+                style = MaterialTheme.typography.displayMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 

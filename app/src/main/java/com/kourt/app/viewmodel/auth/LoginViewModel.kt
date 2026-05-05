@@ -82,15 +82,20 @@ class LoginViewModel @Inject constructor(
 
     override fun onForgetPassword(email: String) {
         viewModelScope.launch {
-            val result =  authRepository.resetPassword(email)
-            if (result.isSuccess){
+            uiState = uiState.copy(isLoading = true, error = null, passwordResetSent = false)
+            val result = authRepository.resetPassword(email)
+            if (result.isSuccess) {
                 Log.d(TAG, "Password reset email sent successfully")
-
-            }
-            else{
+                uiState = uiState.copy(isLoading = false, passwordResetSent = true)
+            } else {
                 Log.e(TAG, "Failed to send password reset email: ${result.exceptionOrNull()?.message}")
+                uiState = uiState.copy(isLoading = false, error = R.string.error_reset_failed)
             }
         }
+    }
+
+    override fun onPasswordResetConsumed() {
+        uiState = uiState.copy(passwordResetSent = false)
     }
 
 

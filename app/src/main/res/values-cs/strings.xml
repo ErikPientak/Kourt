@@ -239,6 +239,8 @@
     <string name="error_display_name_required">Zadejte prosím jméno</string>
     <string name="error_login_failed">Přihlášení se nezdařilo. Zkontrolujte prosím své údaje.</string>
     <string name="error_google_sign_in_failed">Přihlášení přes Google se nezdařilo. Zkuste to prosím znovu.</string>
+    <string name="error_reset_failed">Odeslání e-mailu pro obnovu se nezdařilo. Zkontrolujte e-mailovou adresu a zkuste to znovu.</string>
+    <string name="auth_reset_email_sent">E-mail pro obnovu hesla byl odeslán! Zkontrolujte si doručenou poštu.</string>
     <string name="error_registration_failed">Registrace se nezdařila. Zkuste to prosím znovu.</string>
     <string name="error_create_club_failed">Klub se nepodařilo vytvořit. Zkuste to prosím znovu.</string>
 
@@ -325,6 +327,7 @@
     <string name="event_detail_status_no_response_subtitle">Zatím jste neodpověděli</string>
     <string name="event_detail_view_all">Zobrazit všech %1$d</string>
     <string name="event_detail_show_less">Zobrazit méně</string>
+    <string name="event_detail_section_lineup">Nominace</string>
 
     <!-- Coach Dashboard -->
     <string name="coach_dashboard_managing_label">Spravuji</string>

@@ -7,4 +7,5 @@ interface LoginScreenActions {
     fun onSignInWithGoogle(context: Context)
     fun onClearError()
     fun onForgetPassword(email: String)
+    fun onPasswordResetConsumed()
 }
