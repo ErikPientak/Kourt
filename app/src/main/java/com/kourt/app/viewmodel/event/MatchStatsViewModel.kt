@@ -25,6 +25,7 @@ import com.kourt.app.data.repository.remote.MatchStatsRepository
 import com.kourt.app.data.repository.remote.NominationRepository
 import com.kourt.app.data.repository.remote.PlayerStatsRepository
 import com.kourt.app.data.repository.remote.TeamMemberRepository
+import com.kourt.app.data.repository.remote.TeamStatsRepository
 import com.kourt.app.data.repository.remote.UserRepository
 import com.kourt.app.ui.screens.event.matchstats.MatchStatsScreenActions
 import com.kourt.app.ui.screens.event.matchstats.MatchStatsScreenUiState
@@ -49,6 +50,7 @@ class MatchStatsViewModel @Inject constructor(
     private val nominationRepository: NominationRepository,
     private val matchStatsRepository: MatchStatsRepository,
     private val teamMemberRepository: TeamMemberRepository,
+    private val teamStatsRepository: TeamStatsRepository,
     private val userRepository: UserRepository,
     private val playerStatsRepository: PlayerStatsRepository,
     private val localMatchStatsRepository: LocalMatchStatsRepository,
@@ -181,7 +183,10 @@ class MatchStatsViewModel @Inject constructor(
                 StatField.ASSISTS               -> player.copy(assists = maxOf(0, player.assists + delta))
                 StatField.FOULS                 -> player.copy(fouls = maxOf(0, min(player.fouls + delta, 5)))
                 StatField.FREE_THROWS_ATTEMPTED -> player.copy(freeThrowsAttempted = maxOf(0, player.freeThrowsAttempted + delta))
-                StatField.FREE_THROWS_MADE      -> player.copy(freeThrowsMade = maxOf(0, player.freeThrowsMade + delta))
+                StatField.FREE_THROWS_MADE      -> {
+                    player.copy(freeThrowsMade = maxOf(0, player.freeThrowsMade + delta),
+                        points = maxOf(0, player.points + delta))
+                }
             }
         }
         uiState = uiState.copy(players = updatedPlayers)
@@ -194,7 +199,7 @@ class MatchStatsViewModel @Inject constructor(
             uiState = uiState.copy(error = R.string.error_not_signed_in)
             return
         }
-
+        // Cancel any existing draft save
         draftSaveJob?.cancel()
 
         viewModelScope.launch {
@@ -211,6 +216,9 @@ class MatchStatsViewModel @Inject constructor(
                     freeThrowsMade = p.freeThrowsMade,
                 )
             }
+
+            val existingTeamStats = teamStatsRepository.getTeamStats(teamId)
+
             val toSave = MatchStats(
                 id = existingMatchStats?.id ?: "",
                 eventId = eventId,
@@ -223,27 +231,46 @@ class MatchStatsViewModel @Inject constructor(
             )
 
             runCatching {
+                //Update Match
                 matchStatsRepository.updateMatchStats(toSave)
                 Log.d(TAG, "${if (existingMatchStats != null) "Updated" else "Created"} match stats for event $eventId")
 
+                //Update Team Stats
+                teamStatsRepository.updateTeamStats(
+                    existingTeamStats!!.copy(
+                        matchesPlayed = existingTeamStats.matchesPlayed + 1,
+                        totalPointsScored = existingTeamStats.totalPointsScored + toSave.myTeamScore,
+                        totalPointsAgainst = existingTeamStats.totalPointsAgainst + toSave.opponentScore,
+                        wins = if (toSave.myTeamScore > toSave.opponentScore) existingTeamStats.wins + 1 else existingTeamStats.wins,
+                        losses = if (toSave.myTeamScore < toSave.opponentScore) existingTeamStats.losses + 1 else existingTeamStats.losses,
+                        draws = if (toSave.myTeamScore == toSave.opponentScore) existingTeamStats.draws + 1 else existingTeamStats.draws,
+                        updatedAt = now,
+                    )
+                )
+                //Update Player Stats
                 uiState.players.forEach { player ->
                     val existing = playerStatsRepository.getPlayerStats(player.teamMemberId, teamId)
                         ?: PlayerStats(teamMemberId = player.teamMemberId, teamId = teamId)
+                    // Use the previously saved match stat as the baseline so re-saves apply
+                    // only the delta rather than adding the full value every time.
+                    val prev = existingMatchStats?.playerStats?.get(player.teamMemberId)
                     playerStatsRepository.updatePlayerStats(
                         existing.copy(
-                            matchesPlayed            = existing.matchesPlayed + 1,
-                            totalPoints              = existing.totalPoints + player.points,
-                            totalRebounds            = existing.totalRebounds + player.rebounds,
-                            totalAssists             = existing.totalAssists + player.assists,
-                            totalFouls               = existing.totalFouls + player.fouls,
-                            totalFreeThrowsAttempted = existing.totalFreeThrowsAttempted + player.freeThrowsAttempted,
-                            totalFreeThrowsMade      = existing.totalFreeThrowsMade + player.freeThrowsMade,
+                            matchesPlayed            = existing.matchesPlayed + if (prev == null) 1 else 0,
+                            totalPoints              = existing.totalPoints + player.points - (prev?.points ?: 0),
+                            totalRebounds            = existing.totalRebounds + player.rebounds - (prev?.rebounds ?: 0),
+                            totalAssists             = existing.totalAssists + player.assists - (prev?.assists ?: 0),
+                            totalFouls               = existing.totalFouls + player.fouls - (prev?.fouls ?: 0),
+                            totalFreeThrowsAttempted = existing.totalFreeThrowsAttempted + player.freeThrowsAttempted - (prev?.freeThrowsAttempted ?: 0),
+                            totalFreeThrowsMade      = existing.totalFreeThrowsMade + player.freeThrowsMade - (prev?.freeThrowsMade ?: 0),
                             updatedAt                = now,
                         )
                     )
                 }
                 Log.d(TAG, "Updated player stats for ${uiState.players.size} players")
 
+                // Keep in-memory baseline current so further saves this session use correct deltas
+                existingMatchStats = toSave
                 localMatchStatsRepository.deleteDraft(eventId)
             }.onFailure { e ->
                 Log.e(TAG, "Failed to save match stats online for $eventId, queuing for sync", e)

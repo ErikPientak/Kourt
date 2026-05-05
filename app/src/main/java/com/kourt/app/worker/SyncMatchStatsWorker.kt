@@ -8,9 +8,11 @@ import androidx.work.WorkerParameters
 import com.google.firebase.Timestamp
 import com.kourt.app.data.model.MatchStats
 import com.kourt.app.data.model.PlayerStats
+import com.kourt.app.data.model.TeamStats
 import com.kourt.app.data.repository.local.LocalMatchStatsRepository
 import com.kourt.app.data.repository.remote.MatchStatsRepository
 import com.kourt.app.data.repository.remote.PlayerStatsRepository
+import com.kourt.app.data.repository.remote.TeamStatsRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -23,6 +25,7 @@ class SyncMatchStatsWorker @AssistedInject constructor(
     private val localMatchStatsRepository: LocalMatchStatsRepository,
     private val matchStatsRepository: MatchStatsRepository,
     private val playerStatsRepository: PlayerStatsRepository,
+    private val teamStatsRepository: TeamStatsRepository,
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
@@ -36,6 +39,7 @@ class SyncMatchStatsWorker @AssistedInject constructor(
                 val playerStatsMap = localMatchStatsRepository.deserializePlayerStats(entity.playerStatsJson)
                 val now = Timestamp.now()
 
+                // Update match stats
                 val toSave = MatchStats(
                     eventId = entity.eventId,
                     myTeamScore = playerStatsMap.values.sumOf { it.points },
@@ -47,6 +51,22 @@ class SyncMatchStatsWorker @AssistedInject constructor(
                 )
                 matchStatsRepository.updateMatchStats(toSave)
 
+                // Update team stats
+                val existing = teamStatsRepository.getTeamStats(entity.teamId)
+                    ?: TeamStats(teamId = entity.teamId)
+                teamStatsRepository.updateTeamStats(
+                    existing.copy(
+                        matchesPlayed = existing.matchesPlayed + 1,
+                        totalPointsScored = existing.totalPointsScored + toSave.myTeamScore,
+                        totalPointsAgainst = existing.totalPointsAgainst + toSave.opponentScore,
+                        wins = if (toSave.myTeamScore > toSave.opponentScore) existing.wins + 1 else existing.wins,
+                        losses = if (toSave.myTeamScore < toSave.opponentScore) existing.losses + 1 else existing.losses,
+                        draws = if (toSave.myTeamScore == toSave.opponentScore) existing.draws + 1 else existing.draws,
+                        updatedAt = now,
+                        )
+                )
+
+                // Update player stats
                 for ((memberId, matchStat) in playerStatsMap) {
                     val existing = playerStatsRepository.getPlayerStats(memberId, entity.teamId)
                         ?: PlayerStats(teamMemberId = memberId, teamId = entity.teamId)

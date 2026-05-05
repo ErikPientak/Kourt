@@ -123,7 +123,8 @@ class PlayerDashboardViewModel @Inject constructor(
                 ?: return@launch
 
             runCatching {
-                val attendees = buildAttendees(rsvps.filter { it.status == "yes" }.map { it.submittedBy }.filter { it.isNotBlank() })
+                val playerUserIds = uiState.members.filter { it.role == "player" }.map { it.userId }.toSet()
+                val attendees = buildAttendees(rsvps.filter { it.status == "yes" && it.submittedBy in playerUserIds }.map { it.submittedBy }.filter { it.isNotBlank() })
                 if (uiState.upNextEvent?.eventId == eventId) {
                     uiState = uiState.copy(upNextAttendees = attendees)
                 }
@@ -150,7 +151,8 @@ class PlayerDashboardViewModel @Inject constructor(
                 ?: return@launch
 
             runCatching {
-                val attendees = buildAttendees(rsvps.filter { it.status == "yes" }.map { it.submittedBy }.filter { it.isNotBlank() })
+                val playerUserIds = uiState.members.filter { it.role == "player" }.map { it.userId }.toSet()
+                val attendees = buildAttendees(rsvps.filter { it.status == "yes" && it.submittedBy in playerUserIds }.map { it.submittedBy }.filter { it.isNotBlank() })
                 if (uiState.upNextEvent?.eventId == eventId) {
                     uiState = uiState.copy(upNextAttendees = attendees)
                 }

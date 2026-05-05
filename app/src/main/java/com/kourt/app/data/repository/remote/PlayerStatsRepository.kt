@@ -28,4 +28,9 @@ class PlayerStatsRepository @Inject constructor(
     suspend fun updatePlayerStats(stats: PlayerStats) {
         collection.document("${stats.teamMemberId}_${stats.teamId}").set(stats).await()
     }
+
+    suspend fun deletePlayerStatsByTeam(teamId: String) {
+        val docs = collection.whereEqualTo("teamId", teamId).get().await()
+        docs.forEach { it.reference.delete().await() }
+    }
 }

@@ -296,6 +296,7 @@
     <string name="event_detail_status_no_response_subtitle">You haven\'t responded yet</string>
     <string name="event_detail_view_all">View All %1$d</string>
     <string name="event_detail_show_less">Show Less</string>
+    <string name="event_detail_section_lineup">Lineup</string>
 
     <!-- Edit recurring event scope dialog -->
     <string name="edit_recurring_title">Edit Recurring Event</string>
@@ -442,4 +443,22 @@
     <string name="coach_dashboard_analytics_cd">View attendance analytics</string>
     <string name="error_no_team">No active team selected</string>
     <string name="attendance_analytics_no_data">No Analytics to be shown yet</string>
+    <string name="attendance_analytics_next_cd">Next analytics screen</string>
+
+    <!-- Match Stats Analytics -->
+    <string name="match_stats_analytics_title">Match Analytics</string>
+    <string name="match_stats_analytics_team_record">TEAM RECORD</string>
+    <string name="match_stats_analytics_top_scorer">TOP SCORER</string>
+    <string name="match_stats_analytics_player_breakdown">Player Stats</string>
+    <string name="match_stats_analytics_no_data">No match data yet</string>
+    <string name="match_stats_analytics_pts">PTS</string>
+    <string name="match_stats_analytics_reb">REB</string>
+    <string name="match_stats_analytics_ast">AST</string>
+    <string name="match_stats_analytics_ft">FT%</string>
+    <string name="match_stats_analytics_fouls">FOULS</string>
+    <string name="match_stats_analytics_wins">W</string>
+    <string name="match_stats_analytics_losses">L</string>
+    <string name="match_stats_analytics_draws">D</string>
+    <string name="match_stats_analytics_prev_cd">Previous analytics screen</string>
+
 </resources>

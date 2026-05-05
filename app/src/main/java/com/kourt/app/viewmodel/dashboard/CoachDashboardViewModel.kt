@@ -142,7 +142,14 @@ class CoachDashboardViewModel @Inject constructor(
                 ?: return@launch
 
             runCatching {
-                val yesUids = rsvps.filter { it.status == "yes" }.map { it.submittedBy }.filter { it.isNotBlank() }
+                val playerUserIds = uiState.members
+                    .filter { it.role == "player" }
+                    .map { it.userId }
+                    .toSet()
+                val yesUids = rsvps
+                    .filter { it.status == "yes" && it.submittedBy in playerUserIds }
+                    .map { it.submittedBy }
+                    .filter { it.isNotBlank() }
                 val attendees = if (yesUids.isNotEmpty()) {
                     userRepository.getUsersByIds(yesUids).map { user ->
                         ClubMemberUiItem(

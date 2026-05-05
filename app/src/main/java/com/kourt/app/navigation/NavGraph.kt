@@ -29,6 +29,7 @@ import com.kourt.app.ui.screens.event.matchstats.MatchStatsScreen
 import com.kourt.app.ui.screens.event.aftermatch.AfterMatchStatsScreen
 import com.kourt.app.ui.screens.setup.addchild.AddChildScreen
 import com.kourt.app.ui.screens.analytics.attendance.AttendanceAnalyticsScreen
+import com.kourt.app.ui.screens.analytics.matchstats.MatchStatsAnalyticsScreen
 
 @Composable
 fun NavGraph(
@@ -178,6 +179,10 @@ fun NavGraph(
 
         composable(route = Destination.AttendanceAnalyticsScreen.route) {
             AttendanceAnalyticsScreen(navigation = navigation)
+        }
+
+        composable(route = Destination.MatchStatsAnalyticsScreen.route) {
+            MatchStatsAnalyticsScreen(navigation = navigation)
         }
 
         composable(

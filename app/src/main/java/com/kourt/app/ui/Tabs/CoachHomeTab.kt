@@ -46,7 +46,7 @@ fun CoachHomeTab(
         if (uiState.upNextEvent != null) {
             UpNextCard(
                 event = uiState.upNextEvent,
-                rosterSize = uiState.members.size,
+                rosterSize = uiState.members.count { it.role == "player" },
                 attendeeNames = uiState.upNextAttendees,
                 ctaText = if (uiState.upNextEvent.type.lowercase() == "match") {
                     R.string.schedule_log_statistics

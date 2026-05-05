@@ -14,5 +14,5 @@ data class TeamStats(
     val totalPointsScored: Int = 0,
     val totalPointsAgainst: Int = 0,
     val totalTrainings: Int = 0,
-    @PropertyName("updated_at") val updatedAt: Timestamp = Timestamp.now()
+    val updatedAt: Timestamp = Timestamp.now()
 )

@@ -80,6 +80,20 @@ class LoginViewModel @Inject constructor(
         }
     }
 
+    override fun onForgetPassword(email: String) {
+        viewModelScope.launch {
+            val result =  authRepository.resetPassword(email)
+            if (result.isSuccess){
+                Log.d(TAG, "Password reset email sent successfully")
+
+            }
+            else{
+                Log.e(TAG, "Failed to send password reset email: ${result.exceptionOrNull()?.message}")
+            }
+        }
+    }
+
+
     private suspend fun resolveDestination(uid: String) {
         val adminClub = runCatching { clubRepository.getClubByAdminId(uid) }.getOrNull()
         if (adminClub != null) {

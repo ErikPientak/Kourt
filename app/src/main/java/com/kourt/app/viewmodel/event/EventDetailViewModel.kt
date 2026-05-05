@@ -12,12 +12,14 @@ import com.kourt.app.R
 import com.kourt.app.data.model.Rsvp
 import com.kourt.app.data.repository.remote.AuthRepository
 import com.kourt.app.data.repository.remote.EventRepository
+import com.kourt.app.data.repository.remote.NominationRepository
 import com.kourt.app.data.repository.remote.RsvpRepository
 import com.kourt.app.data.repository.remote.TeamMemberRepository
 import com.kourt.app.data.repository.remote.UserRepository
 import com.kourt.app.ui.screens.event.detail.EventDetailScreenActions
 import com.kourt.app.ui.screens.event.detail.EventDetailScreenUiState
 import com.kourt.app.ui.screens.event.detail.EventDetailUiItem
+import com.kourt.app.ui.screens.event.detail.NominatedPlayerUiItem
 import com.kourt.app.ui.screens.event.detail.RsvpMemberUiItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -35,6 +37,7 @@ class EventDetailViewModel @Inject constructor(
     private val rsvpRepository: RsvpRepository,
     private val userRepository: UserRepository,
     private val teamMemberRepository: TeamMemberRepository,
+    private val nominationRepository: NominationRepository,
 ) : ViewModel(), EventDetailScreenActions {
 
     private val eventId: String = savedStateHandle["eventId"] ?: ""
@@ -60,10 +63,12 @@ class EventDetailViewModel @Inject constructor(
                 val eventDeferred = async { eventRepository.getEvent(eventId) }
                 val rsvpsDeferred = async { rsvpRepository.getRsvpsByEvent(eventId) }
                 val membershipsDeferred = async { teamMemberRepository.getMembersByUser(uid) }
+                val nominationDeferred = async { nominationRepository.getNomination(eventId) }
 
                 val event = eventDeferred.await()
                 val rsvps = rsvpsDeferred.await()
                 val memberships = membershipsDeferred.await()
+                val nomination = nominationDeferred.await()
 
                 if (event == null) {
                     uiState = uiState.copy(isLoading = false, error = R.string.error_load_failed)
@@ -151,6 +156,23 @@ class EventDetailViewModel @Inject constructor(
                     )
                 }
 
+                val nominatedPlayers = if (
+                    event.type.lowercase() == "match" && !nomination?.players.isNullOrEmpty()
+                ) {
+                    val nominatedIds = nomination!!.players
+                    val teamMembers = teamMemberRepository.getMembersByTeam(event.teamId)
+                        .associateBy { it.userId }
+                    userRepository.getUsersByIds(nominatedIds).mapNotNull { user ->
+                        val member = teamMembers[user.id] ?: return@mapNotNull null
+                        NominatedPlayerUiItem(
+                            userId = user.id,
+                            displayName = user.displayName.ifBlank { user.email },
+                            avatarUrl = user.avatarId.ifBlank { user.photoURL },
+                            jerseyNumber = member.jerseyNumber,
+                        )
+                    }.sortedWith(compareBy({ it.jerseyNumber == 0 }, { it.jerseyNumber }))
+                } else emptyList()
+
                 uiState = uiState.copy(
                     isLoading = false,
                     event = eventUiItem,
@@ -162,6 +184,7 @@ class EventDetailViewModel @Inject constructor(
                     notGoingMembers = notGoingMembers,
                     isEditable = isEditable,
                     canRsvp = canRsvp,
+                    nominatedPlayers = nominatedPlayers,
                 )
             }.onFailure { e ->
                 Log.e(TAG, "Failed to load event detail for $eventId", e)

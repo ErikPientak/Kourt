@@ -4,6 +4,14 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 
 @Immutable
+data class NominatedPlayerUiItem(
+    val userId: String,
+    val displayName: String,
+    val avatarUrl: String,
+    val jerseyNumber: Int,
+)
+
+@Immutable
 data class EventDetailUiItem(
     val eventId: String,
     val teamId: String,
@@ -43,5 +51,6 @@ data class EventDetailScreenUiState(
     val selectedReason: String? = null,
     val reasonNote: String = "",
     val isRsvpSubmitting: Boolean = false,
+    val nominatedPlayers: List<NominatedPlayerUiItem> = emptyList(),
     @StringRes val error: Int? = null,
 )

@@ -10,6 +10,7 @@ import javax.inject.Singleton
 class TeamMemberRepository @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val rsvpRepository: RsvpRepository,
+    private val playerStatsRepository: PlayerStatsRepository
 ) {
     private val collection = firestore.collection("Team_member")
 
@@ -30,6 +31,7 @@ class TeamMemberRepository @Inject constructor(
         val userId = collection.document(id).get().await()
             .toObject(TeamMember::class.java)?.userId
         if (!userId.isNullOrBlank()) rsvpRepository.deleteRsvpsByUser(userId)
+        playerStatsRepository.deletePlayerStatsByTeam(id)
         collection.document(id).delete().await()
     }
 

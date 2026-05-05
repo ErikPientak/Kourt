@@ -38,4 +38,5 @@ interface INavigationRouter {
     fun navigateToMatchStats(eventId: String)
     fun navigateToAfterMatchStats(eventId: String)
     fun navigateToAttendanceAnalytics()
+    fun navigateToMatchStatsAnalytics()
 }

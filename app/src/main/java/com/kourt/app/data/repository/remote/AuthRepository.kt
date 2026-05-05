@@ -55,6 +55,10 @@ class AuthRepository @Inject constructor(
         auth.signInWithCredential(firebaseCredential).await().user!!
     }
 
+    suspend fun resetPassword(email: String): Result<Unit> = runCatching {
+        auth.sendPasswordResetEmail(email).await()
+    }
+
     fun signOut() {
         auth.signOut()
     }

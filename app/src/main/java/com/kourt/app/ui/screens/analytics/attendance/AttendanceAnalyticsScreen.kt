@@ -2,6 +2,7 @@ package com.kourt.app.ui.screens.analytics.attendance
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,7 +20,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -48,6 +53,7 @@ import com.kourt.app.ui.theme.KourtTheme
 import com.kourt.app.ui.theme.OrangeDark
 import com.kourt.app.ui.theme.OrangeLight
 import com.kourt.app.viewmodel.analytics.AttendanceAnalyticsViewModel
+import kourtNeonGlow
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 
@@ -77,6 +83,7 @@ fun AttendanceAnalyticsScreen(
     AttendanceAnalyticsScreenContent(
         uiState = uiState,
         onBack = { navigation.returnBack() },
+        onNext = { navigation.navigateToMatchStatsAnalytics() },
     )
 }
 
@@ -86,6 +93,7 @@ fun AttendanceAnalyticsScreen(
 fun AttendanceAnalyticsScreenContent(
     uiState: AttendanceAnalyticsScreenUiState,
     onBack: () -> Unit,
+    onNext: () -> Unit = {},
 ) {
     val isDark = MaterialTheme.colorScheme.background.blue < 0.5f
     val accent = if (isDark) OrangeDark else OrangeLight
@@ -93,6 +101,15 @@ fun AttendanceAnalyticsScreenContent(
     BaseScreen(
         title = stringResource(R.string.attendance_analytics_title),
         onBack = onBack,
+        trailingIcon = {
+            IconButton(onClick = onNext) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = stringResource(R.string.attendance_analytics_next_cd),
+                    tint = MaterialTheme.colorScheme.onBackground,
+                )
+            }
+        },
     ) { padding ->
         when {
             uiState.isLoading -> Box(
@@ -309,7 +326,10 @@ private fun MostReliableCard(
     modifier: Modifier = Modifier,
 ) {
     Surface(
-        modifier = modifier,
+        modifier = modifier.kourtNeonGlow(
+            color = MaterialTheme.colorScheme.primary,
+            shapeRadius = 16.dp,
+            ),
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.surface,
     ) {

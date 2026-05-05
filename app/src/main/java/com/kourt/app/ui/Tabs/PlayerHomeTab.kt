@@ -47,7 +47,7 @@ fun PlayerHomeTab(
         if (upNext != null) {
             UpNextCard(
                 event = upNext,
-                rosterSize = uiState.members.size,
+                rosterSize = uiState.members.count { it.role == "player" },
                 myRsvpStatus = uiState.myRsvpStatus,
                 ctaText = R.string.player_dashboard_update_attendance,
                 onCtaClick = onUpdateAttendance,

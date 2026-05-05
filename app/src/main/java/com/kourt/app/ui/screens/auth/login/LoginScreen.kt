@@ -193,7 +193,9 @@ private fun LoginScreenContent(
                 text = stringResource(R.string.auth_forgot_password),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.clickable { },
+                modifier = Modifier.clickable {
+                    actions.onForgetPassword(email)
+                },
             )
         }
 

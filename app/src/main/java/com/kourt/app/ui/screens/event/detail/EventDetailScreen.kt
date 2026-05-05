@@ -48,6 +48,8 @@ import com.kourt.app.ui.components.bottomSheets.RsvpSelectionBottomSheet
 import com.kourt.app.ui.theme.KourtTheme
 import com.kourt.app.viewmodel.event.EventDetailViewModel
 
+private val LineupAccent = Color(0xFFF97316)
+
 @Composable
 fun EventDetailScreen(
     navigation: INavigationRouter,
@@ -105,6 +107,10 @@ private fun EventDetailContent(
                 ) {
                     uiState.event?.let { event ->
                         EventInfoSection(event = event)
+                    }
+
+                    if (uiState.event?.type?.lowercase() == "match" && uiState.nominatedPlayers.isNotEmpty()) {
+                        NominatedPlayersSection(players = uiState.nominatedPlayers)
                     }
 
                     if (uiState.canRsvp) {
@@ -216,6 +222,71 @@ private fun EventInfoSection(event: EventDetailUiItem) {
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     )
+                }
+            }
+        }
+    }
+}
+
+// ── Section: Lineup ──────────────────────────────────────────────────────────
+
+@Composable
+private fun NominatedPlayersSection(players: List<NominatedPlayerUiItem>) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        SectionLabelWithBadge(
+            text = stringResource(R.string.event_detail_section_lineup),
+            count = players.size,
+            badgeColor = LineupAccent,
+        )
+
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surface,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column {
+                players.forEachIndexed { index, player ->
+                    if (index > 0) {
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.background,
+                            thickness = 1.dp,
+                        )
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        if (player.jerseyNumber > 0) {
+                            Surface(
+                                shape = CircleShape,
+                                color = LineupAccent,
+                                modifier = Modifier.size(32.dp),
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text(
+                                        text = player.jerseyNumber.toString(),
+                                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                        color = Color.White,
+                                    )
+                                }
+                            }
+                        } else {
+                            Spacer(modifier = Modifier.size(32.dp))
+                        }
+                        KourtAvatarLeading(
+                            fallbackText = player.displayName,
+                            photoUrl = player.avatarUrl,
+                        )
+                        Text(
+                            text = player.displayName,
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
                 }
             }
         }
@@ -658,6 +729,13 @@ private val previewNotGoingMembers = listOf(
     RsvpMemberUiItem("u6", "Anna Park", "Out of town", "", "no"),
 )
 
+private val previewNominatedPlayers = listOf(
+    NominatedPlayerUiItem("u1", "Marcus Johnson", "", 7),
+    NominatedPlayerUiItem("u2", "Layla Chen", "", 11),
+    NominatedPlayerUiItem("u3", "Derek Williams", "", 23),
+    NominatedPlayerUiItem("u4", "Sofia Martinez", "", 0),
+)
+
 private val previewUiState = EventDetailScreenUiState(
     isLoading = false,
     event = previewEvent,
@@ -669,6 +747,7 @@ private val previewUiState = EventDetailScreenUiState(
     notGoingMembers = previewNotGoingMembers,
     isEditable = true,
     canRsvp = true,
+    nominatedPlayers = previewNominatedPlayers,
 )
 
 private val previewActions = object : EventDetailScreenActions {

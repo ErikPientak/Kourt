@@ -437,4 +437,21 @@
     <string name="coach_dashboard_analytics_cd">Zobrazit analýzu docházky</string>
     <string name="error_no_team">Není vybrán žádný aktivní tým</string>
     <string name="attendance_analytics_no_data">Zatím nejsou k dispozici žádná data</string>
+    <string name="attendance_analytics_next_cd">Další obrazovka analýzy</string>
+
+    <!-- Match Stats Analytics -->
+    <string name="match_stats_analytics_title">Analýza zápasů</string>
+    <string name="match_stats_analytics_team_record">BILANCE TÝMU</string>
+    <string name="match_stats_analytics_top_scorer">NEJLEPŠÍ STŘELEC</string>
+    <string name="match_stats_analytics_player_breakdown">Statistiky hráčů</string>
+    <string name="match_stats_analytics_no_data">Zatím žádná data ze zápasů</string>
+    <string name="match_stats_analytics_pts">BODY</string>
+    <string name="match_stats_analytics_reb">DOS</string>
+    <string name="match_stats_analytics_ast">AST</string>
+    <string name="match_stats_analytics_ft">TH%</string>
+    <string name="match_stats_analytics_fouls">FAULY</string>
+    <string name="match_stats_analytics_wins">V</string>
+    <string name="match_stats_analytics_losses">P</string>
+    <string name="match_stats_analytics_draws">R</string>
+    <string name="match_stats_analytics_prev_cd">Předchozí obrazovka analýzy</string>
 </resources>

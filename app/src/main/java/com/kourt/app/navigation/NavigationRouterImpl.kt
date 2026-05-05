@@ -127,6 +127,14 @@ class NavigationRouterImpl(private val navController: NavController) : INavigati
     }
 
     override fun navigateToAttendanceAnalytics() {
-        navController.navigate(Destination.AttendanceAnalyticsScreen.route)
+        navController.navigate(Destination.AttendanceAnalyticsScreen.route) {
+            popUpTo(Destination.CoachDashboardScreen.route) { inclusive = false }
+        }
+    }
+
+    override fun navigateToMatchStatsAnalytics() {
+        navController.navigate(Destination.MatchStatsAnalyticsScreen.route) {
+            popUpTo(Destination.CoachDashboardScreen.route) { inclusive = false }
+        }
     }
 }
