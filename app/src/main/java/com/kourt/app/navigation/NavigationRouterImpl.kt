@@ -18,11 +18,7 @@ class NavigationRouterImpl(private val navController: NavController) : INavigati
         navController.navigate(Destination.RegisterScreen.route)
     }
 
-    override fun navigateToHome() {
-        navController.navigate(Destination.HomeScreen.route)
-    }
-
-    override fun navigateToSetupScreen() {
+override fun navigateToSetupScreen() {
         navController.navigate(Destination.SetupScreen.route)
     }
 

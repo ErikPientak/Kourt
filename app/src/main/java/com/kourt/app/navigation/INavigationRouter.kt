@@ -7,8 +7,7 @@ interface INavigationRouter {
     fun returnBack()
     fun navigateToLoginScreen()
     fun navigateToRegisterScreen()
-    fun navigateToHome()
-    fun navigateToSetupScreen()
+fun navigateToSetupScreen()
     fun navigateToCreateClubScreen()
     fun navigateToReviewConfirm(
         clubName: String,

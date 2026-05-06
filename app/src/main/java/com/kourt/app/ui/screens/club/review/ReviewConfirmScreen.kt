@@ -54,7 +54,7 @@ fun ReviewConfirmScreen(
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
             viewModel.onSaveConsumed()
-            navigation.navigateToHome()
+            navigation.navigateToClubManagementScreen()
         }
     }
 

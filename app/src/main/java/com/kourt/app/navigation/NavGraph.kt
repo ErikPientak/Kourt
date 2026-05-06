@@ -14,7 +14,6 @@ import com.kourt.app.ui.screens.auth.register.RegisterScreen
 import com.kourt.app.ui.screens.club.create.CreateClubScreen
 import com.kourt.app.ui.screens.club.management.ClubManagementScreen
 import com.kourt.app.ui.screens.club.review.ReviewConfirmScreen
-import com.kourt.app.ui.screens.home.HomeScreen
 import com.kourt.app.ui.screens.setup.SetupScreen
 import com.kourt.app.ui.screens.settings.SettingsScreen
 import com.kourt.app.ui.screens.settings.profile.ProfileScreen
@@ -55,17 +54,7 @@ fun NavGraph(
             RegisterScreen(navigation)
         }
 
-        composable(route = Destination.HomeScreen.route) {
-            HomeScreen(
-                navigation = navigation,
-                isDarkTheme = isDarkTheme,
-                currentLanguage = currentLanguage,
-                onToggleTheme = onToggleTheme,
-                onSetLanguage = onSetLanguage,
-            )
-        }
-
-        composable(route = Destination.SetupScreen.route) {
+composable(route = Destination.SetupScreen.route) {
             SetupScreen(navigation = navigation)
         }
 
