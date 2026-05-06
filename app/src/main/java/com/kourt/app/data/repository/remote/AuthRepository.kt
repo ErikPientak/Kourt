@@ -15,16 +15,16 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AuthRepository @Inject constructor(
+open class AuthRepository @Inject constructor(
     private val auth: FirebaseAuth
 ) {
-    val currentUser: FirebaseUser?
+    open val currentUser: FirebaseUser?
         get() = auth.currentUser
 
     val isLoggedIn: Boolean
         get() = auth.currentUser != null
 
-    suspend fun signInWithEmail(email: String, password: String): Result<FirebaseUser> = runCatching {
+    open suspend fun signInWithEmail(email: String, password: String): Result<FirebaseUser> = runCatching {
         auth.signInWithEmailAndPassword(email, password).await().user!!
     }
 
@@ -55,7 +55,7 @@ class AuthRepository @Inject constructor(
         auth.signInWithCredential(firebaseCredential).await().user!!
     }
 
-    suspend fun resetPassword(email: String): Result<Unit> = runCatching {
+    open suspend fun resetPassword(email: String): Result<Unit> = runCatching {
         auth.sendPasswordResetEmail(email).await()
     }
 

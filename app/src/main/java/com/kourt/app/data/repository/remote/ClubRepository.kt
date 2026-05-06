@@ -8,7 +8,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ClubRepository @Inject constructor(
+open class ClubRepository @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
     private val collection = firestore.collection("Club")
@@ -29,7 +29,7 @@ class ClubRepository @Inject constructor(
         collection.document(id).delete().await()
     }
 
-    suspend fun getClubByAdminId(uid: String): Club? =
+    open suspend fun getClubByAdminId(uid: String): Club? =
         collection.whereArrayContains("admin_ids", uid).get().await()
             .toObjects(Club::class.java)
             .firstOrNull()

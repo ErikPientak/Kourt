@@ -7,16 +7,16 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class PlayerStatsRepository @Inject constructor(
+open class PlayerStatsRepository @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
     private val collection = firestore.collection("playerStats")
 
-    suspend fun getPlayerStats(teamMemberId: String, teamId: String): PlayerStats? =
+    open suspend fun getPlayerStats(teamMemberId: String, teamId: String): PlayerStats? =
         collection.document("${teamMemberId}_${teamId}").get().await()
             .toObject(PlayerStats::class.java)
 
-    suspend fun getPlayersStatsByTeam(teamId: String): List<PlayerStats> =
+    open suspend fun getPlayersStatsByTeam(teamId: String): List<PlayerStats> =
         collection.whereEqualTo("teamId", teamId).get().await()
             .toObjects(PlayerStats::class.java)
 
@@ -25,7 +25,7 @@ class PlayerStatsRepository @Inject constructor(
         return ref.id
     }
 
-    suspend fun updatePlayerStats(stats: PlayerStats) {
+    open suspend fun updatePlayerStats(stats: PlayerStats) {
         collection.document("${stats.teamMemberId}_${stats.teamId}").set(stats).await()
     }
 

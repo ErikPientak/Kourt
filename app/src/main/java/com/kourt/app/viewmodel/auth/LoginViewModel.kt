@@ -97,9 +97,7 @@ class LoginViewModel @Inject constructor(
     override fun onPasswordResetConsumed() {
         uiState = uiState.copy(passwordResetSent = false)
     }
-
-
-    private suspend fun resolveDestination(uid: String) {
+    internal suspend fun resolveDestination(uid: String) {
         val adminClub = runCatching { clubRepository.getClubByAdminId(uid) }.getOrNull()
         if (adminClub != null) {
             Log.d(TAG, "User is admin of club ${adminClub.id}, routing to ClubManagement")

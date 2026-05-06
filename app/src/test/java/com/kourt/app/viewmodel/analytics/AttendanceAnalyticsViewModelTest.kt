@@ -12,35 +12,38 @@ package com.kourt.app.viewmodel.analytics
  *  - Trend direction (isTrendImproving):
  *      * latest week rate > previous -> Improving (true)
  *      * latest week rate < previous -> Declining (false)
- *  - Edge cases: zero stats player skipped, blank teamId emits error, generic failure path.
+ *  - Edge cases: zero-stats player skipped, blank teamId emits error,
+ *    generic failure path on repo throw.
  *
- * Note: the ViewModel calls loadAnalytics() from init, so we must stub *every* repository
- * before constructing the VM.
+ * Note: the ViewModel calls loadAnalytics() from init, so we set every fake
+ * field BEFORE constructing the VM.
  */
 
-import com.google.common.truth.Truth.assertThat
 import com.google.firebase.Timestamp
 import com.kourt.app.R
+import com.kourt.app.data.model.Attendance
 import com.kourt.app.data.model.Event
 import com.kourt.app.data.model.PlayerStats
 import com.kourt.app.data.model.TeamMember
 import com.kourt.app.data.model.User
-import com.kourt.app.data.repository.local.AppPreferencesRepository
-import com.kourt.app.data.repository.remote.AttendanceRepository
-import com.kourt.app.data.repository.remote.EventRepository
-import com.kourt.app.data.repository.remote.PlayerStatsRepository
-import com.kourt.app.data.repository.remote.TeamMemberRepository
-import com.kourt.app.data.repository.remote.UserRepository
+import com.kourt.app.util.FakeAppPreferencesRepository
+import com.kourt.app.util.FakeAttendanceRepository
+import com.kourt.app.util.FakeEventRepository
+import com.kourt.app.util.FakePlayerStatsRepository
+import com.kourt.app.util.FakeTeamMemberRepository
+import com.kourt.app.util.FakeUserRepository
 import com.kourt.app.util.MainCoroutineRule
-import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import java.util.concurrent.TimeUnit
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AttendanceAnalyticsViewModelTest {
@@ -48,12 +51,22 @@ class AttendanceAnalyticsViewModelTest {
     @get:Rule
     val mainCoroutineRule = MainCoroutineRule()
 
-    private val appPrefs: AppPreferencesRepository = mockk(relaxed = true)
-    private val eventRepository: EventRepository = mockk(relaxed = true)
-    private val attendanceRepository: AttendanceRepository = mockk(relaxed = true)
-    private val playerStatsRepository: PlayerStatsRepository = mockk(relaxed = true)
-    private val teamMemberRepository: TeamMemberRepository = mockk(relaxed = true)
-    private val userRepository: UserRepository = mockk(relaxed = true)
+    private lateinit var appPrefs: FakeAppPreferencesRepository
+    private lateinit var eventRepository: FakeEventRepository
+    private lateinit var attendanceRepository: FakeAttendanceRepository
+    private lateinit var playerStatsRepository: FakePlayerStatsRepository
+    private lateinit var teamMemberRepository: FakeTeamMemberRepository
+    private lateinit var userRepository: FakeUserRepository
+
+    @Before
+    fun setUp() {
+        appPrefs = FakeAppPreferencesRepository.create()
+        eventRepository = FakeEventRepository.create()
+        attendanceRepository = FakeAttendanceRepository.create()
+        playerStatsRepository = FakePlayerStatsRepository.create()
+        teamMemberRepository = FakeTeamMemberRepository.create()
+        userRepository = FakeUserRepository.create()
+    }
 
     private fun newViewModel() = AttendanceAnalyticsViewModel(
         appPreferencesRepository = appPrefs,
@@ -71,19 +84,19 @@ class AttendanceAnalyticsViewModelTest {
         events: List<Event> = emptyList(),
         users: List<User> = emptyList(),
     ) {
-        every { appPrefs.activeTeamId } returns teamId
-        coEvery { playerStatsRepository.getPlayersStatsByTeam(any()) } returns stats
-        coEvery { teamMemberRepository.getMembersByTeam(any()) } returns members
-        coEvery { eventRepository.getEventsByTeam(any()) } returns events
-        coEvery { userRepository.getUsersByIds(any()) } returns users
-        coEvery { attendanceRepository.getAttendanceByEvent(any()) } returns emptyList()
+        appPrefs.activeTeamId = teamId
+        playerStatsRepository.playerStats = stats
+        teamMemberRepository.membersByTeam = members
+        eventRepository.eventsByTeam = events
+        userRepository.users = users
+        attendanceRepository.attendance = emptyList()
     }
 
     // ── Reliability bucket boundaries ─────────────────────────────────────────
 
     @Test
     fun `given attendance rate is 0_9, then reliability is EXCELLENT`() = runTest {
-        // Arrange  - 9 on_time, 0 late, 1 unexcused -> rate = 9/10 = 0.9
+        // Arrange — 9 on_time, 0 late, 1 unexcused -> rate = 9/10 = 0.9
         val members = listOf(TeamMember(id = "m1", userId = "u1", teamId = TEAM_ID, role = "player"))
         val stats = listOf(
             PlayerStats(
@@ -104,8 +117,8 @@ class AttendanceAnalyticsViewModelTest {
 
         // Assert
         val player = vm.uiState.players.single()
-        assertThat(player.attendanceRate).isWithin(EPS).of(0.9f)
-        assertThat(player.reliabilityLabel).isEqualTo("EXCELLENT")
+        assertNear(0.9f, player.attendanceRate)
+        assertEquals("EXCELLENT", player.reliabilityLabel)
     }
 
     @Test
@@ -131,8 +144,8 @@ class AttendanceAnalyticsViewModelTest {
 
         // Assert
         val player = vm.uiState.players.single()
-        assertThat(player.attendanceRate).isWithin(EPS).of(0.7f)
-        assertThat(player.reliabilityLabel).isEqualTo("CONSISTENT")
+        assertNear(0.7f, player.attendanceRate)
+        assertEquals("CONSISTENT", player.reliabilityLabel)
     }
 
     @Test
@@ -158,8 +171,8 @@ class AttendanceAnalyticsViewModelTest {
 
         // Assert
         val player = vm.uiState.players.single()
-        assertThat(player.attendanceRate).isWithin(EPS).of(0.5f)
-        assertThat(player.reliabilityLabel).isEqualTo("NEEDS ATTENTION")
+        assertNear(0.5f, player.attendanceRate)
+        assertEquals("NEEDS ATTENTION", player.reliabilityLabel)
     }
 
     // ── Attendance rate formula ───────────────────────────────────────────────
@@ -187,10 +200,10 @@ class AttendanceAnalyticsViewModelTest {
 
         // Assert
         val player = vm.uiState.players.single()
-        assertThat(player.attendanceRate).isWithin(EPS).of(0.5f)
-        assertThat(player.onTimeRate).isWithin(EPS).of(0.4f)   // 8/20
-        assertThat(player.lateRate).isWithin(EPS).of(0.1f)     // 2/20
-        assertThat(player.absentRate).isWithin(EPS).of(0.5f)   // (5+5)/20
+        assertNear(0.5f, player.attendanceRate)
+        assertNear(0.4f, player.onTimeRate)   // 8/20
+        assertNear(0.1f, player.lateRate)     // 2/20
+        assertNear(0.5f, player.absentRate)   // (5+5)/20
     }
 
     @Test
@@ -206,8 +219,8 @@ class AttendanceAnalyticsViewModelTest {
         advanceUntilIdle()
 
         // Assert
-        assertThat(vm.uiState.players).isEmpty()
-        assertThat(vm.uiState.mostReliablePlayer).isNull()
+        assertTrue(vm.uiState.players.isEmpty())
+        assertNull(vm.uiState.mostReliablePlayer)
     }
 
     // ── Trend direction ───────────────────────────────────────────────────────
@@ -229,15 +242,17 @@ class AttendanceAnalyticsViewModelTest {
             Event(id = "e_curr", teamId = TEAM_ID, date = epochDayToTimestamp(currentWeekEpochDay)),
         )
 
-        every { appPrefs.activeTeamId } returns TEAM_ID
-        coEvery { playerStatsRepository.getPlayersStatsByTeam(any()) } returns emptyList()
-        coEvery { teamMemberRepository.getMembersByTeam(any()) } returns members
-        coEvery { eventRepository.getEventsByTeam(any()) } returns events
-        coEvery { userRepository.getUsersByIds(any()) } returns users
-        coEvery { attendanceRepository.getAttendanceByEvent("e_prev") } returns emptyList()
-        coEvery { attendanceRepository.getAttendanceByEvent("e_curr") } returns listOf(
-            com.kourt.app.data.model.Attendance(eventId = "e_curr", userId = "u1", status = "on_time"),
-            com.kourt.app.data.model.Attendance(eventId = "e_curr", userId = "u2", status = "on_time"),
+        appPrefs.activeTeamId = TEAM_ID
+        playerStatsRepository.playerStats = emptyList()
+        teamMemberRepository.membersByTeam = members
+        eventRepository.eventsByTeam = events
+        userRepository.users = users
+        attendanceRepository.attendanceByEvent = mapOf(
+            "e_prev" to emptyList(),
+            "e_curr" to listOf(
+                Attendance(eventId = "e_curr", userId = "u1", status = "on_time"),
+                Attendance(eventId = "e_curr", userId = "u2", status = "on_time"),
+            ),
         )
 
         // Act
@@ -245,9 +260,9 @@ class AttendanceAnalyticsViewModelTest {
         advanceUntilIdle()
 
         // Assert — trend bars should have at least 2; current week rate (1.0) > previous (0.0)
-        assertThat(vm.uiState.trendBars.size).isAtLeast(2)
-        assertThat(vm.uiState.isTrendImproving).isTrue()
-        assertThat(vm.uiState.trendDelta).isGreaterThan(0f)
+        assertTrue("expected >= 2 trend bars, got ${vm.uiState.trendBars.size}", vm.uiState.trendBars.size >= 2)
+        assertTrue(vm.uiState.isTrendImproving)
+        assertTrue("expected trendDelta > 0, got ${vm.uiState.trendDelta}", vm.uiState.trendDelta > 0f)
     }
 
     @Test
@@ -266,25 +281,27 @@ class AttendanceAnalyticsViewModelTest {
             Event(id = "e_curr", teamId = TEAM_ID, date = epochDayToTimestamp(currentWeekEpochDay)),
         )
 
-        every { appPrefs.activeTeamId } returns TEAM_ID
-        coEvery { playerStatsRepository.getPlayersStatsByTeam(any()) } returns emptyList()
-        coEvery { teamMemberRepository.getMembersByTeam(any()) } returns members
-        coEvery { eventRepository.getEventsByTeam(any()) } returns events
-        coEvery { userRepository.getUsersByIds(any()) } returns users
-        coEvery { attendanceRepository.getAttendanceByEvent("e_prev") } returns listOf(
-            com.kourt.app.data.model.Attendance(eventId = "e_prev", userId = "u1", status = "on_time"),
-            com.kourt.app.data.model.Attendance(eventId = "e_prev", userId = "u2", status = "on_time"),
+        appPrefs.activeTeamId = TEAM_ID
+        playerStatsRepository.playerStats = emptyList()
+        teamMemberRepository.membersByTeam = members
+        eventRepository.eventsByTeam = events
+        userRepository.users = users
+        attendanceRepository.attendanceByEvent = mapOf(
+            "e_prev" to listOf(
+                Attendance(eventId = "e_prev", userId = "u1", status = "on_time"),
+                Attendance(eventId = "e_prev", userId = "u2", status = "on_time"),
+            ),
+            "e_curr" to emptyList(),
         )
-        coEvery { attendanceRepository.getAttendanceByEvent("e_curr") } returns emptyList()
 
         // Act
         val vm = newViewModel()
         advanceUntilIdle()
 
         // Assert
-        assertThat(vm.uiState.trendBars.size).isAtLeast(2)
-        assertThat(vm.uiState.isTrendImproving).isFalse()
-        assertThat(vm.uiState.trendDelta).isLessThan(0f)
+        assertTrue("expected >= 2 trend bars, got ${vm.uiState.trendBars.size}", vm.uiState.trendBars.size >= 2)
+        assertFalse(vm.uiState.isTrendImproving)
+        assertTrue("expected trendDelta < 0, got ${vm.uiState.trendDelta}", vm.uiState.trendDelta < 0f)
     }
 
     // ── Failure / edge cases ──────────────────────────────────────────────────
@@ -292,36 +309,40 @@ class AttendanceAnalyticsViewModelTest {
     @Test
     fun `given no active team, then error is error_no_team`() = runTest {
         // Arrange
-        every { appPrefs.activeTeamId } returns ""
+        appPrefs.activeTeamId = ""
 
         // Act
         val vm = newViewModel()
         advanceUntilIdle()
 
         // Assert
-        assertThat(vm.uiState.error).isEqualTo(R.string.error_no_team)
-        assertThat(vm.uiState.isLoading).isFalse()
+        assertEquals(R.string.error_no_team, vm.uiState.error)
+        assertFalse(vm.uiState.isLoading)
     }
 
     @Test
     fun `given a repository fails, then error is error_generic`() = runTest {
         // Arrange
-        every { appPrefs.activeTeamId } returns TEAM_ID
-        coEvery { playerStatsRepository.getPlayersStatsByTeam(any()) } throws RuntimeException("boom")
-        coEvery { teamMemberRepository.getMembersByTeam(any()) } returns emptyList()
-        coEvery { eventRepository.getEventsByTeam(any()) } returns emptyList()
+        appPrefs.activeTeamId = TEAM_ID
+        playerStatsRepository.failOnGetPlayersStatsByTeam = true
+        teamMemberRepository.membersByTeam = emptyList()
+        eventRepository.eventsByTeam = emptyList()
 
         // Act
         val vm = newViewModel()
         advanceUntilIdle()
 
         // Assert
-        assertThat(vm.uiState.error).isEqualTo(R.string.error_generic)
-        assertThat(vm.uiState.isLoading).isFalse()
+        assertEquals(R.string.error_generic, vm.uiState.error)
+        assertFalse(vm.uiState.isLoading)
     }
 
     private fun epochDayToTimestamp(epochDay: Long): Timestamp =
         Timestamp(TimeUnit.DAYS.toSeconds(epochDay), 0)
+
+    private fun assertNear(expected: Float, actual: Float, eps: Float = EPS) {
+        assertEquals(expected.toDouble(), actual.toDouble(), eps.toDouble())
+    }
 
     private companion object {
         const val TEAM_ID = "team-1"

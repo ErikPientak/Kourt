@@ -7,12 +7,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class MatchStatsRepository @Inject constructor(
+open class MatchStatsRepository @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
     private val collection = firestore.collection("matchStats")
 
-    suspend fun getMatchStats(eventId: String): MatchStats? =
+    open suspend fun getMatchStats(eventId: String): MatchStats? =
         collection.document(eventId).get().await().toObject(MatchStats::class.java)
 
     suspend fun updateMatchStats(matchStats: MatchStats) {

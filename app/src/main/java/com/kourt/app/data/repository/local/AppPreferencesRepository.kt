@@ -13,7 +13,7 @@ private const val KEY_ACTIVE_TEAM_ID = "active_team_id"
 private const val KEY_ACTIVE_CHILD_ID = "active_child_id"
 
 @Singleton
-class AppPreferencesRepository @Inject constructor(
+open class AppPreferencesRepository @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
     private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -30,7 +30,7 @@ class AppPreferencesRepository @Inject constructor(
         get() = prefs.getString(KEY_ACTIVE_CLUB_ID, "") ?: ""
         set(value) = prefs.edit().putString(KEY_ACTIVE_CLUB_ID, value).apply()
 
-    var activeTeamId: String
+    open var activeTeamId: String
         get() = prefs.getString(KEY_ACTIVE_TEAM_ID, "") ?: ""
         set(value) = prefs.edit().putString(KEY_ACTIVE_TEAM_ID, value).apply()
 

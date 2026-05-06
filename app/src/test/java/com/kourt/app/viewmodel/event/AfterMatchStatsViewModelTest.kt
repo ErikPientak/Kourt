@@ -5,34 +5,35 @@ package com.kourt.app.viewmodel.event
  *
  * Covers:
  *  - MVP selection: highest (points + rebounds + assists)
- *  - Tie-breaking falls back to first encountered (sortedByDescending stable)
- *  - isWin = myTeamScore > opponentScore
- *  - isWin = false on ties and losses
+ *  - isWin = myTeamScore > opponentScore (strict — ties are NOT wins)
  *  - Players are sorted by score descending
  *  - Players whose member or user is missing are dropped
+ *  - opponentName falls back to event title when opponent is blank
  *  - Failure paths: null event / null matchStats / blank eventId / repo throws
  */
 
 import androidx.lifecycle.SavedStateHandle
-import com.google.common.truth.Truth.assertThat
 import com.kourt.app.R
 import com.kourt.app.data.model.Event
 import com.kourt.app.data.model.MatchStats
 import com.kourt.app.data.model.PlayerMatchStat
 import com.kourt.app.data.model.TeamMember
 import com.kourt.app.data.model.User
-import com.kourt.app.data.repository.remote.EventRepository
-import com.kourt.app.data.repository.remote.MatchStatsRepository
-import com.kourt.app.data.repository.remote.TeamMemberRepository
-import com.kourt.app.data.repository.remote.UserRepository
+import com.kourt.app.util.FakeEventRepository
+import com.kourt.app.util.FakeMatchStatsRepository
+import com.kourt.app.util.FakeTeamMemberRepository
+import com.kourt.app.util.FakeUserRepository
 import com.kourt.app.util.MainCoroutineRule
-import io.mockk.coEvery
-import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AfterMatchStatsViewModelTest {
@@ -40,10 +41,18 @@ class AfterMatchStatsViewModelTest {
     @get:Rule
     val mainCoroutineRule = MainCoroutineRule()
 
-    private val eventRepository: EventRepository = mockk(relaxed = true)
-    private val matchStatsRepository: MatchStatsRepository = mockk(relaxed = true)
-    private val teamMemberRepository: TeamMemberRepository = mockk(relaxed = true)
-    private val userRepository: UserRepository = mockk(relaxed = true)
+    private lateinit var eventRepository: FakeEventRepository
+    private lateinit var matchStatsRepository: FakeMatchStatsRepository
+    private lateinit var teamMemberRepository: FakeTeamMemberRepository
+    private lateinit var userRepository: FakeUserRepository
+
+    @Before
+    fun setUp() {
+        eventRepository = FakeEventRepository.create()
+        matchStatsRepository = FakeMatchStatsRepository.create()
+        teamMemberRepository = FakeTeamMemberRepository.create()
+        userRepository = FakeUserRepository.create()
+    }
 
     private fun newViewModel(eventId: String = EVENT_ID): AfterMatchStatsViewModel =
         AfterMatchStatsViewModel(
@@ -60,10 +69,10 @@ class AfterMatchStatsViewModelTest {
         members: List<TeamMember> = emptyList(),
         users: List<User> = emptyList(),
     ) {
-        coEvery { eventRepository.getEvent(EVENT_ID) } returns event
-        coEvery { matchStatsRepository.getMatchStats(EVENT_ID) } returns matchStats
-        coEvery { teamMemberRepository.getMembersByTeam(any()) } returns members
-        coEvery { userRepository.getUsersByIds(any()) } returns users
+        eventRepository.event = event
+        matchStatsRepository.matchStats = matchStats
+        teamMemberRepository.membersByTeam = members
+        userRepository.users = users
     }
 
     // ── MVP selection ─────────────────────────────────────────────────────────
@@ -102,10 +111,11 @@ class AfterMatchStatsViewModelTest {
         advanceUntilIdle()
 
         // Assert
-        assertThat(vm.uiState.mvpItem).isNotNull()
-        assertThat(vm.uiState.mvpItem!!.teamMemberId).isEqualTo("m2")
-        assertThat(vm.uiState.mvpItem!!.displayName).isEqualTo("Bob")
-        assertThat(vm.uiState.mvpItem!!.points).isEqualTo(30)
+        assertNotNull(vm.uiState.mvpItem)
+        val mvp = vm.uiState.mvpItem!!
+        assertEquals("m2", mvp.teamMemberId)
+        assertEquals("Bob", mvp.displayName)
+        assertEquals(30, mvp.points)
     }
 
     @Test
@@ -137,7 +147,7 @@ class AfterMatchStatsViewModelTest {
 
         // Assert
         val orderedIds = vm.uiState.players.map { it.teamMemberId }
-        assertThat(orderedIds).containsExactly("m2", "m3", "m1").inOrder()
+        assertEquals(listOf("m2", "m3", "m1"), orderedIds)
     }
 
     @Test
@@ -159,8 +169,8 @@ class AfterMatchStatsViewModelTest {
         advanceUntilIdle()
 
         // Assert
-        assertThat(vm.uiState.players.map { it.teamMemberId }).containsExactly("m1")
-        assertThat(vm.uiState.mvpItem!!.teamMemberId).isEqualTo("m1")
+        assertEquals(listOf("m1"), vm.uiState.players.map { it.teamMemberId })
+        assertEquals("m1", vm.uiState.mvpItem!!.teamMemberId)
     }
 
     @Test
@@ -185,7 +195,7 @@ class AfterMatchStatsViewModelTest {
         advanceUntilIdle()
 
         // Assert
-        assertThat(vm.uiState.players.map { it.teamMemberId }).containsExactly("m1")
+        assertEquals(listOf("m1"), vm.uiState.players.map { it.teamMemberId })
     }
 
     // ── Win detection ─────────────────────────────────────────────────────────
@@ -193,48 +203,42 @@ class AfterMatchStatsViewModelTest {
     @Test
     fun `given my team score is greater than opponent, then isWin is true`() = runTest {
         // Arrange
-        stubScreen(
-            matchStats = MatchStats(eventId = EVENT_ID, myTeamScore = 80, opponentScore = 60)
-        )
+        stubScreen(matchStats = MatchStats(eventId = EVENT_ID, myTeamScore = 80, opponentScore = 60))
 
         // Act
         val vm = newViewModel()
         advanceUntilIdle()
 
         // Assert
-        assertThat(vm.uiState.isWin).isTrue()
-        assertThat(vm.uiState.myTeamScore).isEqualTo(80)
-        assertThat(vm.uiState.opponentScore).isEqualTo(60)
+        assertTrue(vm.uiState.isWin)
+        assertEquals(80, vm.uiState.myTeamScore)
+        assertEquals(60, vm.uiState.opponentScore)
     }
 
     @Test
     fun `given my team score is less than opponent, then isWin is false`() = runTest {
         // Arrange
-        stubScreen(
-            matchStats = MatchStats(eventId = EVENT_ID, myTeamScore = 50, opponentScore = 70)
-        )
+        stubScreen(matchStats = MatchStats(eventId = EVENT_ID, myTeamScore = 50, opponentScore = 70))
 
         // Act
         val vm = newViewModel()
         advanceUntilIdle()
 
         // Assert
-        assertThat(vm.uiState.isWin).isFalse()
+        assertFalse(vm.uiState.isWin)
     }
 
     @Test
     fun `given a tied score, then isWin is false`() = runTest {
         // Arrange — strict greater-than means a tie is not a win
-        stubScreen(
-            matchStats = MatchStats(eventId = EVENT_ID, myTeamScore = 70, opponentScore = 70)
-        )
+        stubScreen(matchStats = MatchStats(eventId = EVENT_ID, myTeamScore = 70, opponentScore = 70))
 
         // Act
         val vm = newViewModel()
         advanceUntilIdle()
 
         // Assert
-        assertThat(vm.uiState.isWin).isFalse()
+        assertFalse(vm.uiState.isWin)
     }
 
     // ── opponentName fallback ─────────────────────────────────────────────────
@@ -252,7 +256,7 @@ class AfterMatchStatsViewModelTest {
         advanceUntilIdle()
 
         // Assert
-        assertThat(vm.uiState.opponentName).isEqualTo("Tournament Day")
+        assertEquals("Tournament Day", vm.uiState.opponentName)
     }
 
     // ── Failure paths ─────────────────────────────────────────────────────────
@@ -264,8 +268,8 @@ class AfterMatchStatsViewModelTest {
         advanceUntilIdle()
 
         // Assert
-        assertThat(vm.uiState.error).isEqualTo(R.string.error_load_failed)
-        assertThat(vm.uiState.isLoading).isFalse()
+        assertEquals(R.string.error_load_failed, vm.uiState.error)
+        assertFalse(vm.uiState.isLoading)
     }
 
     @Test
@@ -278,8 +282,8 @@ class AfterMatchStatsViewModelTest {
         advanceUntilIdle()
 
         // Assert
-        assertThat(vm.uiState.error).isEqualTo(R.string.error_load_failed)
-        assertThat(vm.uiState.isLoading).isFalse()
+        assertEquals(R.string.error_load_failed, vm.uiState.error)
+        assertFalse(vm.uiState.isLoading)
     }
 
     @Test
@@ -292,23 +296,23 @@ class AfterMatchStatsViewModelTest {
         advanceUntilIdle()
 
         // Assert
-        assertThat(vm.uiState.error).isEqualTo(R.string.error_load_failed)
-        assertThat(vm.uiState.isLoading).isFalse()
+        assertEquals(R.string.error_load_failed, vm.uiState.error)
+        assertFalse(vm.uiState.isLoading)
     }
 
     @Test
     fun `given a repository throws, then error is error_load_failed`() = runTest {
         // Arrange
-        coEvery { eventRepository.getEvent(EVENT_ID) } throws RuntimeException("boom")
-        coEvery { matchStatsRepository.getMatchStats(EVENT_ID) } returns MatchStats(eventId = EVENT_ID)
+        eventRepository.failOnGetEvent = true
+        matchStatsRepository.matchStats = MatchStats(eventId = EVENT_ID)
 
         // Act
         val vm = newViewModel()
         advanceUntilIdle()
 
         // Assert
-        assertThat(vm.uiState.error).isEqualTo(R.string.error_load_failed)
-        assertThat(vm.uiState.isLoading).isFalse()
+        assertEquals(R.string.error_load_failed, vm.uiState.error)
+        assertFalse(vm.uiState.isLoading)
     }
 
     private companion object {

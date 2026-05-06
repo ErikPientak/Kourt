@@ -86,7 +86,7 @@ class AttendanceViewModel @Inject constructor(
 
                 // Format event date
                 val locale = Locale.getDefault()
-                val pattern = DateFormat.getBestDateTimePattern(locale, "MMMd")
+                val pattern = DateFormat.getBestDateTimePattern(locale, "MMMd") ?: "MMM d"
                 val formatter = java.text.SimpleDateFormat(pattern, locale)
                 val dateLabel = formatter.format(Date(event.date.seconds * 1000))
 

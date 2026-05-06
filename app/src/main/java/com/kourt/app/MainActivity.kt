@@ -6,9 +6,15 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.kourt.app.navigation.NavGraph
 import com.kourt.app.ui.theme.KourtTheme
 import com.kourt.app.viewmodel.MainViewModel
@@ -21,24 +27,35 @@ class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
+
         super.onCreate(savedInstanceState)
+
+        splashScreen.setKeepOnScreenCondition {
+            viewModel.startDestination.value == null
+        }
         applyLocale(viewModel.language)
         enableEdgeToEdge()
         setContent {
+
+            val startDest by viewModel.startDestination.collectAsState()
+
             KourtTheme(darkTheme = viewModel.isDarkTheme) {
-                Scaffold(modifier = Modifier.fillMaxSize()) { paddingValues ->
-                    NavGraph(
-                        startDestination = viewModel.startDestination,
-                        paddingValues = paddingValues,
-                        isDarkTheme = viewModel.isDarkTheme,
-                        currentLanguage = viewModel.language,
-                        onToggleTheme = { viewModel.toggleTheme() },
-                        onSetLanguage = { code ->
-                            viewModel.updateLanguage(code)
-                            recreate()
-                        },
-                    )
-                }
+                startDest?.let { destination ->
+                    Scaffold(modifier = Modifier.fillMaxSize()) { paddingValues ->
+                        NavGraph(
+                            startDestination = destination,
+                            paddingValues = paddingValues,
+                            isDarkTheme = viewModel.isDarkTheme,
+                            currentLanguage = viewModel.language,
+                            onToggleTheme = { viewModel.toggleTheme() },
+                            onSetLanguage = { code ->
+                                viewModel.updateLanguage(code)
+                                recreate()
+                            },
+                        )
+                    }
+              }
             }
         }
     }

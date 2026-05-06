@@ -7,16 +7,16 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AttendanceRepository @Inject constructor(
+open class AttendanceRepository @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
     private val collection = firestore.collection("attendance")
 
-    suspend fun getAttendanceByEvent(eventId: String): List<Attendance> =
+    open suspend fun getAttendanceByEvent(eventId: String): List<Attendance> =
         collection.whereEqualTo("eventId", eventId).get().await()
             .toObjects(Attendance::class.java)
 
-    suspend fun saveAttendance(attendance: Attendance): String  {
+    open suspend fun saveAttendance(attendance: Attendance): String  {
         val ref = collection.add(attendance).await()
         return ref.id
     }

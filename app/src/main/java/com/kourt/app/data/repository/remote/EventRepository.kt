@@ -7,15 +7,15 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class EventRepository @Inject constructor(
+open class EventRepository @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
     private val collection = firestore.collection("Event")
 
-    suspend fun getEvent(id: String): Event? =
+    open suspend fun getEvent(id: String): Event? =
         collection.document(id).get().await().toObject(Event::class.java)
 
-    suspend fun getEventsByTeam(teamId: String): List<Event> =
+    open suspend fun getEventsByTeam(teamId: String): List<Event> =
         collection.whereEqualTo("teamId", teamId).get().await()
             .toObjects(Event::class.java)
 

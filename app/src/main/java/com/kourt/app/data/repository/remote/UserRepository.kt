@@ -10,15 +10,15 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class UserRepository @Inject constructor(
+open class UserRepository @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
     private val collection = firestore.collection("User")
 
-    suspend fun getUser(id: String): User? =
+    open suspend fun getUser(id: String): User? =
         collection.document(id).get().await().toObject(User::class.java)
 
-    suspend fun createUser(user: User) {
+    open suspend fun createUser(user: User) {
         collection.document(user.id).set(user).await()
     }
 
@@ -31,7 +31,7 @@ class UserRepository @Inject constructor(
         collection.document(id).delete().await()
     }
 
-    suspend fun getUsersByIds(ids: List<String>): List<User> {
+    open suspend fun getUsersByIds(ids: List<String>): List<User> {
         if (ids.isEmpty()) return emptyList()
         return ids.chunked(30).flatMap { chunk ->
             collection

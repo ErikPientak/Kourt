@@ -15,38 +15,36 @@ package com.kourt.app.viewmodel.event
  *   - blank eventId emits error_load_failed without launching coroutines
  *   - existing Attendance docs win over RSVP defaults
  *   - members not in {player, parent} are filtered out
+ *
+ * Note: android.text.format.DateFormat.getBestDateTimePattern returns null on the
+ * JVM (Android stub jar + isReturnDefaultValues=true). The production code
+ * falls back to "MMM d" via the elvis operator, so no static mocking is required.
  */
 
-import android.text.format.DateFormat
 import androidx.lifecycle.SavedStateHandle
-import com.google.common.truth.Truth.assertThat
 import com.kourt.app.R
 import com.kourt.app.data.model.Attendance
 import com.kourt.app.data.model.Event
 import com.kourt.app.data.model.Rsvp
 import com.kourt.app.data.model.TeamMember
 import com.kourt.app.data.model.User
-import com.kourt.app.data.repository.remote.AttendanceRepository
-import com.kourt.app.data.repository.remote.AuthRepository
-import com.kourt.app.data.repository.remote.EventRepository
-import com.kourt.app.data.repository.remote.PlayerStatsRepository
-import com.kourt.app.data.repository.remote.RsvpRepository
-import com.kourt.app.data.repository.remote.TeamMemberRepository
-import com.kourt.app.data.repository.remote.TeamStatsRepository
-import com.kourt.app.data.repository.remote.UserRepository
+import com.kourt.app.util.FakeAttendanceRepository
+import com.kourt.app.util.FakeAuthRepository
+import com.kourt.app.util.FakeEventRepository
+import com.kourt.app.util.FakePlayerStatsRepository
+import com.kourt.app.util.FakeRsvpRepository
+import com.kourt.app.util.FakeTeamMemberRepository
+import com.kourt.app.util.FakeTeamStatsRepository
+import com.kourt.app.util.FakeUserRepository
 import com.kourt.app.util.MainCoroutineRule
-import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.mockkStatic
-import io.mockk.unmockkStatic
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AttendanceViewModelTest {
@@ -54,26 +52,25 @@ class AttendanceViewModelTest {
     @get:Rule
     val mainCoroutineRule = MainCoroutineRule()
 
-    private val authRepository: AuthRepository = mockk(relaxed = true)
-    private val eventRepository: EventRepository = mockk(relaxed = true)
-    private val rsvpRepository: RsvpRepository = mockk(relaxed = true)
-    private val teamMemberRepository: TeamMemberRepository = mockk(relaxed = true)
-    private val userRepository: UserRepository = mockk(relaxed = true)
-    private val attendanceRepository: AttendanceRepository = mockk(relaxed = true)
-    private val playerStatsRepository: PlayerStatsRepository = mockk(relaxed = true)
-    private val teamStatsRepository: TeamStatsRepository = mockk(relaxed = true)
+    private lateinit var authRepository: FakeAuthRepository
+    private lateinit var eventRepository: FakeEventRepository
+    private lateinit var rsvpRepository: FakeRsvpRepository
+    private lateinit var teamMemberRepository: FakeTeamMemberRepository
+    private lateinit var userRepository: FakeUserRepository
+    private lateinit var attendanceRepository: FakeAttendanceRepository
+    private lateinit var playerStatsRepository: FakePlayerStatsRepository
+    private lateinit var teamStatsRepository: FakeTeamStatsRepository
 
     @Before
     fun setUp() {
-        // android.text.format.DateFormat is an Android framework class with no JVM impl.
-        // Stub the only call the ViewModel makes against it.
-        mockkStatic(DateFormat::class)
-        every { DateFormat.getBestDateTimePattern(any(), any()) } returns "MMM d"
-    }
-
-    @After
-    fun tearDown() {
-        unmockkStatic(DateFormat::class)
+        authRepository = FakeAuthRepository.create()
+        eventRepository = FakeEventRepository.create()
+        rsvpRepository = FakeRsvpRepository.create()
+        teamMemberRepository = FakeTeamMemberRepository.create()
+        userRepository = FakeUserRepository.create()
+        attendanceRepository = FakeAttendanceRepository.create()
+        playerStatsRepository = FakePlayerStatsRepository.create()
+        teamStatsRepository = FakeTeamStatsRepository.create()
     }
 
     private fun newViewModel(eventId: String = EVENT_ID): AttendanceViewModel =
@@ -110,11 +107,11 @@ class AttendanceViewModelTest {
             // u_no_rsvp intentionally has no RSVP doc
         )
 
-        coEvery { eventRepository.getEvent(EVENT_ID) } returns Event(id = EVENT_ID, teamId = TEAM_ID)
-        coEvery { attendanceRepository.getAttendanceByEvent(EVENT_ID) } returns emptyList()
-        coEvery { rsvpRepository.getRsvpsByEvent(EVENT_ID) } returns rsvps
-        coEvery { teamMemberRepository.getMembersByTeam(TEAM_ID) } returns members
-        coEvery { userRepository.getUsersByIds(any()) } returns users
+        eventRepository.event = Event(id = EVENT_ID, teamId = TEAM_ID)
+        attendanceRepository.attendance = emptyList()
+        rsvpRepository.rsvps = rsvps
+        teamMemberRepository.membersByTeam = members
+        userRepository.users = users
 
         // Act
         val vm = newViewModel()
@@ -122,36 +119,32 @@ class AttendanceViewModelTest {
 
         // Assert
         val statusByUserId = vm.uiState.members.associate { it.userId to it.status }
-        assertThat(statusByUserId["u_yes"]).isEqualTo("on_time")
-        assertThat(statusByUserId["u_late"]).isEqualTo("on_time")
-        assertThat(statusByUserId["u_no_reason"]).isEqualTo("excused")
-        assertThat(statusByUserId["u_no_blank"]).isEqualTo("unexcused")
-        assertThat(statusByUserId["u_no_rsvp"]).isEqualTo("unexcused")
+        assertEquals("on_time",   statusByUserId["u_yes"])
+        assertEquals("on_time",   statusByUserId["u_late"])
+        assertEquals("excused",   statusByUserId["u_no_reason"])
+        assertEquals("unexcused", statusByUserId["u_no_blank"])
+        assertEquals("unexcused", statusByUserId["u_no_rsvp"])
     }
 
     @Test
     fun `given an unknown RSVP status, then default attendance status is unexcused`() = runTest {
         // Arrange — exercise the else branch with an unrecognized status
-        val members = listOf(
-            TeamMember(id = "m1", userId = "u1", teamId = TEAM_ID, role = "player")
-        )
+        val members = listOf(TeamMember(id = "m1", userId = "u1", teamId = TEAM_ID, role = "player"))
         val users = listOf(User(id = "u1", displayName = "Alice"))
-        val rsvps = listOf(
-            Rsvp(eventId = EVENT_ID, status = "maybe", reason = "", submittedBy = "u1")
-        )
+        val rsvps = listOf(Rsvp(eventId = EVENT_ID, status = "maybe", reason = "", submittedBy = "u1"))
 
-        coEvery { eventRepository.getEvent(EVENT_ID) } returns Event(id = EVENT_ID, teamId = TEAM_ID)
-        coEvery { attendanceRepository.getAttendanceByEvent(EVENT_ID) } returns emptyList()
-        coEvery { rsvpRepository.getRsvpsByEvent(EVENT_ID) } returns rsvps
-        coEvery { teamMemberRepository.getMembersByTeam(TEAM_ID) } returns members
-        coEvery { userRepository.getUsersByIds(any()) } returns users
+        eventRepository.event = Event(id = EVENT_ID, teamId = TEAM_ID)
+        attendanceRepository.attendance = emptyList()
+        rsvpRepository.rsvps = rsvps
+        teamMemberRepository.membersByTeam = members
+        userRepository.users = users
 
         // Act
         val vm = newViewModel()
         advanceUntilIdle()
 
         // Assert
-        assertThat(vm.uiState.members.single().status).isEqualTo("unexcused")
+        assertEquals("unexcused", vm.uiState.members.single().status)
     }
 
     // ── Existing attendance overrides RSVP default ────────────────────────────
@@ -160,25 +153,23 @@ class AttendanceViewModelTest {
     fun `given an existing Attendance doc, then it overrides the RSVP-derived default`() = runTest {
         // Arrange — RSVP says "yes" (default would be "on_time"), but a saved
         // Attendance with status="late" already exists and must win.
-        val members = listOf(
-            TeamMember(id = "m1", userId = "u1", teamId = TEAM_ID, role = "player")
-        )
+        val members = listOf(TeamMember(id = "m1", userId = "u1", teamId = TEAM_ID, role = "player"))
         val users = listOf(User(id = "u1", displayName = "Alice"))
         val rsvps = listOf(Rsvp(eventId = EVENT_ID, status = "yes", submittedBy = "u1"))
         val attendance = listOf(Attendance(eventId = EVENT_ID, userId = "u1", status = "late"))
 
-        coEvery { eventRepository.getEvent(EVENT_ID) } returns Event(id = EVENT_ID, teamId = TEAM_ID)
-        coEvery { attendanceRepository.getAttendanceByEvent(EVENT_ID) } returns attendance
-        coEvery { rsvpRepository.getRsvpsByEvent(EVENT_ID) } returns rsvps
-        coEvery { teamMemberRepository.getMembersByTeam(TEAM_ID) } returns members
-        coEvery { userRepository.getUsersByIds(any()) } returns users
+        eventRepository.event = Event(id = EVENT_ID, teamId = TEAM_ID)
+        attendanceRepository.attendance = attendance
+        rsvpRepository.rsvps = rsvps
+        teamMemberRepository.membersByTeam = members
+        userRepository.users = users
 
         // Act
         val vm = newViewModel()
         advanceUntilIdle()
 
         // Assert
-        assertThat(vm.uiState.members.single().status).isEqualTo("late")
+        assertEquals("late", vm.uiState.members.single().status)
     }
 
     // ── Filtering ─────────────────────────────────────────────────────────────
@@ -194,11 +185,11 @@ class AttendanceViewModelTest {
         )
         val users = members.map { User(id = it.userId, displayName = it.userId) }
 
-        coEvery { eventRepository.getEvent(EVENT_ID) } returns Event(id = EVENT_ID, teamId = TEAM_ID)
-        coEvery { attendanceRepository.getAttendanceByEvent(EVENT_ID) } returns emptyList()
-        coEvery { rsvpRepository.getRsvpsByEvent(EVENT_ID) } returns emptyList()
-        coEvery { teamMemberRepository.getMembersByTeam(TEAM_ID) } returns members
-        coEvery { userRepository.getUsersByIds(any()) } returns users
+        eventRepository.event = Event(id = EVENT_ID, teamId = TEAM_ID)
+        attendanceRepository.attendance = emptyList()
+        rsvpRepository.rsvps = emptyList()
+        teamMemberRepository.membersByTeam = members
+        userRepository.users = users
 
         // Act
         val vm = newViewModel()
@@ -206,7 +197,7 @@ class AttendanceViewModelTest {
 
         // Assert
         val userIds = vm.uiState.members.map { it.userId }
-        assertThat(userIds).containsExactly("u1", "u2")
+        assertEquals(listOf("u1", "u2"), userIds)
     }
 
     // ── Error handling ────────────────────────────────────────────────────────
@@ -218,24 +209,24 @@ class AttendanceViewModelTest {
         advanceUntilIdle()
 
         // Assert
-        assertThat(vm.uiState.error).isEqualTo(R.string.error_load_failed)
-        assertThat(vm.uiState.isLoading).isFalse()
+        assertEquals(R.string.error_load_failed, vm.uiState.error)
+        assertFalse(vm.uiState.isLoading)
     }
 
     @Test
     fun `given event lookup returns null, then error is error_load_failed`() = runTest {
         // Arrange
-        coEvery { eventRepository.getEvent(EVENT_ID) } returns null
-        coEvery { attendanceRepository.getAttendanceByEvent(EVENT_ID) } returns emptyList()
-        coEvery { rsvpRepository.getRsvpsByEvent(EVENT_ID) } returns emptyList()
+        eventRepository.event = null
+        attendanceRepository.attendance = emptyList()
+        rsvpRepository.rsvps = emptyList()
 
         // Act
         val vm = newViewModel()
         advanceUntilIdle()
 
         // Assert
-        assertThat(vm.uiState.error).isEqualTo(R.string.error_load_failed)
-        assertThat(vm.uiState.isLoading).isFalse()
+        assertEquals(R.string.error_load_failed, vm.uiState.error)
+        assertFalse(vm.uiState.isLoading)
     }
 
     private companion object {

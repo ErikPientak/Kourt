@@ -394,6 +394,7 @@ class ProfileViewModel @Inject constructor(
             "admin" -> uiState = uiState.copy(navigateToClubManagement = true)
             "player" -> uiState = uiState.copy(navigateToPlayerDashboard = true)
             "coach" -> uiState = uiState.copy(navigateToCoachDashboard = true)
+            "assistant" -> uiState = uiState.copy(navigateToCoachDashboard = true)
         }
     }
 

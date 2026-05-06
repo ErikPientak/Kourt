@@ -7,12 +7,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class RsvpRepository @Inject constructor(
+open class RsvpRepository @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
     private val collection = firestore.collection("RSVP")
 
-    suspend fun getRsvpsByEvent(eventId: String): List<Rsvp> =
+    open suspend fun getRsvpsByEvent(eventId: String): List<Rsvp> =
         collection.whereEqualTo("eventId", eventId).get().await()
             .toObjects(Rsvp::class.java)
 

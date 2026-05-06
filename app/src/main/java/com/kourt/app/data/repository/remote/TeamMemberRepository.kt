@@ -7,20 +7,24 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class TeamMemberRepository @Inject constructor(
+open class TeamMemberRepository @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val rsvpRepository: RsvpRepository,
     private val playerStatsRepository: PlayerStatsRepository
 ) {
     private val collection = firestore.collection("Team_member")
 
-    suspend fun getMembersByTeam(teamId: String): List<TeamMember> =
+    open suspend fun getMembersByTeam(teamId: String): List<TeamMember> =
         collection.whereEqualTo("teamId", teamId).get().await()
             .toObjects(TeamMember::class.java)
 
-    suspend fun getMembersByUser(userId: String): List<TeamMember> =
+    open suspend fun getMembersByUser(userId: String): List<TeamMember> =
         collection.whereEqualTo("userId", userId).get().await()
             .toObjects(TeamMember::class.java)
+
+    suspend fun getMemberByUserId(userId: String): TeamMember? =
+        collection.whereEqualTo("userId", userId).get().await()
+            .toObjects(TeamMember::class.java).firstOrNull()
 
     suspend fun createMember(member: TeamMember): String {
         val ref = collection.add(member).await()
