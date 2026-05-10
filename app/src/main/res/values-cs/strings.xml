@@ -4,7 +4,7 @@
     <string name="web_client_id">109773853321-9g237i8e2e9n7q6ldfnc887ll6vn0i1d.apps.googleusercontent.com</string>
 
     <string name="app_icon_content_desc">Ikona aplikace Kourt</string>
-    <string name="app_tagline">Posuňte správu svých zápasů na vyšší úroveň</string>
+    <string name="app_tagline">Posuňte svou hru na vyšší úroveň</string>
 
     <string name="auth_email_label">E-mailová adresa</string>
     <string name="auth_email_placeholder">trener@tym.cz</string>

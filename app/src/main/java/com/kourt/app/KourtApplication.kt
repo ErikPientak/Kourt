@@ -12,13 +12,6 @@ class KourtApplication : Application(), Configuration.Provider {
 
     @Inject lateinit var workerFactory: HiltWorkerFactory
 
-    override fun onCreate() {
-        super.onCreate()
-        FirebaseAppCheck.getInstance().installAppCheckProviderFactory(
-            appCheckProviderFactory()
-        )
-    }
-
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setWorkerFactory(workerFactory)

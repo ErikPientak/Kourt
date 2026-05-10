@@ -19,21 +19,20 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.kourt.app"
+        applicationId = "com.kourt.app.v2"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-
     signingConfigs {
         create("release") {
-            storeFile = (localProps["KEYSTORE_PATH"] as String?)?.let { file(it) }
-            storePassword = localProps["KEYSTORE_PASSWORD"] as String?
-            keyAlias = localProps["KEY_ALIAS"] as String?
-            keyPassword = localProps["KEY_PASSWORD"] as String?
+            storeFile = file("D:\\Programming\\release_key.jks")
+            storePassword = "xzabiak2003"
+            keyAlias = "release_key"
+            keyPassword = "xzabiak2003"
         }
     }
 
@@ -100,7 +99,6 @@ dependencies {
     implementation(libs.firebase.storage)
     implementation(libs.firebase.messaging)
     debugImplementation(libs.firebase.appcheck.debug)
-    releaseImplementation(libs.firebase.appcheck.playintegrity)
 
     // Credential Manager
     implementation(libs.credentials)

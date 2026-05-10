@@ -293,7 +293,7 @@ private fun RegisterScreenContent(
             modifier = Modifier.fillMaxWidth(),
         )
 
-        Spacer(modifier = Modifier.height(36.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         // "Already have an account? Log In" footer
         Row(

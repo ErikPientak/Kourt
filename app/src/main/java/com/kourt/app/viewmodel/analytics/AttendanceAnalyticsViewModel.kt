@@ -74,13 +74,14 @@ class AttendanceAnalyticsViewModel @Inject constructor(
                 Log.d(TAG, "Fetched ${stats.size} stats, ${members.size} members, ${events.size} events")
 
                 // Resolve user display names and avatars
-                val userIds = members.map { it.userId }.filter { it.isNotBlank() }
+                val playerMembers = members.filter { it.role == "player" }
+                val userIds = playerMembers.map { it.userId }.filter { it.isNotBlank() }
                 val users   = if (userIds.isNotEmpty()) userRepository.getUsersByIds(userIds) else emptyList()
                 val userMap = users.associateBy { it.id }
 
                 // ── Player attendance items ────────────────────────────────
                 val playerItems = stats.mapNotNull { ps ->
-                    val member = members.firstOrNull { it.id == ps.teamMemberId } ?: return@mapNotNull null
+                    val member = playerMembers.firstOrNull { it.id == ps.teamMemberId } ?: return@mapNotNull null
                     val user   = userMap[member.userId]
 
                     val onTime   = ps.totalTrainingsOnTime
@@ -159,7 +160,7 @@ class AttendanceAnalyticsViewModel @Inject constructor(
                     }
                 }.awaitAll().toMap()
 
-                val memberCount = members.size.coerceAtLeast(1)
+                val memberCount = playerMembers.size.coerceAtLeast(1)
 
                 // Group by ISO week bucket (epochDay / 7)
                 val weekBuckets = recentEvents.groupBy { event ->

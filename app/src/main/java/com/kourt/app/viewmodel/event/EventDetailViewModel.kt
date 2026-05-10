@@ -117,25 +117,23 @@ class EventDetailViewModel @Inject constructor(
                     .filter { it.isNotBlank() }
                     .distinct()
 
-                val users = if (allRelevantUids.isNotEmpty()) {
-                    userRepository.getUsersByIds(allRelevantUids)
-                } else {
-                    emptyList()
+                val usersDeferred = async {
+                    if (allRelevantUids.isNotEmpty()) userRepository.getUsersByIds(allRelevantUids)
+                    else emptyList()
                 }
-                val userMap = users.associateBy { it.id }
+                val teamMembersDeferred = async { teamMemberRepository.getMembersByTeam(event.teamId) }
 
-                // Build a role lookup: userId -> role (from team members)
-                // getMembersByUser gives us the current user's memberships, not all members.
-                // We use the role from Rsvp submitter's membership by fetching all members.
-                // Since we only have getMembersByUser(uid), we derive role from the event teamId
-                // membership of the current user. For other members we show their user role.
-                // As a fallback, we show the user's email domain or an empty string.
+                val userMap = usersDeferred.await().associateBy { it.id }
+                val memberRoleMap = teamMembersDeferred.await().associate { it.userId to it.role }
+
                 val goingMembers = goingRsvps.mapNotNull { rsvp ->
                     val user = userMap[rsvp.submittedBy] ?: return@mapNotNull null
+                    val memberRole = memberRoleMap[rsvp.submittedBy]
+                        ?.replaceFirstChar { it.uppercase() } ?: ""
                     RsvpMemberUiItem(
                         userId = user.id,
                         displayName = user.displayName.ifBlank { user.email },
-                        subtitle = role.replaceFirstChar { it.uppercase() },
+                        subtitle = memberRole,
                         avatarUrl = user.avatarId.ifBlank { user.photoURL },
                         rsvpStatus = rsvp.status,
                     )

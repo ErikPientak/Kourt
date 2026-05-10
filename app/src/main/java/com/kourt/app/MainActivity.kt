@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
@@ -52,7 +53,7 @@ class MainActivity : ComponentActivity() {
 
             KourtTheme(darkTheme = viewModel.isDarkTheme) {
                 startDest?.let { destination ->
-                    Scaffold(modifier = Modifier.fillMaxSize()) { paddingValues ->
+                    Scaffold(modifier = Modifier.fillMaxSize(), contentWindowInsets = WindowInsets(0)) { paddingValues ->
                         NavGraph(
                             startDestination = destination,
                             paddingValues = paddingValues,

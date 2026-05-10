@@ -84,6 +84,13 @@ fun AfterMatchStatsScreen(
     viewModel: AfterMatchStatsViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
+    val navBackStackEntry by navigation.getNavController().currentBackStackEntryAsState()
+
+    LaunchedEffect(navBackStackEntry) {
+        if (navBackStackEntry?.destination?.route == Destination.AfterMatchStatsScreen.route) {
+            viewModel.loadData()
+        }
+    }
 
     AfterMatchStatsScreenContent(
         uiState = uiState,

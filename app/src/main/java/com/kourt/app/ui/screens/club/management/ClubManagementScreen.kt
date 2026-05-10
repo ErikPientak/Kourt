@@ -339,6 +339,7 @@ private fun ClubManagementBottomNav(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
+            .navigationBarsPadding()
             .drawWithContent {
                 drawContent()
                 val thickness = 1.dp.toPx()

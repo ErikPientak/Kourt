@@ -41,6 +41,59 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:109773853321:android:674043fa83342228d0ac58",
+        "android_client_info": {
+          "package_name": "com.kourt.app.v2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "109773853321-4bkkhrriaadgklje1g4mb71d536kof2f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kourt.app.v2",
+            "certificate_hash": "44dfeeb5fe85a586c49cd5e1928631f7b92623b5"
+          }
+        },
+        {
+          "client_id": "109773853321-f23h9hsh8ki0umigbm98mkjinih3kun3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kourt.app.v2",
+            "certificate_hash": "907325b22be48d7e6e73d1d4c15e8a10ed695e4e"
+          }
+        },
+        {
+          "client_id": "109773853321-jcrc9v9m1paof4iemrkj625b9qt4pv1j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kourt.app.v2",
+            "certificate_hash": "e9b2ccb257f7687b06c95c7be388a12f04ef321e"
+          }
+        },
+        {
+          "client_id": "109773853321-9g237i8e2e9n7q6ldfnc887ll6vn0i1d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCLncDYjTCRaSUQ341TffJ0OOQAVcd2e8M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "109773853321-9g237i8e2e9n7q6ldfnc887ll6vn0i1d.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"

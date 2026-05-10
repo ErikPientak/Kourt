@@ -39,7 +39,7 @@ class RegisterViewModel @Inject constructor(
             if (result.isSuccess) {
                 val firebaseUser = result.getOrNull()!!
                 Log.d(TAG, "Firebase Auth registration successful: ${firebaseUser.email}")
-                runCatching {
+                val userWriteResult = runCatching {
                     userRepository.updateUser(
                         User(
                             id = firebaseUser.uid,
@@ -47,11 +47,13 @@ class RegisterViewModel @Inject constructor(
                             email = email.trim(),
                         )
                     )
-                }.onSuccess {
-                    Log.d(TAG, "Firestore user document created for uid: ${firebaseUser.uid}")
-                }.onFailure {
-                    Log.e(TAG, "Failed to create Firestore user document: ${it.message}")
                 }
+                if (userWriteResult.isFailure) {
+                    Log.e(TAG, "Failed to create Firestore user document: ${userWriteResult.exceptionOrNull()?.message}")
+                    uiState = uiState.copy(isLoading = false, error = R.string.error_registration_failed)
+                    return@launch
+                }
+                Log.d(TAG, "Firestore user document created for uid: ${firebaseUser.uid}")
                 uiState = uiState.copy(isLoading = false, isSuccess = true)
             } else {
                 Log.e(TAG, "Registration failed: ${result.exceptionOrNull()?.message}")

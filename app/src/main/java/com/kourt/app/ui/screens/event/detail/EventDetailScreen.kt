@@ -30,6 +30,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,6 +43,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.R
+import com.kourt.app.navigation.Destination
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.BaseScreen
 import com.kourt.app.ui.components.KourtAvatarLeading
@@ -56,6 +60,13 @@ fun EventDetailScreen(
     viewModel: EventDetailViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
+    val navBackStackEntry by navigation.getNavController().currentBackStackEntryAsState()
+
+    LaunchedEffect(navBackStackEntry) {
+        if (navBackStackEntry?.destination?.route == Destination.EventDetailScreen.route) {
+            viewModel.loadEventDetail()
+        }
+    }
 
     EventDetailContent(
         uiState = uiState,

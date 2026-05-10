@@ -42,7 +42,7 @@ class AfterMatchStatsViewModel @Inject constructor(
 
     // ── Data loading ──────────────────────────────────────────────────────────
 
-    private fun loadData() {
+    fun loadData() {
         if (eventId.isBlank()) {
             uiState = uiState.copy(isLoading = false, error = R.string.error_load_failed)
             return

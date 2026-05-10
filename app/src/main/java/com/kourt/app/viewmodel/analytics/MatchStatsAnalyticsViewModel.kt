@@ -60,12 +60,13 @@ class MatchStatsAnalyticsViewModel @Inject constructor(
 
                 Log.d(TAG, "Fetched teamStats=$teamStats, ${playerStats.size} player stats, ${members.size} members")
 
-                val userIds = members.map { it.userId }.filter { it.isNotBlank() }
+                val playerMembers = members.filter { it.role == "player" }
+                val userIds = playerMembers.map { it.userId }.filter { it.isNotBlank() }
                 val users   = if (userIds.isNotEmpty()) userRepository.getUsersByIds(userIds) else emptyList()
                 val userMap = users.associateBy { it.id }
 
                 val playerItems = playerStats.mapNotNull { ps ->
-                    val member = members.firstOrNull { it.id == ps.teamMemberId } ?: return@mapNotNull null
+                    val member = playerMembers.firstOrNull { it.id == ps.teamMemberId } ?: return@mapNotNull null
                     val user   = userMap[member.userId]
                     val ftPct  = if (ps.totalFreeThrowsAttempted == 0) null
                                  else ps.totalFreeThrowsMade.toFloat() / ps.totalFreeThrowsAttempted

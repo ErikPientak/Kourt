@@ -1,6 +1,8 @@
 package com.kourt.app.data.model
 
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentId
+import com.google.firebase.firestore.PropertyName
 
 data class User(
     @DocumentId val id: String = "",
@@ -11,4 +13,5 @@ data class User(
     val childIds: List<String> = emptyList(),
     val managedProfile: Boolean = false,
     val managedBy: String = "",
+    @PropertyName("created_at") val createdAt: Timestamp = Timestamp.now(),
 )
