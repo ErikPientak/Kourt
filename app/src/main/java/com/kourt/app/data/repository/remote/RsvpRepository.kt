@@ -19,7 +19,7 @@ open class RsvpRepository @Inject constructor(
     suspend fun getMyRsvp(eventId: String, uid: String): Rsvp? =
         collection
             .whereEqualTo("eventId", eventId)
-            .whereEqualTo("submitted_by", uid)
+            .whereEqualTo("submittedBy", uid)
             .get().await()
             .toObjects(Rsvp::class.java)
             .firstOrNull()
@@ -34,7 +34,7 @@ open class RsvpRepository @Inject constructor(
     }
 
     suspend fun deleteRsvpsByUser(uid: String) {
-        val docs = collection.whereEqualTo("submitted_by", uid).get().await()
+        val docs = collection.whereEqualTo("submittedBy", uid).get().await()
         docs.forEach { it.reference.delete().await() }
     }
 }

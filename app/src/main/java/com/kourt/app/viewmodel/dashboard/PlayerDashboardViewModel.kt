@@ -181,7 +181,7 @@ class PlayerDashboardViewModel @Inject constructor(
         viewModelScope.launch {
             uiState = uiState.copy(isRsvpSubmitting = true)
             runCatching {
-                val existing = loadedMyRsvp
+                val existing = rsvpRepository.getMyRsvp(eventId, uid)
                 if (existing != null) {
                     rsvpRepository.updateRsvp(
                         existing.copy(status = status, reason = reason.orEmpty(), reasonNote = note.orEmpty())

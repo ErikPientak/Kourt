@@ -11,7 +11,10 @@ class NavigationRouterImpl(private val navController: NavController) : INavigati
     }
 
     override fun navigateToLoginScreen() {
-        navController.navigate(Destination.LoginScreen.route)
+        navController.navigate(Destination.LoginScreen.route){
+            popUpTo(0) { inclusive = true }
+            launchSingleTop = true
+        }
     }
 
     override fun navigateToRegisterScreen() {
