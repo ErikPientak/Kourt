@@ -7,7 +7,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.android.identity.util.UUID
 import com.google.firebase.Timestamp
 import com.kourt.app.R
 import com.kourt.app.data.model.Event
@@ -19,6 +18,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.util.Date
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 

@@ -39,7 +39,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.kourt.app.R
 import com.kourt.app.ui.components.bottomSheets.avatarResId
 import com.kourt.app.ui.components.bottomSheets.contentColorForBackground
