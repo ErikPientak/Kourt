@@ -33,8 +33,14 @@ open class RsvpRepository @Inject constructor(
         collection.document(rsvp.id).set(rsvp).await()
     }
 
-    suspend fun deleteRsvpsByUser(uid: String) {
-        val docs = collection.whereEqualTo("submittedBy", uid).get().await()
-        docs.forEach { it.reference.delete().await() }
+    /** Scoped per event so the query stays within what security rules let the caller read. */
+    suspend fun deleteRsvpsByUserForEvents(uid: String, eventIds: List<String>) {
+        eventIds.forEach { eventId ->
+            val docs = collection
+                .whereEqualTo("eventId", eventId)
+                .whereEqualTo("submittedBy", uid)
+                .get().await()
+            docs.forEach { it.reference.delete().await() }
+        }
     }
 }

@@ -1,0 +1,288 @@
+rules_version = '2';
+
+// Kourt Firestore security rules
+//
+// Access model:
+//   - Club admins     : uid listed in Club.admin_ids. Full control over the club's teams.
+//   - Team staff      : Team_member role 'coach' / 'assistant' / 'admin'. Manage the team's
+//                       roster, events, attendance, nominations and stats.
+//   - Team members    : any Team_member (incl. 'player' / 'parent'). Read team data, RSVP.
+//   - Managed children: User docs with managedProfile = true; the parent (managedBy) acts for them.
+//
+// Team_member doc IDs are `{userId}_{teamId}` so membership can be checked with one lookup.
+// Anything not matched below is denied.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    function signedIn() { return request.auth != null; }
+    function uid() { return request.auth.uid; }
+
+    function userPath(userId)   { return /databases/$(database)/documents/User/$(userId); }
+    function clubPath(clubId)   { return /databases/$(database)/documents/Club/$(clubId); }
+    function teamPath(teamId)   { return /databases/$(database)/documents/Team/$(teamId); }
+    function eventPath(eventId) { return /databases/$(database)/documents/Event/$(eventId); }
+    function memberPath(userId, teamId) {
+      return /databases/$(database)/documents/Team_member/$(userId + '_' + teamId);
+    }
+
+    function staffRoles() { return ['coach', 'assistant', 'admin']; }
+    function allRoles()   { return ['coach', 'assistant', 'admin', 'player', 'parent']; }
+
+    function isMember(teamId) { return exists(memberPath(uid(), teamId)); }
+
+    function isStaff(teamId) {
+      return isMember(teamId) && get(memberPath(uid(), teamId)).data.role in staffRoles();
+    }
+
+    function isClubAdmin(clubId) {
+      return uid() in get(clubPath(clubId)).data.admin_ids;
+    }
+
+    function isTeamAdmin(teamId) {
+      return exists(teamPath(teamId)) && isClubAdmin(get(teamPath(teamId)).data.clubId);
+    }
+
+    function canViewTeam(teamId)   { return isMember(teamId) || isTeamAdmin(teamId); }
+    function canManageTeam(teamId) { return isStaff(teamId) || isTeamAdmin(teamId); }
+
+    function eventTeam(eventId) { return get(eventPath(eventId)).data.teamId; }
+
+    // A child profile created and managed by the caller.
+    function isManagedChild(userId) {
+      return exists(userPath(userId)) && get(userPath(userId)).data.get('managedBy', '') == uid();
+    }
+
+    // The caller themselves, or a child profile they manage.
+    function actsFor(userId) { return userId == uid() || isManagedChild(userId); }
+
+    function unchanged(field) {
+      return request.resource.data.get(field, null) == resource.data.get(field, null);
+    }
+
+    // ── User ─────────────────────────────────────────────────────────────────
+    // Readable by any signed-in user: needed for coach search by displayName
+    // and for showing names/avatars of teammates.
+
+    match /User/{userId} {
+      allow read: if signedIn();
+
+      allow create: if signedIn() && (
+        // Own profile on sign-up
+        (userId == uid() && request.resource.data.get('managedProfile', false) == false)
+        // Child profile created by a parent
+        || (request.resource.data.managedProfile == true && request.resource.data.managedBy == uid())
+      );
+
+      allow update: if signedIn()
+        && (userId == uid() || resource.data.get('managedBy', '') == uid())
+        && unchanged('managedProfile')
+        && unchanged('managedBy');
+
+      allow delete: if signedIn()
+        && (userId == uid() || resource.data.get('managedBy', '') == uid());
+    }
+
+    // ── Club ─────────────────────────────────────────────────────────────────
+
+    match /Club/{clubId} {
+      allow read: if signedIn();
+
+      allow create: if signedIn()
+        && request.resource.data.created_by == uid()
+        && request.resource.data.admin_ids == [uid()];
+
+      allow update: if signedIn()
+        && uid() in resource.data.admin_ids
+        && unchanged('created_by')
+        && request.resource.data.admin_ids.size() > 0;
+
+      allow delete: if signedIn() && uid() in resource.data.admin_ids;
+    }
+
+    // ── Team ─────────────────────────────────────────────────────────────────
+    // Readable by any signed-in user because joining looks a team up by joinCode.
+
+    match /Team/{teamId} {
+      allow read: if signedIn();
+
+      allow create: if signedIn() && isClubAdmin(request.resource.data.clubId);
+
+      allow update: if signedIn()
+        && canManageTeam(teamId)
+        && unchanged('clubId')
+        && unchanged('joinCode');
+
+      allow delete: if signedIn() && isTeamAdmin(teamId);
+    }
+
+    // ── Team_member ──────────────────────────────────────────────────────────
+
+    match /Team_member/{memberId} {
+      function validMember(d) {
+        return memberId == d.userId + '_' + d.teamId && d.role in allRoles();
+      }
+
+      allow read: if signedIn() && (
+        resource.data.userId == uid()
+        || isManagedChild(resource.data.userId)
+        || canViewTeam(resource.data.teamId)
+      );
+
+      allow create: if signedIn() && validMember(request.resource.data) && (
+        // Joining by code: yourself or your child as a player, yourself as a parent
+        (request.resource.data.role == 'player'
+          && actsFor(request.resource.data.userId)
+          && exists(teamPath(request.resource.data.teamId)))
+        || (request.resource.data.role == 'parent'
+          && request.resource.data.userId == uid()
+          && exists(teamPath(request.resource.data.teamId)))
+        // Staff adding someone to their team
+        || isStaff(request.resource.data.teamId)
+        // Club admin, including inside the batch that creates the team
+        || isClubAdmin(getAfter(teamPath(request.resource.data.teamId)).data.clubId)
+      );
+
+      // Staff can only change role and jersey number.
+      allow update: if signedIn()
+        && canManageTeam(resource.data.teamId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role', 'jerseyNumber'])
+        && request.resource.data.role in allRoles();
+
+      // Leave a team yourself / for your child, or be removed by staff.
+      allow delete: if signedIn() && (
+        actsFor(resource.data.userId) || canManageTeam(resource.data.teamId)
+      );
+    }
+
+    // ── Event ────────────────────────────────────────────────────────────────
+
+    match /Event/{eventId} {
+      allow read: if signedIn() && canViewTeam(resource.data.teamId);
+
+      allow create: if signedIn()
+        && canManageTeam(request.resource.data.teamId)
+        && request.resource.data.createdBy == uid();
+
+      allow update: if signedIn()
+        && canManageTeam(resource.data.teamId)
+        && unchanged('teamId');
+
+      allow delete: if signedIn() && canManageTeam(resource.data.teamId);
+    }
+
+    // ── RSVP ─────────────────────────────────────────────────────────────────
+
+    match /RSVP/{rsvpId} {
+      allow read: if signedIn() && (
+        resource.data.submittedBy == uid()
+        || canViewTeam(eventTeam(resource.data.eventId))
+      );
+
+      allow create: if signedIn()
+        && request.resource.data.submittedBy == uid()
+        && isMember(eventTeam(request.resource.data.eventId));
+
+      allow update: if signedIn()
+        && resource.data.submittedBy == uid()
+        && unchanged('submittedBy')
+        && unchanged('eventId');
+
+      allow delete: if signedIn() && (
+        resource.data.submittedBy == uid()
+        || canManageTeam(eventTeam(resource.data.eventId))
+      );
+    }
+
+    // ── attendance ── doc ID: {userId}_{eventId} ─────────────────────────────
+
+    match /attendance/{attendanceId} {
+      allow read: if signedIn() && canViewTeam(eventTeam(resource.data.eventId));
+
+      allow create, update: if signedIn()
+        && attendanceId == request.resource.data.userId + '_' + request.resource.data.eventId
+        && canManageTeam(eventTeam(request.resource.data.eventId));
+
+      allow delete: if signedIn() && canManageTeam(eventTeam(resource.data.eventId));
+    }
+
+    // ── matchStats ── doc ID: {eventId} ──────────────────────────────────────
+
+    match /matchStats/{eventId} {
+      allow read: if signedIn() && canViewTeam(eventTeam(eventId));
+
+      allow create, update: if signedIn()
+        && request.resource.data.eventId == eventId
+        && canManageTeam(eventTeam(eventId));
+
+      allow delete: if signedIn() && canManageTeam(eventTeam(eventId));
+    }
+
+    // ── nominations ── doc ID: {eventId} ─────────────────────────────────────
+
+    match /nominations/{eventId} {
+      allow read: if signedIn() && canViewTeam(eventTeam(eventId));
+
+      allow create, update: if signedIn()
+        && request.resource.data.eventId == eventId
+        && canManageTeam(eventTeam(eventId));
+
+      allow delete: if signedIn() && canManageTeam(eventTeam(eventId));
+    }
+
+    // ── teamStats ── doc ID: {teamId} ────────────────────────────────────────
+
+    match /teamStats/{teamId} {
+      allow read: if signedIn() && canViewTeam(teamId);
+
+      allow create, update: if signedIn()
+        && request.resource.data.teamId == teamId
+        && canManageTeam(teamId);
+
+      allow delete: if signedIn() && canManageTeam(teamId);
+    }
+
+    // ── playerStats ── doc ID: {teamMemberId}_{teamId} = {userId}_{teamId}_{teamId} ──
+
+    match /playerStats/{statsId} {
+      function statsUserId() { return statsId.split('_')[0]; }
+      function statsTeamId() { return statsId.split('_')[1]; }
+
+      function validStatsId(d) {
+        return statsId.split('_').size() == 3
+          && statsId == d.teamMemberId + '_' + d.teamId
+          && d.teamId == statsTeamId();
+      }
+
+      // Fresh stats a player may create for themselves when joining a team.
+      function isBlankStats(d) {
+        return d.matchesPlayed == 0 && d.totalPoints == 0 && d.totalRebounds == 0
+          && d.totalAssists == 0 && d.totalFouls == 0
+          && d.totalFreeThrowsAttempted == 0 && d.totalFreeThrowsMade == 0
+          && d.totalTrainingsOnTime == 0 && d.totalTrainingsLate == 0
+          && d.totalTrainingsExcused == 0 && d.totalTrainingsUnexcused == 0
+          && d.attendanceRate == 0;
+      }
+
+      // Single doc reads may target a doc that doesn't exist yet, so check the ID.
+      allow get: if signedIn() && canViewTeam(statsTeamId());
+      // Queries are filtered by teamId.
+      allow list: if signedIn() && canViewTeam(resource.data.teamId);
+
+      allow create: if signedIn() && validStatsId(request.resource.data) && (
+        canManageTeam(statsTeamId())
+        || (statsUserId() == uid() && isMember(statsTeamId()) && isBlankStats(request.resource.data))
+      );
+
+      allow update: if signedIn()
+        && validStatsId(request.resource.data)
+        && canManageTeam(statsTeamId());
+
+      allow delete: if signedIn() && (
+        canManageTeam(statsTeamId()) || actsFor(statsUserId())
+      );
+    }
+  }
+}

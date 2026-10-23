@@ -31,7 +31,10 @@ class TeamRepository @Inject constructor(
         batch.set(teamRef, team)
         val memberCollection = firestore.collection("Team_member")
         members.forEach { member ->
-            batch.set(memberCollection.document(), member.copy(teamId = teamRef.id))
+            batch.set(
+                memberCollection.document(TeamMemberRepository.memberDocId(member.userId, teamRef.id)),
+                member.copy(teamId = teamRef.id)
+            )
         }
         batch.commit().await()
         return teamRef.id

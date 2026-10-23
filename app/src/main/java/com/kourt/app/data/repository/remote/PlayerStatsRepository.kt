@@ -21,16 +21,16 @@ open class PlayerStatsRepository @Inject constructor(
             .toObjects(PlayerStats::class.java)
 
     suspend fun createPlayerStats(stats: PlayerStats): String  {
-        val ref = collection.add(stats).await()
-        return ref.id
+        val id = "${stats.teamMemberId}_${stats.teamId}"
+        collection.document(id).set(stats).await()
+        return id
     }
 
     open suspend fun updatePlayerStats(stats: PlayerStats) {
         collection.document("${stats.teamMemberId}_${stats.teamId}").set(stats).await()
     }
 
-    suspend fun deletePlayerStatsByTeam(teamId: String) {
-        val docs = collection.whereEqualTo("teamId", teamId).get().await()
-        docs.forEach { it.reference.delete().await() }
+    suspend fun deletePlayerStats(teamMemberId: String, teamId: String) {
+        collection.document("${teamMemberId}_${teamId}").delete().await()
     }
 }

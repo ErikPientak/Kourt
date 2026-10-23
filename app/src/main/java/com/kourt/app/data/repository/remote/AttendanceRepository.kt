@@ -17,8 +17,9 @@ open class AttendanceRepository @Inject constructor(
             .toObjects(Attendance::class.java)
 
     open suspend fun saveAttendance(attendance: Attendance): String  {
-        val ref = collection.add(attendance).await()
-        return ref.id
+        val id = "${attendance.userId}_${attendance.eventId}"
+        collection.document(id).set(attendance).await()
+        return id
     }
 
     suspend fun updateAttendance(attendance: Attendance) {

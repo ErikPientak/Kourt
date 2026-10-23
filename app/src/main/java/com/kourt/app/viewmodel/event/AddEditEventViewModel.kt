@@ -219,7 +219,7 @@ class AddEditEventViewModel @Inject constructor(
             uiState = uiState.copy(isLoading = true, error = null)
             runCatching {
                 eventRepository.updateEvent(buildEvent(state, uid))
-                val following = eventRepository.getEventsBySeriesId(state.seriesId)
+                val following = eventRepository.getEventsBySeriesId(teamId, state.seriesId)
                     .filter {
                         TimeUnit.MILLISECONDS.toDays(it.date.toDate().time) > origDay &&
                         it.id != eventId

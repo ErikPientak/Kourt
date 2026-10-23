@@ -28,8 +28,12 @@ open class EventRepository @Inject constructor(
         collection.document(event.id).set(event).await()
     }
 
-    suspend fun getEventsBySeriesId(seriesId: String): List<Event> =
-        collection.whereEqualTo("seriesId", seriesId).get().await()
+    // teamId filter is required by security rules
+    suspend fun getEventsBySeriesId(teamId: String, seriesId: String): List<Event> =
+        collection
+            .whereEqualTo("teamId", teamId)
+            .whereEqualTo("seriesId", seriesId)
+            .get().await()
             .toObjects(Event::class.java)
 
     suspend fun cancelEvent(id: String) {

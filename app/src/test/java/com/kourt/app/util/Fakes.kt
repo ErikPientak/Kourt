@@ -84,6 +84,7 @@ internal class FakeTeamMemberRepository : TeamMemberRepository(
     firestore = TestInstantiator.allocate(com.google.firebase.firestore.FirebaseFirestore::class.java),
     rsvpRepository = TestInstantiator.allocate(RsvpRepository::class.java),
     playerStatsRepository = TestInstantiator.allocate(PlayerStatsRepository::class.java),
+    eventRepository = TestInstantiator.allocate(EventRepository::class.java),
 ) {
     var membersByUser: List<TeamMember> = emptyList()
     var membersByTeam: List<TeamMember> = emptyList()
