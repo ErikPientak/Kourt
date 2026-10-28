@@ -16,15 +16,19 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.kourt.app.data.model.Team
 import com.kourt.app.ui.components.TeamCard
+import com.kourt.app.ui.components.roleBadgeColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AssignTeamBottomSheet(
     teams: List<Team>,
+    /** teamId → the member's current role there; teams they're already on show it as a badge. */
+    currentRoles: Map<String, String>,
     onTeamSelected: (String) -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
@@ -63,9 +67,12 @@ fun AssignTeamBottomSheet(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
             ) {
                 items(items = teams, key = { it.id }) { team ->
+                    val role = currentRoles[team.id]
                     TeamCard(
                         teamName = team.name,
                         headCoach = team.headCoach,
+                        badge = role?.uppercase(),
+                        badgeColor = role?.let { roleBadgeColor(it) } ?: Color.Transparent,
                         onClick = {
                             onTeamSelected(team.id)
                             onDismiss()

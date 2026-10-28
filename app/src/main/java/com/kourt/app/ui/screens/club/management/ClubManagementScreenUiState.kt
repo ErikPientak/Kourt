@@ -16,6 +16,16 @@ enum class EventStatusFilter { ALL, UPCOMING, PAST, CANCELLED }
 
 // ── Members tab — UI projection ───────────────────────────────────────────────
 
+/** One TeamMember record of a club member — a user can belong to several teams. */
+@Immutable
+data class ClubMembership(
+    val memberId: String,
+    val teamId: String,
+    val teamName: String,
+    /** Raw lowercase role string for this team. */
+    val role: String,
+)
+
 @Immutable
 data class ClubMemberUiItem(
     /** Firestore document ID of the TeamMember record — used as the list key. */
@@ -28,6 +38,8 @@ data class ClubMemberUiItem(
     val subtitle: String,
     val avatarUrl: String = "",
     val jerseyNumber: Int = 0,
+    /** Every team this user belongs to in the club. Only populated on Club Management. */
+    val memberships: List<ClubMembership> = emptyList(),
 )
 
 // ── Screen UI state ───────────────────────────────────────────────────────────
@@ -65,6 +77,11 @@ data class ClubManagementScreenUiState(
     val memberForAssignTeam: ClubMemberUiItem? = null,
     val memberForMakeAdmin: ClubMemberUiItem? = null,
     val memberForRemove: ClubMemberUiItem? = null,
+    /** Member whose role in [roleTeamId] is being picked. `null` means the role sheet is closed. */
+    val memberForChangeRole: ClubMemberUiItem? = null,
+    val roleTeamId: String? = null,
+    /** Role highlighted in the role sheet before the update is confirmed. */
+    val selectedRole: String? = null,
 
     // ── Events tab ────────────────────────────────────────────────────────────
     val events: List<EventUiItem> = emptyList(),

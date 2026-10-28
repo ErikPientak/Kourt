@@ -52,6 +52,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.data.model.Team
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.BaseScreenWithBottomNav
+import com.kourt.app.ui.components.bottomSheets.ChangeRoleBottomSheet
 import com.kourt.app.ui.components.bottomSheets.GrowYourTeamBottomSheet
 import com.kourt.app.ui.components.bottomSheets.MemberActionBottomSheet
 import com.kourt.app.ui.components.bottomSheets.TeamActionBottomSheet
@@ -111,13 +112,26 @@ private fun ClubManagementScreenContent(
         )
     }
 
-    // Assign to Team bottom sheet
+    // Assign to Team bottom sheet — step 1: pick the team
     val memberForAssign = uiState.memberForAssignTeam
     if (memberForAssign != null) {
         AssignTeamBottomSheet(
             teams = uiState.teams,
+            currentRoles = memberForAssign.memberships.associate { it.teamId to it.role },
             onTeamSelected = { teamId -> actions.onAssignTeamSelected(memberForAssign.memberId, teamId) },
             onDismiss = { actions.onAssignTeamDismiss() },
+        )
+    }
+
+    // Assign to Team bottom sheet — step 2: pick the role in that team
+    val memberForRole = uiState.memberForChangeRole
+    if (memberForRole != null) {
+        ChangeRoleBottomSheet(
+            selectedMember = memberForRole.memberId,
+            selectedRole = uiState.selectedRole,
+            onRoleSelected = { actions.onRoleSelected(it) },
+            onUpdateRole = { actions.onChangeRoleConfirm() },
+            onDismiss = { actions.onChangeRoleDismiss() },
         )
     }
 
@@ -228,7 +242,7 @@ private fun ClubManagementScreenContent(
         },
         floatingActionButton = {
             when (selectedTab) {
-                TAB_TEAMS -> FloatingActionButton(
+                TAB_TEAMS -> if (uiState.clubId.isNotBlank()) FloatingActionButton(
                     onClick = { navigation.navigateToAddTeamScreen(uiState.clubId) },
                     shape = RoundedCornerShape(16.dp),
                     containerColor = MaterialTheme.colorScheme.primary,

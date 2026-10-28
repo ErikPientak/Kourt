@@ -61,8 +61,8 @@ open class TeamMemberRepository @Inject constructor(
             .get().await()
             .isEmpty.not()
 
-    fun changeRole(memberId: String, newRole: String) {
-        collection.document(memberId).update("role", newRole)
+    suspend fun changeRole(memberId: String, newRole: String) {
+        collection.document(memberId).update("role", newRole).await()
     }
 
     fun changeJerseyNumber(memberId: String, newJerseyNumber: Int) {

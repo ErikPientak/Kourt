@@ -249,6 +249,10 @@ class AddTeamViewModel @Inject constructor(
             uiState = uiState.copy(error = R.string.error_not_signed_in)
             return
         }
+        if (clubId.isBlank()) {
+            uiState = uiState.copy(error = R.string.error_no_club_found)
+            return
+        }
         val joinCode = generateJoinCode()
 
         viewModelScope.launch {

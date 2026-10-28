@@ -16,6 +16,7 @@ import com.kourt.app.data.repository.remote.TeamMemberRepository
 import com.kourt.app.data.repository.remote.TeamRepository
 import com.kourt.app.data.repository.remote.UserRepository
 import com.kourt.app.ui.screens.club.management.ClubMemberUiItem
+import com.kourt.app.ui.screens.club.management.ClubMembership
 import com.kourt.app.ui.screens.club.management.ClubManagementScreenActions
 import com.kourt.app.ui.screens.club.management.ClubManagementScreenUiState
 import com.kourt.app.ui.screens.club.management.EventStatusFilter
@@ -67,11 +68,12 @@ class ClubManagementViewModel @Inject constructor(
 
             runCatching {
                 val activeClubId = appPreferencesRepository.activeClubId
-                val club = if (activeClubId.isNotEmpty()) {
-                    clubRepository.getClub(activeClubId)
-                } else {
-                    clubRepository.getClubByAdminId(uid)
+                // The stored club may have been deleted; drop it and fall back to the admin lookup.
+                val activeClub = activeClubId.takeIf { it.isNotEmpty() }?.let { clubRepository.getClub(it) }
+                if (activeClub == null && activeClubId.isNotEmpty()) {
+                    appPreferencesRepository.activeClubId = ""
                 }
+                val club = activeClub ?: clubRepository.getClubByAdminId(uid)
                 if (club == null) {
                     uiState = uiState.copy(isLoading = false, error = R.string.error_no_club_found)
                     return@launch
@@ -145,14 +147,25 @@ class ClubManagementViewModel @Inject constructor(
                     val (primaryMember, _) = entries.first()
                     val user = userMap[userId] ?: return@mapNotNull null
                     val teamNames = entries.map { it.second }
+                    val memberships = entries.map { (member, teamName) ->
+                        ClubMembership(
+                            memberId = member.id,
+                            teamId = member.teamId,
+                            teamName = teamName,
+                            role = member.role.lowercase(),
+                        )
+                    }
+                    // Badge shows the highest-ranked role across all of the user's teams.
+                    val topRole = memberships.minBy { ROLE_ORDER[it.role] ?: Int.MAX_VALUE }.role
 
                     ClubMemberUiItem(
                         memberId = primaryMember.id,
                         userId = userId,
                         displayName = user.displayName.ifBlank { user.email },
-                        role = primaryMember.role.lowercase(),
-                        subtitle = buildSubtitle(primaryMember.role, teamNames, user.displayName),
+                        role = topRole,
+                        subtitle = buildSubtitle(topRole, teamNames, user.displayName),
                         avatarUrl = user.avatarId.ifBlank { user.photoURL },
+                        memberships = memberships,
                     )
                 }
 
@@ -201,12 +214,14 @@ class ClubManagementViewModel @Inject constructor(
         return members.filter { item ->
             val matchesQuery = trimmed.isEmpty() ||
                     item.displayName.contains(trimmed, ignoreCase = true)
+            // A user matches a role filter if they hold that role in any of their teams.
+            val hasRole = { role: String -> item.memberships.any { it.role == role } }
             val matchesFilter = when (filter) {
                 MemberFilter.ALL -> true
-                MemberFilter.COACH -> item.role == "coach"
-                MemberFilter.PLAYER -> item.role == "player"
-                MemberFilter.PARENT -> item.role == "parent"
-                MemberFilter.ASSISTANT -> item.role == "assistant"
+                MemberFilter.COACH -> hasRole("coach")
+                MemberFilter.PLAYER -> hasRole("player")
+                MemberFilter.PARENT -> hasRole("parent")
+                MemberFilter.ASSISTANT -> hasRole("assistant")
             }
             matchesQuery && matchesFilter
         }.sortedBy { ROLE_ORDER[it.role] ?: Int.MAX_VALUE }
@@ -240,23 +255,16 @@ class ClubManagementViewModel @Inject constructor(
         uiState = uiState.copy(memberForAssignTeam = member)
     }
 
+    /** Team picked — open the role sheet, preselecting the member's current role in that team. */
     override fun onAssignTeamSelected(memberId: String, teamId: String) {
         val member = uiState.memberForAssignTeam ?: return
-        uiState = uiState.copy(memberForAssignTeam = null)
-        viewModelScope.launch {
-            runCatching {
-                teamMemberRepository.createMember(
-                    com.kourt.app.data.model.TeamMember(
-                        userId = member.userId,
-                        teamId = teamId,
-                        role = member.role,
-                    )
-                )
-                Log.d(TAG, "Assigned userId=${member.userId} to teamId=$teamId")
-            }.onFailure { e ->
-                Log.e(TAG, "Failed to assign member to team", e)
-            }
-        }
+        val currentRole = member.memberships.find { it.teamId == teamId }?.role
+        uiState = uiState.copy(
+            memberForAssignTeam = null,
+            memberForChangeRole = member,
+            roleTeamId = teamId,
+            selectedRole = currentRole ?: "player",
+        )
     }
 
     override fun onAssignTeamDismiss() {
@@ -311,6 +319,51 @@ class ClubManagementViewModel @Inject constructor(
 
     override fun onRemoveDismiss() {
         uiState = uiState.copy(memberForRemove = null)
+    }
+
+    // ── Role sheet ────────────────────────────────────────────────────────────
+
+    override fun onRoleSelected(role: String) {
+        uiState = uiState.copy(selectedRole = role)
+    }
+
+    /**
+     * Saves the picked role for the picked team: updates the existing membership's role,
+     * or creates a new membership. The rules only allow `role` to change on an existing
+     * TeamMember doc, so an existing membership must never be overwritten with `set`.
+     */
+    override fun onChangeRoleConfirm() {
+        val member = uiState.memberForChangeRole ?: return
+        val teamId = uiState.roleTeamId ?: return
+        val newRole = uiState.selectedRole ?: return
+        uiState = uiState.copy(memberForChangeRole = null, roleTeamId = null, selectedRole = null)
+
+        val existing = member.memberships.find { it.teamId == teamId }
+        if (existing?.role == newRole) return
+
+        viewModelScope.launch {
+            runCatching {
+                if (existing != null) {
+                    teamMemberRepository.changeRole(existing.memberId, newRole)
+                } else {
+                    teamMemberRepository.createMember(
+                        com.kourt.app.data.model.TeamMember(
+                            userId = member.userId,
+                            teamId = teamId,
+                            role = newRole,
+                        )
+                    )
+                }
+                Log.d(TAG, "Set role: userId=${member.userId}, teamId=$teamId, role=$newRole")
+                loadMembers(uiState.teams)
+            }.onFailure { e ->
+                Log.e(TAG, "Failed to set role", e)
+            }
+        }
+    }
+
+    override fun onChangeRoleDismiss() {
+        uiState = uiState.copy(memberForChangeRole = null, roleTeamId = null, selectedRole = null)
     }
 
     // ── Events tab ────────────────────────────────────────────────────────────

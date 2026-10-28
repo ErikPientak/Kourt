@@ -332,12 +332,16 @@ fun TeamCard(
     modifier: Modifier = Modifier,
     accentColor: String = "",
     initials: String = "",
+    badge: String? = null,
+    badgeColor: Color = Color.Transparent,
     onMenuClick: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null,
 ) {
     KourtCard(
         title = teamName,
         subtitle = headCoach,
+        badge = badge,
+        badgeColor = badgeColor,
         leadingContent = {
             if (accentColor.isNotBlank()) {
                 KourtTeamAvatar(initials = initials, accentColor = accentColor)

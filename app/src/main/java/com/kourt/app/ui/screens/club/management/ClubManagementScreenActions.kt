@@ -35,6 +35,11 @@ interface ClubManagementScreenActions {
     fun onRemoveConfirm(memberId: String)
     fun onRemoveDismiss()
 
+    // ── Role sheet (opened after picking a team in Assign to Team) ─────────────
+    fun onRoleSelected(role: String)
+    fun onChangeRoleConfirm()
+    fun onChangeRoleDismiss()
+
     // ── Events tab ────────────────────────────────────────────────────────────
     fun onEventStatusFilterChange(filter: EventStatusFilter)
     fun onEventMenuClick(eventId: String)
