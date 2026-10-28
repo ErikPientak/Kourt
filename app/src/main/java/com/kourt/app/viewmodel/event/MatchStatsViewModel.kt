@@ -18,14 +18,13 @@ import com.kourt.app.data.local.PendingMatchStatsEntity
 import com.kourt.app.data.model.MatchStats
 import com.kourt.app.data.model.PlayerMatchStat
 import com.kourt.app.data.model.PlayerStats
+import com.kourt.app.data.model.TeamStats
 import com.kourt.app.data.repository.remote.AuthRepository
 import com.kourt.app.data.repository.remote.EventRepository
 import com.kourt.app.data.repository.local.LocalMatchStatsRepository
 import com.kourt.app.data.repository.remote.MatchStatsRepository
 import com.kourt.app.data.repository.remote.NominationRepository
-import com.kourt.app.data.repository.remote.PlayerStatsRepository
 import com.kourt.app.data.repository.remote.TeamMemberRepository
-import com.kourt.app.data.repository.remote.TeamStatsRepository
 import com.kourt.app.data.repository.remote.UserRepository
 import com.kourt.app.ui.screens.event.matchstats.MatchStatsScreenActions
 import com.kourt.app.ui.screens.event.matchstats.MatchStatsScreenUiState
@@ -39,6 +38,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.min
+import kotlin.math.sign
 
 private const val TAG = "MatchStatsViewModel"
 
@@ -50,9 +50,7 @@ class MatchStatsViewModel @Inject constructor(
     private val nominationRepository: NominationRepository,
     private val matchStatsRepository: MatchStatsRepository,
     private val teamMemberRepository: TeamMemberRepository,
-    private val teamStatsRepository: TeamStatsRepository,
     private val userRepository: UserRepository,
-    private val playerStatsRepository: PlayerStatsRepository,
     private val localMatchStatsRepository: LocalMatchStatsRepository,
     private val workManager: WorkManager,
 ) : ViewModel(), MatchStatsScreenActions {
@@ -217,8 +215,6 @@ class MatchStatsViewModel @Inject constructor(
                 )
             }
 
-            val existingTeamStats = teamStatsRepository.getTeamStats(teamId)
-
             val toSave = MatchStats(
                 id = existingMatchStats?.id ?: "",
                 eventId = eventId,
@@ -231,45 +227,11 @@ class MatchStatsViewModel @Inject constructor(
             )
 
             runCatching {
-                //Update Match
-                matchStatsRepository.updateMatchStats(toSave)
+                // Match, team and player totals in one transaction, applied as a delta
+                // against the previously stored match stats so re-saves don't double-count.
+                matchStatsRepository.saveMatchStatsWithTotals(teamId, toSave)
                 Log.d(TAG, "${if (existingMatchStats != null) "Updated" else "Created"} match stats for event $eventId")
 
-                //Update Team Stats
-                teamStatsRepository.updateTeamStats(
-                    existingTeamStats!!.copy(
-                        matchesPlayed = existingTeamStats.matchesPlayed + 1,
-                        totalPointsScored = existingTeamStats.totalPointsScored + toSave.myTeamScore,
-                        totalPointsAgainst = existingTeamStats.totalPointsAgainst + toSave.opponentScore,
-                        wins = if (toSave.myTeamScore > toSave.opponentScore) existingTeamStats.wins + 1 else existingTeamStats.wins,
-                        losses = if (toSave.myTeamScore < toSave.opponentScore) existingTeamStats.losses + 1 else existingTeamStats.losses,
-                        draws = if (toSave.myTeamScore == toSave.opponentScore) existingTeamStats.draws + 1 else existingTeamStats.draws,
-                        updatedAt = now,
-                    )
-                )
-                //Update Player Stats
-                uiState.players.forEach { player ->
-                    val existing = playerStatsRepository.getPlayerStats(player.teamMemberId, teamId)
-                        ?: PlayerStats(teamMemberId = player.teamMemberId, teamId = teamId)
-                    // Use the previously saved match stat as the baseline so re-saves apply
-                    // only the delta rather than adding the full value every time.
-                    val prev = existingMatchStats?.playerStats?.get(player.teamMemberId)
-                    playerStatsRepository.updatePlayerStats(
-                        existing.copy(
-                            matchesPlayed            = existing.matchesPlayed + if (prev == null) 1 else 0,
-                            totalPoints              = existing.totalPoints + player.points - (prev?.points ?: 0),
-                            totalRebounds            = existing.totalRebounds + player.rebounds - (prev?.rebounds ?: 0),
-                            totalAssists             = existing.totalAssists + player.assists - (prev?.assists ?: 0),
-                            totalFouls               = existing.totalFouls + player.fouls - (prev?.fouls ?: 0),
-                            totalFreeThrowsAttempted = existing.totalFreeThrowsAttempted + player.freeThrowsAttempted - (prev?.freeThrowsAttempted ?: 0),
-                            totalFreeThrowsMade      = existing.totalFreeThrowsMade + player.freeThrowsMade - (prev?.freeThrowsMade ?: 0),
-                            updatedAt                = now,
-                        )
-                    )
-                }
-                Log.d(TAG, "Updated player stats for ${uiState.players.size} players")
-
-                // Keep in-memory baseline current so further saves this session use correct deltas
                 existingMatchStats = toSave
                 localMatchStatsRepository.deleteDraft(eventId)
             }.onFailure { e ->
@@ -339,4 +301,53 @@ class MatchStatsViewModel @Inject constructor(
         workManager.enqueueUniqueWork("sync_match_stats", ExistingWorkPolicy.KEEP, request)
         Log.d(TAG, "Enqueued SyncMatchStatsWorker")
     }
+}
+
+// ── Season totals ─────────────────────────────────────────────────────────────
+// Season totals are kept by applying the *difference* between a match's previously
+// saved stats and its new stats. A first save has no previous stats, so the whole
+// match is added; re-saving the same match only adds what changed.
+// Top-level (not in the class) because MatchStatsRepository's save transaction and
+// SyncMatchStatsWorker apply the same calculation.
+
+/** 1 = win, 0 = draw, -1 = loss, from my team's point of view. */
+private fun MatchStats.outcome(): Int = (myTeamScore - opponentScore).sign
+
+/** Applies [current] to the team totals, replacing whatever [previous] contributed. */
+internal fun TeamStats.applyMatch(previous: MatchStats?, current: MatchStats, now: Timestamp): TeamStats {
+    // +1 if the new result is [result], -1 if the old one was, so a changed result moves over.
+    fun resultDelta(result: Int): Int =
+        (if (current.outcome() == result) 1 else 0) -
+            (if (previous?.outcome() == result) 1 else 0)
+
+    return copy(
+        matchesPlayed = matchesPlayed + if (previous == null) 1 else 0,
+        totalPointsScored = totalPointsScored + current.myTeamScore - (previous?.myTeamScore ?: 0),
+        totalPointsAgainst = totalPointsAgainst + current.opponentScore - (previous?.opponentScore ?: 0),
+        wins = wins + resultDelta(1),
+        draws = draws + resultDelta(0),
+        losses = losses + resultDelta(-1),
+        updatedAt = now,
+    )
+}
+
+/**
+ * Applies one player's line for a match. `null` means the player wasn't in that version
+ * of the match, so a player dropped from the stats on an edit is subtracted again.
+ */
+internal fun PlayerStats.applyMatch(previous: PlayerMatchStat?, current: PlayerMatchStat?, now: Timestamp): PlayerStats {
+    val old = previous ?: PlayerMatchStat()
+    val new = current ?: PlayerMatchStat()
+    val playedDelta = (if (current != null) 1 else 0) - (if (previous != null) 1 else 0)
+
+    return copy(
+        matchesPlayed = matchesPlayed + playedDelta,
+        totalPoints = totalPoints + new.points - old.points,
+        totalRebounds = totalRebounds + new.rebounds - old.rebounds,
+        totalAssists = totalAssists + new.assists - old.assists,
+        totalFouls = totalFouls + new.fouls - old.fouls,
+        totalFreeThrowsAttempted = totalFreeThrowsAttempted + new.freeThrowsAttempted - old.freeThrowsAttempted,
+        totalFreeThrowsMade = totalFreeThrowsMade + new.freeThrowsMade - old.freeThrowsMade,
+        updatedAt = now,
+    )
 }
