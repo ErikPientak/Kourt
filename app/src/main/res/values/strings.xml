@@ -361,6 +361,7 @@
     <string name="player_dashboard_rsvp_going">GOING</string>
     <string name="player_dashboard_rsvp_not_going">NOT GOING</string>
     <string name="player_dashboard_rsvp_late">LATE</string>
+    <string name="rsvp_pending_badge">RSVP</string>
 
     <!-- RSVP -->
     <string name="rsvp_going">Going</string>

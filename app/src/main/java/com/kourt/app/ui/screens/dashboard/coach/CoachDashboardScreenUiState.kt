@@ -38,6 +38,8 @@ data class EventUiItem(
     val teamId: String = "",
     val teamName: String = "",
     val teamColor: String = "",
+    /** The viewer's own RSVP ("yes", "late", "no"), or `null` if they haven't answered. Player views only. */
+    val myRsvpStatus: String? = null,
 )
 
 data class CoachDashboardScreenUiState(

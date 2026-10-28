@@ -355,6 +355,7 @@
     <string name="player_dashboard_rsvp_going">JDU</string>
     <string name="player_dashboard_rsvp_not_going">NEJDU</string>
     <string name="player_dashboard_rsvp_late">POZDĚ</string>
+    <string name="rsvp_pending_badge">ODPOVĚZ</string>
 
 
     <!-- RSVP -->

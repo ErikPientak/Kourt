@@ -43,6 +43,9 @@ class PlayerDashboardViewModel @Inject constructor(
 
     private var loadedMyRsvp: Rsvp? = null
 
+    /** eventId → the user's RSVP status, used for the pills on the upcoming event cards. */
+    private var myRsvpStatusByEvent: Map<String, String> = emptyMap()
+
     var uiState by mutableStateOf(PlayerDashboardScreenUiState())
         private set
 
@@ -85,8 +88,8 @@ class PlayerDashboardViewModel @Inject constructor(
             isLoading = false,
             isMembersLoading = false,
             upNextEvent = upNextEvent,
-            upcomingEvents = upcomingEvents,
-            allEvents = allEvents,
+            upcomingEvents = upcomingEvents.withMyRsvps(),
+            allEvents = allEvents.withMyRsvps(),
             members = members,
             filteredMembers = applyMemberFilter(members, "", MemberFilter.ALL),
             memberSearchQuery = "",
@@ -98,6 +101,24 @@ class PlayerDashboardViewModel @Inject constructor(
             myRsvpStatus = null,
         )
         if (upNextEvent != null) loadRsvpData(upNextEvent.eventId)
+        loadMyRsvpStatuses()
+    }
+
+    private fun List<EventUiItem>.withMyRsvps() = map { it.copy(myRsvpStatus = myRsvpStatusByEvent[it.eventId]) }
+
+    /** One query for all of the user's RSVPs, so every upcoming card can show its pill. */
+    private fun loadMyRsvpStatuses() {
+        val uid = authRepository.currentUser?.uid ?: return
+        viewModelScope.launch {
+            runCatching {
+                myRsvpStatusByEvent = rsvpRepository.getMyRsvps(uid).associate { it.eventId to it.status }
+                uiState = uiState.copy(
+                    upcomingEvents = uiState.upcomingEvents.withMyRsvps(),
+                    allEvents = uiState.allEvents.withMyRsvps(),
+                )
+                Log.d(logTag, "Loaded ${myRsvpStatusByEvent.size} RSVPs for event cards")
+            }.onFailure { e -> Log.w(logTag, "Failed to load my RSVPs", e) }
+        }
     }
 
     private fun loadRsvpData(eventId: String) {
@@ -191,10 +212,13 @@ class PlayerDashboardViewModel @Inject constructor(
                         Rsvp(eventId = eventId, status = status, reason = reason.orEmpty(), reasonNote = note.orEmpty(), submittedBy = uid)
                     )
                 }
+                myRsvpStatusByEvent = myRsvpStatusByEvent + (eventId to status)
                 uiState = uiState.copy(
                     isRsvpSubmitting = false,
                     myRsvpStatus = if (isUpNext) status else uiState.myRsvpStatus,
                     rsvpTargetEventId = null,
+                    upcomingEvents = uiState.upcomingEvents.withMyRsvps(),
+                    allEvents = uiState.allEvents.withMyRsvps(),
                 )
                 if (isUpNext) refreshRsvpCounts(eventId)
                 Log.d(logTag, "RSVP submitted for $eventId: status=$status reason=$reason")

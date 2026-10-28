@@ -1,6 +1,7 @@
 package com.kourt.app.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.core.graphics.toColorInt
 import androidx.compose.foundation.layout.Arrangement
@@ -32,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
@@ -64,6 +66,8 @@ fun KourtCard(
     modifier: Modifier = Modifier,
     badge: String? = null,
     badgeColor: Color = Color.Transparent,
+    /** Outlined instead of filled, for a badge that asks for action rather than shows a state. */
+    badgeOutlined: Boolean = false,
     titleIndicatorColor: Color? = null,
     subtitleLeadingIcon: ImageVector? = null,
     subtitleLeadingPainter: Painter? = null,
@@ -132,7 +136,7 @@ fun KourtCard(
                     )
 
                     if (badge != null) {
-                        KourtBadgePill(label = badge, color = badgeColor)
+                        KourtBadgePill(label = badge, color = badgeColor, outlined = badgeOutlined)
                     }
                 }
 
@@ -172,12 +176,16 @@ fun KourtCard(
 // ── Private helpers ───────────────────────────────────────────────────────────
 
 @Composable
-private fun KourtBadgePill(label: String, color: Color) {
+private fun KourtBadgePill(label: String, color: Color, outlined: Boolean = false) {
+    val shape = RoundedCornerShape(50.dp)
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
-            .clip(RoundedCornerShape(50.dp))
-            .background(color.copy(alpha = 0.15f))
+            .clip(shape)
+            .then(
+                if (outlined) Modifier.border(1.dp, color, shape)
+                else Modifier.background(color.copy(alpha = 0.15f))
+            )
             .padding(horizontal = 8.dp, vertical = 4.dp),
     ) {
         Text(
@@ -434,6 +442,10 @@ fun EventCard(
     teamBadgeColor: Color = Color.Transparent,
     showChevron: Boolean = true,
     showMenu: Boolean = false,
+    /** Show the viewer's RSVP as the badge (replaces [teamBadge]) on upcoming events. */
+    showRsvpStatus: Boolean = false,
+    /** "yes", "late", "no", or `null` when the viewer hasn't answered yet. */
+    rsvpStatus: String? = null,
     onMenuClick: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null,
 ) {
@@ -443,6 +455,14 @@ fun EventCard(
                  (epochDay >= 0 && epochDay < today && !isCancelled)
 
     val cardAlpha = if (isCancelled || isPast) 0.80f else 1f
+
+    // Answered: filled pill with the answer. Not answered: outlined "RSVP" prompt.
+    // Nothing to answer on past or cancelled events, so no pill there.
+    val rsvpBadge = if (showRsvpStatus && !isCancelled && !isPast) {
+        rsvpStatus?.let { rsvpStatusLabelAndColor(it) }
+            ?: (stringResource(R.string.rsvp_pending_badge) to MaterialTheme.colorScheme.primary)
+    } else null
+    val rsvpPending = rsvpBadge != null && rsvpStatus == null
 
     KourtCard(
         title = title,
@@ -455,8 +475,9 @@ fun EventCard(
             )
         },
         modifier = modifier.alpha(cardAlpha),
-        badge = teamBadge,
-        badgeColor = teamBadgeColor,
+        badge = rsvpBadge?.first ?: teamBadge,
+        badgeColor = rsvpBadge?.second ?: teamBadgeColor,
+        badgeOutlined = rsvpPending,
         titleIndicatorColor = if (isCancelled || isPast) null else eventTypeColor(eventType),
         titleTextDecoration = if (isCancelled) TextDecoration.LineThrough else null,
         subtitleLeadingIcon = Icons.Filled.DateRange,

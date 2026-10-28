@@ -170,7 +170,7 @@ private fun PlayerDashboardContent(
                         onLogAttendance = actions::onUpdateAttendanceForEvent,
                         onLogStatistics = actions::onUpdateAttendanceForEvent,
                         onCardClicked = actions::onCardClicked,
-                        ctaTextOverride = stringResource(R.string.player_dashboard_update_attendance),
+                        showRsvp = true,
                     )
                     TAB_ROSTER -> MembersTab(
                         uiState = ClubManagementScreenUiState(

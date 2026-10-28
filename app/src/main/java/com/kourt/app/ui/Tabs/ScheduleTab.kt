@@ -21,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kourt.app.R
+import com.kourt.app.ui.components.EventCard
 import com.kourt.app.ui.components.KourtCalendar
 import com.kourt.app.ui.components.ScheduleEventCard
 import com.kourt.app.ui.screens.dashboard.coach.CoachDashboardScreenUiState
@@ -40,6 +41,8 @@ fun ScheduleTab(
     onShowStatistics: (String) -> Unit = {},
     onCardClicked: (String) -> Unit,
     ctaTextOverride: String? = null,
+    /** Player schedule: show the compact home-tab card with the RSVP pill instead of coach CTAs. */
+    showRsvp: Boolean = false,
 ) {
     val locale = Locale.getDefault()
     val pattern = remember(locale) {
@@ -121,6 +124,24 @@ fun ScheduleTab(
                     val isPastMatch = event.type.lowercase() == "match" &&
                         event.epochDay >= 0 && event.epochDay < today
                     val hasStats = event.eventId in uiState.matchStatsEventIds
+
+                    if (showRsvp) {
+                        EventCard(
+                            title = event.title,
+                            eventType = event.type,
+                            status = event.status,
+                            epochDay = event.epochDay,
+                            dayOfWeek = event.dayOfWeek,
+                            dayOfMonth = event.dayOfMonth,
+                            startTime = event.startTime,
+                            location = event.location,
+                            showChevron = true,
+                            showRsvpStatus = true,
+                            rsvpStatus = event.myRsvpStatus,
+                            onClick = { onCardClicked(event.eventId) },
+                        )
+                        return@items
+                    }
 
                     ScheduleEventCard(
                         event = event,

@@ -16,6 +16,11 @@ open class RsvpRepository @Inject constructor(
         collection.whereEqualTo("eventId", eventId).get().await()
             .toObjects(Rsvp::class.java)
 
+    /** All RSVPs the user submitted; the rules allow reading your own RSVPs directly. */
+    suspend fun getMyRsvps(uid: String): List<Rsvp> =
+        collection.whereEqualTo("submittedBy", uid).get().await()
+            .toObjects(Rsvp::class.java)
+
     suspend fun getMyRsvp(eventId: String, uid: String): Rsvp? =
         collection
             .whereEqualTo("eventId", eventId)

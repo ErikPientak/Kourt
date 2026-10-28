@@ -204,12 +204,8 @@ private fun AttendanceSection(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                 )
                 if (myRsvpStatus != null) {
-                    val (rsvpText, rsvpColor) = when (myRsvpStatus) {
-                        "yes"   -> stringResource(R.string.player_dashboard_rsvp_going) to Color(0xFF22C55E)
-                        "Late" -> stringResource(R.string.player_dashboard_rsvp_late) to Color(0xFFF97316)
-                        "no"    -> stringResource(R.string.player_dashboard_rsvp_not_going) to Color(0xFFEF4444)
-                        else    -> "—" to MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                    }
+                    val (rsvpText, rsvpColor) = rsvpStatusLabelAndColor(myRsvpStatus)
+                        ?: ("—" to MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
                     Text(
                         text = rsvpText,
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),

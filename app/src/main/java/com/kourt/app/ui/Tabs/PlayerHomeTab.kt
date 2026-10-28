@@ -86,6 +86,8 @@ fun PlayerHomeTab(
                     startTime = event.startTime,
                     location = event.location,
                     showChevron = true,
+                    showRsvpStatus = true,
+                    rsvpStatus = event.myRsvpStatus,
                     onClick = { onCardClicked(event.eventId) },
                 )
             }
