@@ -86,6 +86,13 @@ class AddEditEventViewModel @Inject constructor(
     override fun onDatePickerOpen() { uiState = uiState.copy(isDatePickerOpen = true) }
     override fun onDatePickerDismiss() { uiState = uiState.copy(isDatePickerOpen = false) }
 
+    override fun onEndDateSelected(epochDay: Long) {
+        uiState = uiState.copy(seriesEndEpochDay = epochDay, isEndDatePickerOpen = false, error = null)
+    }
+
+    override fun onEndDatePickerOpen() { uiState = uiState.copy(isEndDatePickerOpen = true) }
+    override fun onEndDatePickerDismiss() { uiState = uiState.copy(isEndDatePickerOpen = false) }
+
     override fun onStartTimeSelected(time: String) {
         uiState = uiState.copy(startTime = time, isStartTimePickerOpen = false, error = null)
     }
@@ -103,6 +110,7 @@ class AddEditEventViewModel @Inject constructor(
     override fun onRepeatToggle(enabled: Boolean) {
         uiState = uiState.copy(
             repeatDays = if (!enabled) emptySet() else uiState.repeatDays,
+            seriesEndEpochDay = if (!enabled) null else uiState.seriesEndEpochDay,
         )
     }
 
@@ -145,6 +153,30 @@ class AddEditEventViewModel @Inject constructor(
             uiState = uiState.copy(error = R.string.error_event_time_required)
             return
         }
+
+        // A new repeating event covers Starts on … Ends on instead of a single date.
+        val isNewSeries = !state.isEditMode && state.repeatDays.isNotEmpty()
+        val occurrenceDays = if (isNewSeries) {
+            val endDay = state.seriesEndEpochDay
+            val seriesError = when {
+                endDay == null -> R.string.error_event_date_required
+                endDay < state.selectedEpochDay -> R.string.error_event_end_before_start
+                endDay - state.selectedEpochDay > MAX_SERIES_SPAN_DAYS -> R.string.error_event_range_too_long
+                else -> null
+            }
+            if (seriesError != null) {
+                uiState = uiState.copy(error = seriesError)
+                return
+            }
+            val days = calculateOccurrenceDates(state.selectedEpochDay, endDay!!, state.repeatDays)
+            if (days.isEmpty()) {
+                uiState = uiState.copy(error = R.string.error_event_no_occurrences)
+                return
+            }
+            days
+        } else {
+            listOf(state.selectedEpochDay)
+        }
         val uid = authRepository.currentUser?.uid ?: run {
             uiState = uiState.copy(error = R.string.error_not_signed_in)
             return
@@ -163,12 +195,7 @@ class AddEditEventViewModel @Inject constructor(
                     Log.d(TAG, "Event updated: $eventId")
                     uiState = uiState.copy(isLoading = false, isSaved = true)
                 } else {
-                    val newSeriesId = if (state.repeatDays.isNotEmpty()) UUID.randomUUID().toString() else ""
-                    val occurrenceDays = if (state.repeatDays.isNotEmpty()) {
-                        calculateOccurrenceDates(state.selectedEpochDay, state.repeatDays)
-                    } else {
-                        listOf(state.selectedEpochDay)
-                    }
+                    val newSeriesId = if (isNewSeries) UUID.randomUUID().toString() else ""
                     val event = buildEvent(state, uid).copy(id = "", seriesId = newSeriesId)
                     var createdMatchId = ""
                     occurrenceDays.forEach { day ->
@@ -286,32 +313,24 @@ class AddEditEventViewModel @Inject constructor(
 
     private fun epochDayToTimestamp(epochDay: Long): Timestamp =
         Timestamp(Date(TimeUnit.DAYS.toMillis(epochDay)))
+}
 
-    private fun calculateOccurrenceDates(
-        startEpochDay: Long,
-        repeatDays: Set<Int>,
-        weeksToCreate: Int = 12
-    ): List<Long> {
-        val dates = mutableListOf<Long>()
-        val startDate = LocalDate.ofEpochDay(startEpochDay)
-        val endLimit = startDate.plusWeeks(weeksToCreate.toLong())
+/** Longest allowed series, so a mis-tapped end date can't create hundreds of events. */
+private const val MAX_SERIES_SPAN_DAYS = 366L
 
-        var currentDate = startDate
-
-        // We loop day-by-day until we hit the 12-week limit
-        while (currentDate.isBefore(endLimit) || currentDate.isEqual(endLimit)) {
-
-            // java.time.DayOfWeek: 1 (Mon) ... 7 (Sun)
-            // Ensure your UI/Picker also uses 1-7!
-            val currentDayOfWeek = currentDate.dayOfWeek.value
-
-            if (repeatDays.contains(currentDayOfWeek)) {
-                dates.add(currentDate.toEpochDay())
-            }
-
-            // Increment by exactly 1 day every time
-            currentDate = currentDate.plusDays(1)
-        }
-        return dates
-    }
+/**
+ * Every day from [startEpochDay] to [endEpochDay] (both inclusive) whose ISO day of week
+ * (1 = Monday … 7 = Sunday, as [java.time.DayOfWeek.getValue]) is in [repeatDays].
+ */
+internal fun calculateOccurrenceDates(
+    startEpochDay: Long,
+    endEpochDay: Long,
+    repeatDays: Set<Int>,
+): List<Long> {
+    val endDate = LocalDate.ofEpochDay(endEpochDay)
+    return generateSequence(LocalDate.ofEpochDay(startEpochDay)) { it.plusDays(1) }
+        .takeWhile { !it.isAfter(endDate) }
+        .filter { it.dayOfWeek.value in repeatDays }
+        .map { it.toEpochDay() }
+        .toList()
 }

@@ -285,6 +285,8 @@
     <string name="event_session_name_placeholder_practice">např. Nácvik střelby</string>
     <string name="event_session_name_placeholder_match">např. Přátelské utkání</string>
     <string name="event_date_label">Datum</string>
+    <string name="event_starts_on_label">Začíná</string>
+    <string name="event_ends_on_label">Končí</string>
     <string name="event_start_time_label">Čas zahájení</string>
     <string name="event_end_time_label">Čas ukončení</string>
     <string name="event_repeat_weekly_label">Opakovat týdně</string>
@@ -306,6 +308,9 @@
     <string name="event_nomination_row">Nominovat hráče nyní</string>
     <string name="error_event_name_required">Název aktivity je povinný</string>
     <string name="error_event_date_required">Vyberte prosím datum</string>
+    <string name="error_event_end_before_start">Datum konce nemůže být před datem začátku</string>
+    <string name="error_event_no_occurrences">Žádný z vybraných dnů nespadá do zvoleného období</string>
+    <string name="error_event_range_too_long">Opakovaná událost může trvat nejvýše jeden rok</string>
     <string name="error_event_time_required">Čas začátku a konce je povinný</string>
     <string name="event_repeat_occurs_summary">Probíhá každé %1$s</string>
     <string name="dialog_done">Hotovo</string>
