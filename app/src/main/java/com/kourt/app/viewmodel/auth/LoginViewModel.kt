@@ -34,6 +34,7 @@ class LoginViewModel @Inject constructor(
         private set
 
     override fun onSignInWithEmail(email: String, password: String) {
+        if (uiState.isLoading) return
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true, error = null)
             val result = authRepository.signInWithEmail(email, password)
@@ -49,6 +50,7 @@ class LoginViewModel @Inject constructor(
     }
 
     override fun onSignInWithGoogle(context: Context) {
+        if (uiState.isLoading) return
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true, error = null)
             val result = authRepository.signInWithGoogle(context)

@@ -43,6 +43,7 @@ class SetupViewModel @Inject constructor(
     }
 
     override fun onJoinTeam() {
+        if (uiState.isLoading) return
         val code = uiState.joinCode.trim()
         if (code.isBlank()) {
             uiState = uiState.copy(error = R.string.error_join_code_required)

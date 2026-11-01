@@ -407,6 +407,7 @@
     <string name="match_stats_opponent_label">OPPONENT</string>
     <string name="match_stats_opponent_scoring_label">OPPONENT SCORING</string>
     <string name="match_stats_save_button">Save Match Stats</string>
+    <string name="match_stats_saved_offline">Saved offline. It will sync when you\'re back online.</string>
 
     <!-- Attendance -->
     <string name="attendance_screen_title">Log Attendance</string>

@@ -402,6 +402,7 @@
     <string name="match_stats_opponent_label">SOUPEŘ</string>
     <string name="match_stats_opponent_scoring_label">BODY SOUPEŘE</string>
     <string name="match_stats_save_button">Uložit statistiky zápasu</string>
+    <string name="match_stats_saved_offline">Uloženo offline. Synchronizuje se po připojení k internetu.</string>
 
     <!-- Attendance -->
     <string name="attendance_screen_title">Zapsat docházku</string>

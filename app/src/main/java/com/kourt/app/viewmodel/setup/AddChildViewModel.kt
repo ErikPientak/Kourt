@@ -50,6 +50,7 @@ class AddChildViewModel @Inject constructor(
     }
 
     override fun onSubmit() {
+        if (uiState.isLoading) return
         val name = uiState.displayName.trim()
         if (name.isBlank()) {
             uiState = uiState.copy(profileError = R.string.error_display_name_required)
@@ -85,6 +86,7 @@ class AddChildViewModel @Inject constructor(
     }
 
     override fun onJoinTeam() {
+        if (uiState.isLoading) return
         val code = uiState.joinCode.trim()
         if (code.isBlank()) {
             uiState = uiState.copy(joinError = R.string.error_join_code_required)

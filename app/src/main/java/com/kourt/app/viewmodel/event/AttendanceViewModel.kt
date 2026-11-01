@@ -11,15 +11,11 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
 import com.kourt.app.R
 import com.kourt.app.data.model.Attendance
-import com.kourt.app.data.model.PlayerStats
-import com.kourt.app.data.model.TeamStats
 import com.kourt.app.data.repository.remote.AttendanceRepository
 import com.kourt.app.data.repository.remote.AuthRepository
 import com.kourt.app.data.repository.remote.EventRepository
-import com.kourt.app.data.repository.remote.PlayerStatsRepository
 import com.kourt.app.data.repository.remote.RsvpRepository
 import com.kourt.app.data.repository.remote.TeamMemberRepository
-import com.kourt.app.data.repository.remote.TeamStatsRepository
 import com.kourt.app.data.repository.remote.UserRepository
 import com.kourt.app.ui.screens.event.attendance.AttendanceFilter
 import com.kourt.app.ui.screens.event.attendance.AttendanceMemberUiItem
@@ -44,8 +40,6 @@ class AttendanceViewModel @Inject constructor(
     private val teamMemberRepository: TeamMemberRepository,
     private val userRepository: UserRepository,
     private val attendanceRepository: AttendanceRepository,
-    private val playerStatsRepository: PlayerStatsRepository,
-    private val teamStatsRepository: TeamStatsRepository,
 ) : ViewModel(), AttendanceScreenActions {
 
     private val eventId: String = savedStateHandle["eventId"] ?: ""
@@ -92,9 +86,9 @@ class AttendanceViewModel @Inject constructor(
                     val formatter = java.text.SimpleDateFormat(pattern, locale)
                     val dateLabel = formatter.format(Date(event.date.seconds * 1000))
 
-                    // Fetch team members with player/parent roles
+                    // Only players attend; parents are on the team to RSVP for their children.
                     val teamMembers = teamMemberRepository.getMembersByTeam(event.teamId)
-                        .filter { it.role in setOf("player", "parent") }
+                        .filter { it.role == "player" }
 
                     // Lookup user display names and avatars
                     val userIds = teamMembers.map { it.userId }.filter { it.isNotBlank() }
@@ -112,7 +106,7 @@ class AttendanceViewModel @Inject constructor(
                     memberIdByUserId = teamMembers.associate { it.userId to it.id }
 
                     // RSVP-derived defaults (only used when no attendance doc exists)
-                    val rsvpByUserId = rsvps.associateBy { it.submittedBy }
+                    val rsvpByUserId = rsvps.associateBy { it.userId }
 
                     val memberItems = teamMembers.mapNotNull { member ->
                         val user = users[member.userId] ?: return@mapNotNull null
@@ -144,42 +138,6 @@ class AttendanceViewModel @Inject constructor(
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private suspend fun updateStats() {
-        val membersWithStatus = uiState.members.filter { it.status != null }
-        val isFirstSave = loadedAttendanceByUserId.isEmpty()
-
-        for (member in membersWithStatus) {
-            val memberId = memberIdByUserId[member.userId] ?: continue
-            val newStatus = member.status ?: continue
-            val oldStatus = loadedAttendanceByUserId[member.userId]?.status
-            if (oldStatus == newStatus) continue
-
-            val existing = playerStatsRepository.getPlayerStats(memberId, teamId)
-                ?: PlayerStats(teamMemberId = memberId, teamId = teamId)
-            var s = existing
-            when (oldStatus) {
-                "on_time"   -> s = s.copy(totalTrainingsOnTime = maxOf(0, s.totalTrainingsOnTime - 1))
-                "late"      -> s = s.copy(totalTrainingsLate = maxOf(0, s.totalTrainingsLate - 1))
-                "excused"   -> s = s.copy(totalTrainingsExcused = maxOf(0, s.totalTrainingsExcused - 1))
-                "unexcused" -> s = s.copy(totalTrainingsUnexcused = maxOf(0, s.totalTrainingsUnexcused - 1))
-            }
-            when (newStatus) {
-                "on_time"   -> s = s.copy(totalTrainingsOnTime = s.totalTrainingsOnTime + 1)
-                "late"      -> s = s.copy(totalTrainingsLate = s.totalTrainingsLate + 1)
-                "excused"   -> s = s.copy(totalTrainingsExcused = s.totalTrainingsExcused + 1)
-                "unexcused" -> s = s.copy(totalTrainingsUnexcused = s.totalTrainingsUnexcused + 1)
-            }
-            playerStatsRepository.updatePlayerStats(s.copy(updatedAt = Timestamp.now()))
-        }
-
-        if (isFirstSave && membersWithStatus.isNotEmpty()) {
-            val existing = teamStatsRepository.getTeamStats(teamId) ?: TeamStats(teamId = teamId)
-            teamStatsRepository.updateTeamStats(
-                existing.copy(totalTrainings = existing.totalTrainings + 1, updatedAt = Timestamp.now())
-            )
-        }
-    }
-
     private fun rsvpDefaultStatus(rsvpStatus: String?, reason: String?): String = when (rsvpStatus) {
         "yes", "late" -> "on_time"
         "no" -> if (reason.isNullOrBlank()) "unexcused" else "excused"
@@ -203,35 +161,30 @@ class AttendanceViewModel @Inject constructor(
     }
 
     override fun onSave() {
+        if (uiState.isSaving) return
         val uid = authRepository.currentUser?.uid
         if (uid == null) {
             uiState = uiState.copy(error = R.string.error_not_signed_in)
             return
         }
+        // One snapshot for the whole save, so edits made while it runs can't mix in.
+        val members = uiState.members
+        val previous = loadedAttendanceByUserId
 
         viewModelScope.launch {
             uiState = uiState.copy(isSaving = true, error = null)
 
             runCatching {
-                val now = Timestamp.now()
-                val membersWithStatus = uiState.members.filter { it.status != null }
-                val newLoaded = mutableMapOf<String, Attendance>()
-
-                membersWithStatus.forEach { member ->
-                    val status = member.status ?: return@forEach
-                    val existing = loadedAttendanceByUserId[member.userId]
-                    val toSave = if (existing != null) {
-                        existing.copy(status = status, updatedBy = uid, updatedAt = now)
-                    } else {
-                        Attendance(eventId = eventId, userId = member.userId, status = status, recordedBy = uid, recordedAt = now)
-                    }
-                    attendanceRepository.saveAttendance(toSave)
-                    newLoaded[member.userId] = toSave
-                }
-
-                updateStats()
-                loadedAttendanceByUserId = newLoaded
-                Log.d(TAG, "Saved attendance for ${membersWithStatus.size} members on event $eventId")
+                val plan = planAttendanceSave(eventId, members, previous, memberIdByUserId, uid, Timestamp.now())
+                attendanceRepository.saveAttendanceWithStats(
+                    teamId = teamId,
+                    upserts = plan.upserts,
+                    deletes = plan.deletes,
+                    counterDeltas = plan.counterDeltas,
+                    trainingsDelta = plan.trainingsDelta,
+                )
+                loadedAttendanceByUserId = plan.savedAfter
+                Log.d(TAG, "Saved attendance for event $eventId: ${plan.upserts.size} set, ${plan.deletes.size} removed")
                 uiState = uiState.copy(isSaving = false, isSaved = true)
             }.onFailure { e ->
                 Log.e(TAG, "Failed to save attendance for $eventId", e)
@@ -243,4 +196,77 @@ class AttendanceViewModel @Inject constructor(
     fun onSavedConsumed() {
         uiState = uiState.copy(isSaved = false)
     }
+}
+
+/** What one attendance save writes, worked out from the screen and the records loaded with it. */
+internal data class AttendanceSavePlan(
+    val upserts: List<Attendance>,
+    val deletes: List<Attendance>,
+    /** teamMemberId → PlayerStats counter field → change. */
+    val counterDeltas: Map<String, Map<String, Long>>,
+    val trainingsDelta: Long,
+    /** The event's records once the save has gone through, keyed by userId. */
+    val savedAfter: Map<String, Attendance>,
+)
+
+/**
+ * Compares each member's status on screen with the record loaded for them. Only changes are
+ * written: a new status sets the record and moves the player's counter from the old status to
+ * the new one; a cleared status deletes the record and takes its count back off.
+ * The team's training count goes up when the event gets its first record and down when the
+ * last one is removed.
+ */
+internal fun planAttendanceSave(
+    eventId: String,
+    members: List<AttendanceMemberUiItem>,
+    previous: Map<String, Attendance>,
+    memberIdByUserId: Map<String, String>,
+    uid: String,
+    now: Timestamp,
+): AttendanceSavePlan {
+    val upserts = mutableListOf<Attendance>()
+    val deletes = mutableListOf<Attendance>()
+    val counterDeltas = mutableMapOf<String, MutableMap<String, Long>>()
+
+    fun addDelta(memberId: String, status: String, delta: Long) {
+        val field = attendanceCounterField(status) ?: return
+        val deltas = counterDeltas.getOrPut(memberId) { mutableMapOf() }
+        deltas[field] = (deltas[field] ?: 0L) + delta
+    }
+
+    for (member in members) {
+        val old = previous[member.userId]
+        val newStatus = member.status
+        if (old?.status == newStatus) continue
+        val memberId = memberIdByUserId[member.userId] ?: continue
+
+        if (newStatus != null) {
+            upserts += old?.copy(status = newStatus, updatedBy = uid, updatedAt = now)
+                ?: Attendance(eventId = eventId, userId = member.userId, status = newStatus, recordedBy = uid, recordedAt = now)
+            addDelta(memberId, newStatus, 1)
+        } else if (old != null) {
+            deletes += old
+        }
+        old?.let { addDelta(memberId, it.status, -1) }
+    }
+
+    val savedAfter = previous - deletes.map { it.userId }.toSet() + upserts.associateBy { it.userId }
+    val trainingsDelta = (if (savedAfter.isNotEmpty()) 1L else 0L) - (if (previous.isNotEmpty()) 1L else 0L)
+
+    return AttendanceSavePlan(
+        upserts = upserts,
+        deletes = deletes,
+        counterDeltas = counterDeltas.filterValues { it.isNotEmpty() },
+        trainingsDelta = trainingsDelta,
+        savedAfter = savedAfter,
+    )
+}
+
+/** The PlayerStats counter an attendance status is counted in. */
+private fun attendanceCounterField(status: String): String? = when (status) {
+    "on_time" -> "totalTrainingsOnTime"
+    "late" -> "totalTrainingsLate"
+    "excused" -> "totalTrainingsExcused"
+    "unexcused" -> "totalTrainingsUnexcused"
+    else -> null
 }

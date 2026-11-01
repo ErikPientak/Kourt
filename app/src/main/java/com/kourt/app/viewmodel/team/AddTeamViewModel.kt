@@ -236,6 +236,7 @@ class AddTeamViewModel @Inject constructor(
     }
 
     override fun onSaveTeam() {
+        if (uiState.isLoading) return
         if (uiState.teamName.isBlank()) {
             uiState = uiState.copy(error = R.string.error_team_name_required)
             return

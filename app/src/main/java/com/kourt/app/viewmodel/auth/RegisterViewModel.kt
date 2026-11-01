@@ -28,6 +28,7 @@ class RegisterViewModel @Inject constructor(
         private set
 
     override fun onRegister(fullName: String, email: String, password: String, confirmPassword: String) {
+        if (uiState.isLoading) return
         if (password != confirmPassword) {
             Log.w(TAG, "Registration failed: passwords do not match")
             uiState = uiState.copy(error = R.string.error_passwords_do_not_match)

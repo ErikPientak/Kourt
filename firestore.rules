@@ -175,23 +175,26 @@ service cloud.firestore {
 
     // ── RSVP ─────────────────────────────────────────────────────────────────
 
+    // doc ID: {userId}_{eventId}, so one RSVP per person per event. userId is who it's for,
+    // submittedBy who tapped it; a parent answers for their child.
+
     match /RSVP/{rsvpId} {
       allow read: if signedIn() && (
-        resource.data.submittedBy == uid()
+        resource.data.userId == uid()
+        || resource.data.submittedBy == uid()
+        || actsFor(resource.data.userId)
         || canViewTeam(eventTeam(resource.data.eventId))
       );
 
-      allow create: if signedIn()
+      allow create, update: if signedIn()
+        && rsvpId == request.resource.data.userId + '_' + request.resource.data.eventId
         && request.resource.data.submittedBy == uid()
+        && actsFor(request.resource.data.userId)
         && isMember(eventTeam(request.resource.data.eventId));
-
-      allow update: if signedIn()
-        && resource.data.submittedBy == uid()
-        && unchanged('submittedBy')
-        && unchanged('eventId');
 
       allow delete: if signedIn() && (
         resource.data.submittedBy == uid()
+        || actsFor(resource.data.userId)
         || canManageTeam(eventTeam(resource.data.eventId))
       );
     }

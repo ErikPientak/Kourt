@@ -108,8 +108,10 @@ abstract class BaseDashboardViewModel(
                         TimeUnit.MILLISECONDS.toDays(it.date.toDate().time) >= todayEpochDay
                     }
 
-                    val upNext = futureEvents.firstOrNull { it.status.lowercase() == "upcoming" }?.toEventUiItem()
-                    val upcoming = futureEvents.drop(1).take(5).map { it.toEventUiItem() }
+                    val upNextEvent = futureEvents.firstOrNull { it.status.lowercase() == "upcoming" }
+                    val upNext = upNextEvent?.toEventUiItem()
+                    // Filter by id: the up-next event isn't always first (a cancelled one can precede it).
+                    val upcoming = futureEvents.filter { it.id != upNextEvent?.id }.take(5).map { it.toEventUiItem() }
                     val allEvents = sortedEvents.map { it.toEventUiItem() }
                     val eventDaysInView = computeEventDaysInView(allEvents, todayYear, todayMonth)
 

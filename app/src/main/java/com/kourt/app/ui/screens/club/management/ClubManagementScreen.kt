@@ -275,9 +275,9 @@ private fun ClubManagementScreenContent(
                 TAB_EVENTS -> EventsTab(
                     uiState = uiState,
                     actions = actions,
-                    onEditEvent = { navigation.navigateToEditEvent(uiState.selectedEvent?.eventId ?: "",
-                        uiState.selectedTeam?.id ?: ""
-                    ) },
+                    onEditEvent = {
+                        uiState.selectedEvent?.let { navigation.navigateToEditEvent(it.eventId, it.teamId) }
+                    },
                 )
             }
         }

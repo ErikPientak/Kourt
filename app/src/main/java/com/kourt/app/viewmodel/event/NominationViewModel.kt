@@ -102,6 +102,7 @@ class NominationViewModel @Inject constructor(
     }
 
     override fun onSave() {
+        if (uiState.isLoading) return
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true)
             runCatching {

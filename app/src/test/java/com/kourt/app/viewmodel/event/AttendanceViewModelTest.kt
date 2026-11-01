@@ -14,7 +14,7 @@ package com.kourt.app.viewmodel.event
  * Also covers:
  *   - blank eventId emits error_load_failed without launching coroutines
  *   - existing Attendance docs win over RSVP defaults
- *   - members not in {player, parent} are filtered out
+ *   - only members with the player role are listed
  *
  * Note: android.text.format.DateFormat.getBestDateTimePattern returns null on the
  * JVM (Android stub jar + isReturnDefaultValues=true). The production code
@@ -31,10 +31,8 @@ import com.kourt.app.data.model.User
 import com.kourt.app.util.FakeAttendanceRepository
 import com.kourt.app.util.FakeAuthRepository
 import com.kourt.app.util.FakeEventRepository
-import com.kourt.app.util.FakePlayerStatsRepository
 import com.kourt.app.util.FakeRsvpRepository
 import com.kourt.app.util.FakeTeamMemberRepository
-import com.kourt.app.util.FakeTeamStatsRepository
 import com.kourt.app.util.FakeUserRepository
 import com.kourt.app.util.MainCoroutineRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -58,8 +56,6 @@ class AttendanceViewModelTest {
     private lateinit var teamMemberRepository: FakeTeamMemberRepository
     private lateinit var userRepository: FakeUserRepository
     private lateinit var attendanceRepository: FakeAttendanceRepository
-    private lateinit var playerStatsRepository: FakePlayerStatsRepository
-    private lateinit var teamStatsRepository: FakeTeamStatsRepository
 
     @Before
     fun setUp() {
@@ -69,8 +65,6 @@ class AttendanceViewModelTest {
         teamMemberRepository = FakeTeamMemberRepository.create()
         userRepository = FakeUserRepository.create()
         attendanceRepository = FakeAttendanceRepository.create()
-        playerStatsRepository = FakePlayerStatsRepository.create()
-        teamStatsRepository = FakeTeamStatsRepository.create()
     }
 
     private fun newViewModel(eventId: String = EVENT_ID): AttendanceViewModel =
@@ -82,8 +76,6 @@ class AttendanceViewModelTest {
             teamMemberRepository = teamMemberRepository,
             userRepository = userRepository,
             attendanceRepository = attendanceRepository,
-            playerStatsRepository = playerStatsRepository,
-            teamStatsRepository = teamStatsRepository,
         )
 
     // ── rsvpDefaultStatus mapping ─────────────────────────────────────────────
@@ -100,10 +92,10 @@ class AttendanceViewModelTest {
         )
         val users = members.map { User(id = it.userId, displayName = it.userId) }
         val rsvps = listOf(
-            Rsvp(eventId = EVENT_ID, status = "yes",  reason = "",        submittedBy = "u_yes"),
-            Rsvp(eventId = EVENT_ID, status = "late", reason = "",        submittedBy = "u_late"),
-            Rsvp(eventId = EVENT_ID, status = "no",   reason = "injured", submittedBy = "u_no_reason"),
-            Rsvp(eventId = EVENT_ID, status = "no",   reason = "",        submittedBy = "u_no_blank"),
+            Rsvp(eventId = EVENT_ID, status = "yes",  reason = "",        userId = "u_yes"),
+            Rsvp(eventId = EVENT_ID, status = "late", reason = "",        userId = "u_late"),
+            Rsvp(eventId = EVENT_ID, status = "no",   reason = "injured", userId = "u_no_reason"),
+            Rsvp(eventId = EVENT_ID, status = "no",   reason = "",        userId = "u_no_blank"),
             // u_no_rsvp intentionally has no RSVP doc
         )
 
@@ -131,7 +123,7 @@ class AttendanceViewModelTest {
         // Arrange — exercise the else branch with an unrecognized status
         val members = listOf(TeamMember(id = "m1", userId = "u1", teamId = TEAM_ID, role = "player"))
         val users = listOf(User(id = "u1", displayName = "Alice"))
-        val rsvps = listOf(Rsvp(eventId = EVENT_ID, status = "maybe", reason = "", submittedBy = "u1"))
+        val rsvps = listOf(Rsvp(eventId = EVENT_ID, status = "maybe", reason = "", userId = "u1"))
 
         eventRepository.event = Event(id = EVENT_ID, teamId = TEAM_ID)
         attendanceRepository.attendance = emptyList()
@@ -155,7 +147,7 @@ class AttendanceViewModelTest {
         // Attendance with status="late" already exists and must win.
         val members = listOf(TeamMember(id = "m1", userId = "u1", teamId = TEAM_ID, role = "player"))
         val users = listOf(User(id = "u1", displayName = "Alice"))
-        val rsvps = listOf(Rsvp(eventId = EVENT_ID, status = "yes", submittedBy = "u1"))
+        val rsvps = listOf(Rsvp(eventId = EVENT_ID, status = "yes", userId = "u1"))
         val attendance = listOf(Attendance(eventId = EVENT_ID, userId = "u1", status = "late"))
 
         eventRepository.event = Event(id = EVENT_ID, teamId = TEAM_ID)
@@ -175,7 +167,7 @@ class AttendanceViewModelTest {
     // ── Filtering ─────────────────────────────────────────────────────────────
 
     @Test
-    fun `given members with non-player roles, then only player and parent remain`() = runTest {
+    fun `given members with non-player roles, then only players remain`() = runTest {
         // Arrange
         val members = listOf(
             TeamMember(id = "m1", userId = "u1", teamId = TEAM_ID, role = "player"),
@@ -197,7 +189,7 @@ class AttendanceViewModelTest {
 
         // Assert
         val userIds = vm.uiState.members.map { it.userId }
-        assertEquals(listOf("u1", "u2"), userIds)
+        assertEquals(listOf("u1"), userIds)
     }
 
     // ── Error handling ────────────────────────────────────────────────────────

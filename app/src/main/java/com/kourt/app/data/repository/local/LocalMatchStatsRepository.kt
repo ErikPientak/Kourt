@@ -19,6 +19,9 @@ class LocalMatchStatsRepository @Inject constructor(
 
     suspend fun deleteDraft(eventId: String) = dao.deleteByEventId(eventId)
 
+    suspend fun deleteIfUnchanged(entity: PendingMatchStatsEntity) =
+        dao.deleteIfUnchanged(entity.eventId, entity.playerStatsJson, entity.opponentScore)
+
     fun serializePlayerStats(stats: Map<String, PlayerMatchStat>): String {
         val root = JSONObject()
         stats.forEach { (memberId, stat) ->

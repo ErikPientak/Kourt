@@ -42,7 +42,6 @@ class EventDetailViewModel @Inject constructor(
 ) : ViewModel(), EventDetailScreenActions {
 
     private val eventId: String = savedStateHandle["eventId"] ?: ""
-    private var loadedMyRsvp: Rsvp? = null
 
     var uiState by mutableStateOf(EventDetailScreenUiState())
         private set
@@ -106,8 +105,7 @@ class EventDetailViewModel @Inject constructor(
                     val rsvpLate = rsvps.count { it.status == "late" }
                     val rsvpNo = rsvps.count { it.status == "no" }
 
-                    val myRsvp = rsvps.firstOrNull { it.submittedBy == uid }
-                    loadedMyRsvp = myRsvp
+                    val myRsvp = rsvps.firstOrNull { it.userId == uid }
                     val myRsvpStatus = myRsvp?.status
 
                     // Fetch user details for going/not-going members
@@ -115,7 +113,7 @@ class EventDetailViewModel @Inject constructor(
                     val notGoingRsvps = rsvps.filter { it.status == "no" }
 
                     val allRelevantUids = (goingRsvps + notGoingRsvps)
-                        .map { it.submittedBy }
+                        .map { it.userId }
                         .filter { it.isNotBlank() }
                         .distinct()
 
@@ -129,8 +127,8 @@ class EventDetailViewModel @Inject constructor(
                     val memberRoleMap = teamMembersDeferred.await().associate { it.userId to it.role }
 
                     val goingMembers = goingRsvps.mapNotNull { rsvp ->
-                        val user = userMap[rsvp.submittedBy] ?: return@mapNotNull null
-                        val memberRole = memberRoleMap[rsvp.submittedBy]
+                        val user = userMap[rsvp.userId] ?: return@mapNotNull null
+                        val memberRole = memberRoleMap[rsvp.userId]
                             ?.replaceFirstChar { it.uppercase() } ?: ""
                         RsvpMemberUiItem(
                             userId = user.id,
@@ -142,7 +140,7 @@ class EventDetailViewModel @Inject constructor(
                     }
 
                     val notGoingMembers = notGoingRsvps.mapNotNull { rsvp ->
-                        val user = userMap[rsvp.submittedBy] ?: return@mapNotNull null
+                        val user = userMap[rsvp.userId] ?: return@mapNotNull null
                         val reasonDisplay = rsvp.reason
                             .replace("_", " ")
                             .replaceFirstChar { it.uppercase() }
@@ -244,6 +242,7 @@ class EventDetailViewModel @Inject constructor(
     }
 
     private fun submitRsvp(status: String, reason: String, note: String) {
+        if (uiState.isRsvpSubmitting) return
         val uid = authRepository.currentUser?.uid ?: run {
             uiState = uiState.copy(error = R.string.error_not_signed_in)
             return
@@ -251,16 +250,10 @@ class EventDetailViewModel @Inject constructor(
         viewModelScope.launch {
             uiState = uiState.copy(isRsvpSubmitting = true, error = null)
             runCatching {
-                val existing = loadedMyRsvp
-                if (existing != null) {
-                    rsvpRepository.updateRsvp(
-                        existing.copy(status = status, reason = reason, reasonNote = note)
-                    )
-                } else {
-                    rsvpRepository.saveRsvp(
-                        Rsvp(eventId = eventId, status = status, reason = reason, reasonNote = note, submittedBy = uid)
-                    )
-                }
+                // One doc per person per event, so a repeated tap replaces instead of duplicating.
+                rsvpRepository.upsertRsvp(
+                    Rsvp(eventId = eventId, userId = uid, status = status, reason = reason, reasonNote = note, submittedBy = uid)
+                )
                 Log.d(TAG, "RSVP submitted: status=$status for event=$eventId")
                 uiState = uiState.copy(isRsvpSubmitting = false)
                 loadEventDetail()

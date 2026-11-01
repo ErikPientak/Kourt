@@ -34,6 +34,10 @@ class AddEditEventViewModel @Inject constructor(
     private val teamId: String = savedStateHandle["teamId"] ?: ""
     private val eventId: String = savedStateHandle["eventId"] ?: ""
     private var originalEpochDay: Long? = null
+    /** The stored event in edit mode; fields the form doesn't show are kept from it. */
+    private var originalEvent: Event? = null
+    /** Made once per form so a retried save can't create a second series. */
+    private val newSeriesId = UUID.randomUUID().toString()
 
     var uiState by mutableStateOf(AddEditEventScreenUiState())
         private set
@@ -46,7 +50,11 @@ class AddEditEventViewModel @Inject constructor(
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true)
             runCatching {
-                val event = eventRepository.getEvent(id) ?: return@launch
+                val event = eventRepository.getEvent(id) ?: run {
+                    uiState = uiState.copy(isLoading = false, error = R.string.error_load_failed)
+                    return@launch
+                }
+                originalEvent = event
                 val epochDay = TimeUnit.MILLISECONDS.toDays(event.date.toDate().time)
                 originalEpochDay = epochDay
                 uiState = uiState.copy(
@@ -141,6 +149,11 @@ class AddEditEventViewModel @Inject constructor(
 
     override fun onSave() {
         val state = uiState
+        if (state.isLoading) return
+        if (teamId.isBlank()) {
+            uiState = uiState.copy(error = R.string.error_generic)
+            return
+        }
         if (state.sessionName.isBlank()) {
             uiState = uiState.copy(error = R.string.error_event_name_required)
             return
@@ -195,14 +208,16 @@ class AddEditEventViewModel @Inject constructor(
                     Log.d(TAG, "Event updated: $eventId")
                     uiState = uiState.copy(isLoading = false, isSaved = true)
                 } else {
-                    val newSeriesId = if (isNewSeries) UUID.randomUUID().toString() else ""
-                    val event = buildEvent(state, uid).copy(id = "", seriesId = newSeriesId)
-                    var createdMatchId = ""
-                    occurrenceDays.forEach { day ->
-                        val newId = eventRepository.createEvent(event.copy(date = epochDayToTimestamp(day)))
-                        if (state.eventType == "match") createdMatchId = newId
-                        Log.d(TAG, "Event created: $newId")
-                    }
+                    val event = buildEvent(state, uid).copy(
+                        id = "",
+                        seriesId = if (isNewSeries) newSeriesId else "",
+                    )
+                    val newIds = eventRepository.createEvents(
+                        occurrenceDays.map { day -> event.copy(date = epochDayToTimestamp(day)) }
+                    )
+                    Log.d(TAG, "Created ${newIds.size} events")
+                    // Nominate for the first match of a new series, not the last.
+                    val createdMatchId = if (state.eventType == "match") newIds.first() else ""
                     if (createdMatchId.isNotEmpty()) {
                         uiState = uiState.copy(isLoading = false, navigateToNominationEventId = createdMatchId)
                     } else {
@@ -222,6 +237,7 @@ class AddEditEventViewModel @Inject constructor(
 
     override fun onSaveThisOnly() {
         val state = uiState
+        if (state.isLoading) return
         val uid = authRepository.currentUser?.uid ?: return
         uiState = uiState.copy(isEditScopeDialogOpen = false)
         viewModelScope.launch {
@@ -239,6 +255,7 @@ class AddEditEventViewModel @Inject constructor(
 
     override fun onSaveThisAndFollowing() {
         val state = uiState
+        if (state.isLoading) return
         val uid = authRepository.currentUser?.uid ?: return
         val origDay = originalEpochDay ?: return
         uiState = uiState.copy(isEditScopeDialogOpen = false)
@@ -287,13 +304,13 @@ class AddEditEventViewModel @Inject constructor(
         type = state.eventType,
         venueType = if (state.eventType == "match") state.venueType else "",
         opponent = if (state.eventType == "match") state.opponent.trim() else "",
-        status = "upcoming",
+        status = originalEvent?.status ?: "upcoming",
         date = epochDayToTimestamp(state.selectedEpochDay!!),
         startTime = state.startTime,
         endTime = state.endTime,
         location = state.location.trim(),
         notes = state.notes.trim(),
-        createdBy = uid,
+        createdBy = originalEvent?.createdBy ?: uid,
     )
 
     override fun onCancel() {

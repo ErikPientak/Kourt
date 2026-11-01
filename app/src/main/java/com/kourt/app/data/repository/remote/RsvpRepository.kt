@@ -16,34 +16,33 @@ open class RsvpRepository @Inject constructor(
         collection.whereEqualTo("eventId", eventId).get().await()
             .toObjects(Rsvp::class.java)
 
-    /** All RSVPs the user submitted; the rules allow reading your own RSVPs directly. */
-    suspend fun getMyRsvps(uid: String): List<Rsvp> =
-        collection.whereEqualTo("submittedBy", uid).get().await()
+    /** All RSVPs for [userId]; the rules allow reading your own (or your child's) RSVPs directly. */
+    suspend fun getMyRsvps(userId: String): List<Rsvp> =
+        collection.whereEqualTo("userId", userId).get().await()
             .toObjects(Rsvp::class.java)
 
-    suspend fun getMyRsvp(eventId: String, uid: String): Rsvp? =
+    suspend fun getMyRsvp(eventId: String, userId: String): Rsvp? =
         collection
             .whereEqualTo("eventId", eventId)
-            .whereEqualTo("submittedBy", uid)
+            .whereEqualTo("userId", userId)
             .get().await()
             .toObjects(Rsvp::class.java)
             .firstOrNull()
 
-    suspend fun saveRsvp(rsvp: Rsvp): String {
-        val ref = collection.add(rsvp).await()
-        return ref.id
-    }
-
-    suspend fun updateRsvp(rsvp: Rsvp) {
-        collection.document(rsvp.id).set(rsvp).await()
+    /**
+     * Creates or replaces the RSVP of [Rsvp.userId] for [Rsvp.eventId]. The doc ID is
+     * `{userId}_{eventId}`, so there is only ever one RSVP per person per event.
+     */
+    suspend fun upsertRsvp(rsvp: Rsvp) {
+        collection.document("${rsvp.userId}_${rsvp.eventId}").set(rsvp).await()
     }
 
     /** Scoped per event so the query stays within what security rules let the caller read. */
-    suspend fun deleteRsvpsByUserForEvents(uid: String, eventIds: List<String>) {
+    suspend fun deleteRsvpsByUserForEvents(userId: String, eventIds: List<String>) {
         eventIds.forEach { eventId ->
             val docs = collection
                 .whereEqualTo("eventId", eventId)
-                .whereEqualTo("submittedBy", uid)
+                .whereEqualTo("userId", userId)
                 .get().await()
             docs.forEach { it.reference.delete().await() }
         }

@@ -9,10 +9,15 @@ import com.google.firebase.Timestamp
 import com.kourt.app.data.model.MatchStats
 import com.kourt.app.data.repository.local.LocalMatchStatsRepository
 import com.kourt.app.data.repository.remote.MatchStatsRepository
+import com.kourt.app.viewmodel.event.isConnectionError
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CancellationException
 
 private const val TAG = "SyncMatchStatsWorker"
+
+/** After this many runs a save that still fails only on connection errors is given up. */
+private const val MAX_ATTEMPTS = 5
 
 @HiltWorker
 class SyncMatchStatsWorker @AssistedInject constructor(
@@ -26,10 +31,10 @@ class SyncMatchStatsWorker @AssistedInject constructor(
         val pending = localMatchStatsRepository.getAllPending()
         if (pending.isEmpty()) return Result.success()
 
-        var allSucceeded = true
+        var shouldRetry = false
 
         for (entity in pending) {
-            runCatching {
+            try {
                 val playerStatsMap = localMatchStatsRepository.deserializePlayerStats(entity.playerStatsJson)
 
                 val toSave = MatchStats(
@@ -45,14 +50,24 @@ class SyncMatchStatsWorker @AssistedInject constructor(
                 // from whatever is stored now, so syncing an edited match doesn't double-count.
                 matchStatsRepository.saveMatchStatsWithTotals(entity.teamId, toSave)
 
-                localMatchStatsRepository.deleteDraft(entity.eventId)
+                // A save made while this one was syncing replaced the row; keep that one.
+                localMatchStatsRepository.deleteIfUnchanged(entity)
                 Log.d(TAG, "Synced pending match stats for event ${entity.eventId}")
-            }.onFailure { e ->
-                Log.e(TAG, "Failed to sync match stats for event ${entity.eventId}", e)
-                allSucceeded = false
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                if (e.isConnectionError() && runAttemptCount < MAX_ATTEMPTS) {
+                    Log.w(TAG, "Offline while syncing match stats for event ${entity.eventId}, will retry", e)
+                    shouldRetry = true
+                } else {
+                    // Rules denial, corrupt row, or still failing after MAX_ATTEMPTS: retrying
+                    // can't help and would block the other pending rows, so drop this one.
+                    Log.e(TAG, "Dropping pending match stats for event ${entity.eventId}", e)
+                    localMatchStatsRepository.deleteIfUnchanged(entity)
+                }
             }
         }
 
-        return if (allSucceeded) Result.success() else Result.retry()
+        return if (shouldRetry) Result.retry() else Result.success()
     }
 }

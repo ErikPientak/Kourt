@@ -27,10 +27,14 @@ data class MatchStatsScreenUiState(
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val isSaved: Boolean = false,
+    /** Saved locally only; it syncs once there's a connection. */
+    val isSavedOffline: Boolean = false,
     val eventTitle: String = "",
     val opponentScore: Int = 0,
     val players: List<PlayerStatEntryUiItem> = emptyList(),
+    /** Points of players who have stats in this match but aren't listed (e.g. left the team). */
+    val hiddenPlayersPoints: Int = 0,
     @StringRes val error: Int? = null,
 ) {
-    val myTeamScore: Int get() = players.sumOf { it.points }
+    val myTeamScore: Int get() = players.sumOf { it.points } + hiddenPlayersPoints
 }

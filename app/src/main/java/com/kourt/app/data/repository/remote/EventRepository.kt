@@ -19,9 +19,17 @@ open class EventRepository @Inject constructor(
         collection.whereEqualTo("teamId", teamId).get().await()
             .toObjects(Event::class.java)
 
-    suspend fun createEvent(event: Event): String {
-        val ref = collection.add(event).await()
-        return ref.id
+    /**
+     * Creates all [events] in one batch, so a series is either fully created or not at all.
+     * Returns the new ids in the same order. A batch holds at most 500 writes; series are
+     * capped well below that (MAX_SERIES_SPAN_DAYS).
+     */
+    suspend fun createEvents(events: List<Event>): List<String> {
+        val refs = events.map { collection.document() }
+        val batch = firestore.batch()
+        refs.zip(events).forEach { (ref, event) -> batch.set(ref, event) }
+        batch.commit().await()
+        return refs.map { it.id }
     }
 
     suspend fun updateEvent(event: Event) {

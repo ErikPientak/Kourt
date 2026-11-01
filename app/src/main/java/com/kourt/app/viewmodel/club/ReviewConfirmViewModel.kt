@@ -44,6 +44,7 @@ class ReviewConfirmViewModel @Inject constructor(
         private set
 
     override fun onConfirm() {
+        if (uiState.isLoading) return
         val uid = authRepository.currentUser?.uid
         if (uid == null) {
             uiState = uiState.copy(error = R.string.error_not_signed_in)

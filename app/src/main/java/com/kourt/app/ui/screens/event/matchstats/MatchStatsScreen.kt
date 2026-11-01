@@ -1,5 +1,6 @@
 package com.kourt.app.ui.screens.event.matchstats
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -29,6 +30,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -70,9 +72,13 @@ fun MatchStatsScreen(
     viewModel: MatchStatsViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
+    val context = LocalContext.current
 
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
+            if (uiState.isSavedOffline) {
+                Toast.makeText(context, R.string.match_stats_saved_offline, Toast.LENGTH_LONG).show()
+            }
             navigation.returnBack()
             viewModel.onSavedConsumed()
         }
@@ -176,7 +182,8 @@ internal fun MatchStatsScreenContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                enabled = !uiState.isSaving,
+                // Saving before the match loaded would write stats without a team.
+                enabled = !uiState.isSaving && !uiState.isLoading && uiState.eventTitle.isNotEmpty(),
             )
         }
     }

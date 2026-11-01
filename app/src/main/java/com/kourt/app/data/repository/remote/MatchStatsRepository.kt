@@ -49,7 +49,10 @@ open class MatchStatsRepository @Inject constructor(
                 ?: TeamStats(teamId = teamId)
 
             // Players in either version, so someone removed on an edit is subtracted again.
-            val memberIds = matchStats.playerStats.keys + previous?.playerStats?.keys.orEmpty()
+            // Unchanged lines are skipped: their delta is zero, and writing them would recreate
+            // the stats doc of a player who has since left the team.
+            val memberIds = (matchStats.playerStats.keys + previous?.playerStats?.keys.orEmpty())
+                .filter { previous?.playerStats?.get(it) != matchStats.playerStats[it] }
             val playerStats = memberIds.associateWith { memberId ->
                 val ref = playerStatsCollection.document("${memberId}_${teamId}")
                 ref to (tx.get(ref).toObject(PlayerStats::class.java)

@@ -147,8 +147,8 @@ class CoachDashboardViewModel @Inject constructor(
                     .map { it.userId }
                     .toSet()
                 val yesUids = rsvps
-                    .filter { it.status == "yes" && it.submittedBy in playerUserIds }
-                    .map { it.submittedBy }
+                    .filter { it.status == "yes" && it.userId in playerUserIds }
+                    .map { it.userId }
                     .filter { it.isNotBlank() }
                 val attendees = if (yesUids.isNotEmpty()) {
                     userRepository.getUsersByIds(yesUids).map { user ->

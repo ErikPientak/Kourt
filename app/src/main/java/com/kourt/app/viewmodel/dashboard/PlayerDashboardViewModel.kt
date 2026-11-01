@@ -41,7 +41,6 @@ class PlayerDashboardViewModel @Inject constructor(
     override val memberRoles = setOf("player", "parent")
     override val logTag = "PlayerDashboardViewModel"
 
-    private var loadedMyRsvp: Rsvp? = null
 
     /** eventId → the user's RSVP status, used for the pills on the upcoming event cards. */
     private var myRsvpStatusByEvent: Map<String, String> = emptyMap()
@@ -126,7 +125,6 @@ class PlayerDashboardViewModel @Inject constructor(
         viewModelScope.launch {
             val rsvps = runCatching {
                 val myRsvp = rsvpRepository.getMyRsvp(eventId, uid)
-                loadedMyRsvp = myRsvp
                 val rsvps = rsvpRepository.getRsvpsByEvent(eventId)
                 val yes = rsvps.count { it.status == "yes" }
                 val late = rsvps.count { it.status == "late" }
@@ -145,7 +143,7 @@ class PlayerDashboardViewModel @Inject constructor(
 
             runCatching {
                 val playerUserIds = uiState.members.filter { it.role == "player" }.map { it.userId }.toSet()
-                val attendees = buildAttendees(rsvps.filter { it.status == "yes" && it.submittedBy in playerUserIds }.map { it.submittedBy }.filter { it.isNotBlank() })
+                val attendees = buildAttendees(rsvps.filter { it.status == "yes" && it.userId in playerUserIds }.map { it.userId }.filter { it.isNotBlank() })
                 if (uiState.upNextEvent?.eventId == eventId) {
                     uiState = uiState.copy(upNextAttendees = attendees)
                 }
@@ -173,7 +171,7 @@ class PlayerDashboardViewModel @Inject constructor(
 
             runCatching {
                 val playerUserIds = uiState.members.filter { it.role == "player" }.map { it.userId }.toSet()
-                val attendees = buildAttendees(rsvps.filter { it.status == "yes" && it.submittedBy in playerUserIds }.map { it.submittedBy }.filter { it.isNotBlank() })
+                val attendees = buildAttendees(rsvps.filter { it.status == "yes" && it.userId in playerUserIds }.map { it.userId }.filter { it.isNotBlank() })
                 if (uiState.upNextEvent?.eventId == eventId) {
                     uiState = uiState.copy(upNextAttendees = attendees)
                 }
@@ -196,22 +194,24 @@ class PlayerDashboardViewModel @Inject constructor(
     }
 
     private fun submitRsvp(status: String, reason: String?, note: String?) {
+        if (uiState.isRsvpSubmitting) return
         val uid = authRepository.currentUser?.uid ?: return
         val eventId = uiState.rsvpTargetEventId ?: return
         val isUpNext = eventId == uiState.upNextEvent?.eventId
         viewModelScope.launch {
             uiState = uiState.copy(isRsvpSubmitting = true)
             runCatching {
-                val existing = rsvpRepository.getMyRsvp(eventId, uid)
-                if (existing != null) {
-                    rsvpRepository.updateRsvp(
-                        existing.copy(status = status, reason = reason.orEmpty(), reasonNote = note.orEmpty())
+                // One doc per person per event, so a repeated tap replaces instead of duplicating.
+                rsvpRepository.upsertRsvp(
+                    Rsvp(
+                        eventId = eventId,
+                        userId = uid,
+                        status = status,
+                        reason = reason.orEmpty(),
+                        reasonNote = note.orEmpty(),
+                        submittedBy = uid,
                     )
-                } else {
-                    rsvpRepository.saveRsvp(
-                        Rsvp(eventId = eventId, status = status, reason = reason.orEmpty(), reasonNote = note.orEmpty(), submittedBy = uid)
-                    )
-                }
+                )
                 myRsvpStatusByEvent = myRsvpStatusByEvent + (eventId to status)
                 uiState = uiState.copy(
                     isRsvpSubmitting = false,

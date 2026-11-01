@@ -12,7 +12,9 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.kourt.app.R
 import com.kourt.app.data.local.PendingMatchStatsEntity
 import com.kourt.app.data.model.MatchStats
@@ -60,6 +62,8 @@ class MatchStatsViewModel @Inject constructor(
 
     private var teamId = ""
     private var existingMatchStats: MatchStats? = null
+    /** Last saved lines per team member; players not on screen keep theirs on the next save. */
+    private var savedPlayerStats: Map<String, PlayerMatchStat> = emptyMap()
     private var draftSaveJob: Job? = null
 
     var uiState by mutableStateOf(MatchStatsScreenUiState())
@@ -98,23 +102,31 @@ class MatchStatsViewModel @Inject constructor(
                     teamId = event.teamId
                     existingMatchStats = matchStats
 
+                    // A queued offline save is what the coach last saved, so it wins over Firestore.
+                    // A plain draft is only restored when the match has never been saved.
+                    val draft = localMatchStatsRepository.getDraft(eventId)
+                        ?.takeIf { it.isPendingSync || matchStats == null }
+                    val draftStats = draft?.let { localMatchStatsRepository.deserializePlayerStats(it.playerStatsJson) }
+                    val existingStatsByMemberId = draftStats ?: matchStats?.playerStats.orEmpty()
+                    savedPlayerStats = existingStatsByMemberId
+
+                    // Everyone nominated, plus anyone who already has stats in this match, so a
+                    // nomination change can't hide (and on save, subtract) a player who played.
                     val nominatedMemberIds: List<String> = nomination?.players ?: emptyList()
                     val allMembers = teamMemberRepository.getMembersByTeam(event.teamId)
-                    val nominatedMembers = if (nominatedMemberIds.isNotEmpty()) {
-                        allMembers.filter { it.userId in nominatedMemberIds }
-                    } else {
-                        allMembers.filter { it.role == "player" }
+                    val shownMembers = allMembers.filter { member ->
+                        member.id in existingStatsByMemberId ||
+                            if (nominatedMemberIds.isNotEmpty()) member.userId in nominatedMemberIds
+                            else member.role == "player"
                     }
-                    Log.d(TAG, "Loaded ${nominatedMembers.size} nominatedMembers")
+                    Log.d(TAG, "Loaded ${shownMembers.size} members for match stats")
 
-                    val userIds = nominatedMembers.map { it.userId }.filter { it.isNotBlank() }
+                    val userIds = shownMembers.map { it.userId }.filter { it.isNotBlank() }
                     val usersById = if (userIds.isNotEmpty()) {
                         userRepository.getUsersByIds(userIds).associateBy { it.id }
                     } else emptyMap()
 
-                    val existingStatsByMemberId = matchStats?.playerStats ?: emptyMap()
-
-                    val playerItems = nominatedMembers.mapNotNull { member ->
+                    val playerItems = shownMembers.mapNotNull { member ->
                         val user = usersById[member.userId] ?: return@mapNotNull null
                         val existing = existingStatsByMemberId[member.id]
                         PlayerStatEntryUiItem(
@@ -132,32 +144,21 @@ class MatchStatsViewModel @Inject constructor(
                         )
                     }
 
+                    // Points of players with stats who can't be shown (left the team, no user doc)
+                    // still count towards the team score.
+                    val shownIds = playerItems.map { it.teamMemberId }.toSet()
+                    val hiddenPoints = existingStatsByMemberId
+                        .filterKeys { it !in shownIds }
+                        .values.sumOf { it.points }
+
                     uiState = uiState.copy(
                         isLoading = false,
                         eventTitle = event.title,
-                        opponentScore = matchStats?.opponentScore ?: 0,
+                        opponentScore = draft?.opponentScore ?: matchStats?.opponentScore ?: 0,
                         players = playerItems,
+                        hiddenPlayersPoints = hiddenPoints,
                     )
-
-                    // Restore local draft when no Firestore doc exists yet
-                    val draft = localMatchStatsRepository.getDraft(eventId)
-                    if (draft != null && !draft.isPendingSync && matchStats == null) {
-                        val draftStats = localMatchStatsRepository.deserializePlayerStats(draft.playerStatsJson)
-                        val restored = playerItems.map { item ->
-                            draftStats[item.teamMemberId]?.let { s ->
-                                item.copy(
-                                    points = s.points,
-                                    rebounds = s.rebounds,
-                                    assists = s.assists,
-                                    fouls = s.fouls,
-                                    freeThrowsAttempted = s.freeThrowsAttempted,
-                                    freeThrowsMade = s.freeThrowsMade,
-                                )
-                            } ?: item
-                        }
-                        uiState = uiState.copy(players = restored, opponentScore = draft.opponentScore)
-                        Log.d(TAG, "Restored local draft for event $eventId")
-                    }
+                    if (draft != null) Log.d(TAG, "Restored local ${if (draft.isPendingSync) "pending save" else "draft"} for event $eventId")
 
                     Log.d(TAG, "Loaded ${playerItems.size} players for match stats on event $eventId")
                 }
@@ -195,6 +196,8 @@ class MatchStatsViewModel @Inject constructor(
     }
 
     override fun onSave() {
+        // Nothing to save until the match has loaded (teamId comes from the event).
+        if (uiState.isSaving || uiState.isLoading || teamId.isBlank()) return
         val uid = authRepository.currentUser?.uid
         if (uid == null) {
             uiState = uiState.copy(error = R.string.error_not_signed_in)
@@ -207,21 +210,14 @@ class MatchStatsViewModel @Inject constructor(
             uiState = uiState.copy(isSaving = true, error = null)
 
             val now = Timestamp.now()
-            val playerStatsMap: Map<String, PlayerMatchStat> = uiState.players.associate { p ->
-                p.teamMemberId to PlayerMatchStat(
-                    points = p.points,
-                    rebounds = p.rebounds,
-                    assists = p.assists,
-                    fouls = p.fouls,
-                    freeThrowsAttempted = p.freeThrowsAttempted,
-                    freeThrowsMade = p.freeThrowsMade,
-                )
-            }
+            // Start from the saved lines so players who aren't shown aren't treated as removed.
+            val playerStatsMap: Map<String, PlayerMatchStat> = savedPlayerStats +
+                uiState.players.associate { it.teamMemberId to it.toPlayerMatchStat() }
 
             val toSave = MatchStats(
                 id = existingMatchStats?.id ?: "",
                 eventId = eventId,
-                myTeamScore = uiState.myTeamScore,
+                myTeamScore = playerStatsMap.values.sumOf { it.points },
                 opponentScore = uiState.opponentScore,
                 playerStats = playerStatsMap,
                 createdBy = existingMatchStats?.createdBy ?: uid,
@@ -236,9 +232,17 @@ class MatchStatsViewModel @Inject constructor(
                 Log.d(TAG, "${if (existingMatchStats != null) "Updated" else "Created"} match stats for event $eventId")
 
                 existingMatchStats = toSave
-                localMatchStatsRepository.deleteDraft(eventId)
+                savedPlayerStats = playerStatsMap
+                runCatching { localMatchStatsRepository.deleteDraft(eventId) }
+                    .onFailure { Log.w(TAG, "Failed to delete local draft for $eventId", it) }
             }.onFailure { e ->
-                Log.e(TAG, "Failed to save match stats online for $eventId, queuing for sync", e)
+                if (!e.isConnectionError()) {
+                    // Rules denial, missing data, …: retrying later would fail the same way.
+                    Log.e(TAG, "Failed to save match stats for $eventId", e)
+                    uiState = uiState.copy(isSaving = false, error = R.string.error_generic)
+                    return@launch
+                }
+                Log.w(TAG, "Offline while saving match stats for $eventId, queuing for sync", e)
                 val queued = runCatching {
                     localMatchStatsRepository.saveDraft(
                         PendingMatchStatsEntity(
@@ -260,6 +264,9 @@ class MatchStatsViewModel @Inject constructor(
                     uiState = uiState.copy(isSaving = false, error = R.string.error_generic)
                     return@launch
                 }
+                savedPlayerStats = playerStatsMap
+                uiState = uiState.copy(isSaving = false, isSaved = true, isSavedOffline = true)
+                return@launch
             }
 
             uiState = uiState.copy(isSaving = false, isSaved = true)
@@ -267,7 +274,7 @@ class MatchStatsViewModel @Inject constructor(
     }
 
     override fun onSavedConsumed() {
-        uiState = uiState.copy(isSaved = false)
+        uiState = uiState.copy(isSaved = false, isSavedOffline = false)
     }
 
     // ── Draft helpers ─────────────────────────────────────────────────────────
@@ -278,21 +285,14 @@ class MatchStatsViewModel @Inject constructor(
             delay(500)
             val uid = authRepository.currentUser?.uid ?: return@launch
             runCatching {
+                // A queued save shares this row; unsaved edits must not replace it (they wait for Save).
+                if (localMatchStatsRepository.getDraft(eventId)?.isPendingSync == true) return@launch
                 localMatchStatsRepository.saveDraft(
                     PendingMatchStatsEntity(
                         eventId = eventId,
                         opponentScore = uiState.opponentScore,
                         playerStatsJson = localMatchStatsRepository.serializePlayerStats(
-                            uiState.players.associate { p ->
-                                p.teamMemberId to PlayerMatchStat(
-                                    points = p.points,
-                                    rebounds = p.rebounds,
-                                    assists = p.assists,
-                                    fouls = p.fouls,
-                                    freeThrowsAttempted = p.freeThrowsAttempted,
-                                    freeThrowsMade = p.freeThrowsMade,
-                                )
-                            }
+                            uiState.players.associate { it.teamMemberId to it.toPlayerMatchStat() }
                         ),
                         createdBy = existingMatchStats?.createdBy ?: uid,
                         createdAtSeconds = existingMatchStats?.createdAt?.seconds ?: Timestamp.now().seconds,
@@ -314,7 +314,8 @@ class MatchStatsViewModel @Inject constructor(
                     .build()
             )
             .build()
-        workManager.enqueueUniqueWork("sync_match_stats", ExistingWorkPolicy.KEEP, request)
+        // Append rather than keep: a save queued while the worker runs still gets its own run.
+        workManager.enqueueUniqueWork("sync_match_stats", ExistingWorkPolicy.APPEND_OR_REPLACE, request)
         Log.d(TAG, "Enqueued SyncMatchStatsWorker")
     }
 }
@@ -367,3 +368,22 @@ internal fun PlayerStats.applyMatch(previous: PlayerMatchStat?, current: PlayerM
         updatedAt = now,
     )
 }
+
+private fun PlayerStatEntryUiItem.toPlayerMatchStat() = PlayerMatchStat(
+    points = points,
+    rebounds = rebounds,
+    assists = assists,
+    fouls = fouls,
+    freeThrowsAttempted = freeThrowsAttempted,
+    freeThrowsMade = freeThrowsMade,
+)
+
+/**
+ * True when a save failed only because there was no connection, so it is worth queuing.
+ * Anything else (a rules denial, a bad document) would fail the same way when retried.
+ */
+internal fun Throwable.isConnectionError(): Boolean =
+    this is FirebaseNetworkException ||
+        (this is FirebaseFirestoreException &&
+            (code == FirebaseFirestoreException.Code.UNAVAILABLE ||
+                code == FirebaseFirestoreException.Code.DEADLINE_EXCEEDED))
