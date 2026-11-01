@@ -62,33 +62,40 @@ class ProfileViewModel @Inject constructor(
             val isReadOnly = targetUserId.isNotBlank() && targetUserId != firebaseUser.uid
             uiState = uiState.copy(isReadOnly = isReadOnly)
 
-            val user = userRepository.getUser(uid)
-            uiState = uiState.copy(
-                displayName = user?.displayName ?: firebaseUser.displayName.orEmpty(),
-                email = user?.email ?: firebaseUser.email.orEmpty(),
-                avatarId = user?.avatarId.orEmpty(),
-            )
+            runCatching {
+                coroutineScope {
+                    val user = userRepository.getUser(uid)
+                    uiState = uiState.copy(
+                        displayName = user?.displayName ?: firebaseUser.displayName.orEmpty(),
+                        email = user?.email ?: firebaseUser.email.orEmpty(),
+                        avatarId = user?.avatarId.orEmpty(),
+                    )
 
-            val membershipRowsDeferred = async { buildMembershipRows(uid) }
-            val adminRowsDeferred = async { buildAdminRows(uid) }
-            val childRowsDeferred = async {
-                if (user?.childIds.isNullOrEmpty()) emptyList()
-                else buildChildRows(user!!.childIds)
+                    val membershipRowsDeferred = async { buildMembershipRows(uid) }
+                    val adminRowsDeferred = async { buildAdminRows(uid) }
+                    val childRowsDeferred = async {
+                        if (user?.childIds.isNullOrEmpty()) emptyList()
+                        else buildChildRows(user!!.childIds)
+                    }
+
+                    val membershipRows = membershipRowsDeferred.await()
+                    val adminRows = adminRowsDeferred.await()
+                    val childRows = childRowsDeferred.await()
+                    val currentActiveChildId = appPreferencesRepository.activeChildId
+
+                    uiState = uiState.copy(
+                        memberships = adminRows + membershipRows,
+                        managedChildren = childRows.map { it.copy(isActive = it.userId == currentActiveChildId) },
+                        activeChildId = currentActiveChildId,
+                        isLoading = false,
+                    )
+
+                    Log.d(TAG, "loadProfile: loaded ${membershipRows.size} memberships + ${adminRows.size} admin rows for uid=$uid")
+                }
+            }.onFailure { e ->
+                Log.e(TAG, "loadProfile failed for uid=$uid", e)
+                uiState = uiState.copy(isLoading = false, error = R.string.error_load_failed)
             }
-
-            val membershipRows = membershipRowsDeferred.await()
-            val adminRows = adminRowsDeferred.await()
-            val childRows = childRowsDeferred.await()
-            val currentActiveChildId = appPreferencesRepository.activeChildId
-
-            uiState = uiState.copy(
-                memberships = adminRows + membershipRows,
-                managedChildren = childRows.map { it.copy(isActive = it.userId == currentActiveChildId) },
-                activeChildId = currentActiveChildId,
-                isLoading = false,
-            )
-
-            Log.d(TAG, "loadProfile: loaded ${membershipRows.size} memberships + ${adminRows.size} admin rows for uid=$uid")
         }
     }
 

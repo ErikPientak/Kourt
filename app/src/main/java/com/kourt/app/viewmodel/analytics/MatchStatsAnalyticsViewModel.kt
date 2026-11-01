@@ -16,6 +16,7 @@ import com.kourt.app.ui.screens.analytics.matchstats.MatchStatsAnalyticsScreenUi
 import com.kourt.app.ui.screens.analytics.matchstats.PlayerMatchStatsItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -42,58 +43,60 @@ class MatchStatsAnalyticsViewModel @Inject constructor(
             uiState = uiState.copy(isLoading = true, error = null)
 
             runCatching {
-                val teamId = appPreferencesRepository.activeTeamId
-                if (teamId.isBlank()) {
-                    uiState = uiState.copy(isLoading = false, error = R.string.error_no_team)
-                    return@runCatching
-                }
+                coroutineScope {
+                    val teamId = appPreferencesRepository.activeTeamId
+                    if (teamId.isBlank()) {
+                        uiState = uiState.copy(isLoading = false, error = R.string.error_no_team)
+                        return@coroutineScope
+                    }
 
-                Log.d(TAG, "Loading match stats analytics for team $teamId")
+                    Log.d(TAG, "Loading match stats analytics for team $teamId")
 
-                val teamStatsDeferred   = async { teamStatsRepository.getTeamStats(teamId) }
-                val playerStatsDeferred = async { playerStatsRepository.getPlayersStatsByTeam(teamId) }
-                val membersDeferred     = async { teamMemberRepository.getMembersByTeam(teamId) }
+                    val teamStatsDeferred   = async { teamStatsRepository.getTeamStats(teamId) }
+                    val playerStatsDeferred = async { playerStatsRepository.getPlayersStatsByTeam(teamId) }
+                    val membersDeferred     = async { teamMemberRepository.getMembersByTeam(teamId) }
 
-                val teamStats   = teamStatsDeferred.await()
-                val playerStats = playerStatsDeferred.await()
-                val members     = membersDeferred.await()
+                    val teamStats   = teamStatsDeferred.await()
+                    val playerStats = playerStatsDeferred.await()
+                    val members     = membersDeferred.await()
 
-                Log.d(TAG, "Fetched teamStats=$teamStats, ${playerStats.size} player stats, ${members.size} members")
+                    Log.d(TAG, "Fetched teamStats=$teamStats, ${playerStats.size} player stats, ${members.size} members")
 
-                val playerMembers = members.filter { it.role == "player" }
-                val userIds = playerMembers.map { it.userId }.filter { it.isNotBlank() }
-                val users   = if (userIds.isNotEmpty()) userRepository.getUsersByIds(userIds) else emptyList()
-                val userMap = users.associateBy { it.id }
+                    val playerMembers = members.filter { it.role == "player" }
+                    val userIds = playerMembers.map { it.userId }.filter { it.isNotBlank() }
+                    val users   = if (userIds.isNotEmpty()) userRepository.getUsersByIds(userIds) else emptyList()
+                    val userMap = users.associateBy { it.id }
 
-                val playerItems = playerStats.mapNotNull { ps ->
-                    val member = playerMembers.firstOrNull { it.id == ps.teamMemberId } ?: return@mapNotNull null
-                    val user   = userMap[member.userId]
-                    val ftPct  = if (ps.totalFreeThrowsAttempted == 0) null
-                                 else ps.totalFreeThrowsMade.toFloat() / ps.totalFreeThrowsAttempted
-                    PlayerMatchStatsItem(
-                        teamMemberId  = ps.teamMemberId,
-                        displayName   = user?.displayName?.ifBlank { user.email } ?: member.id,
-                        avatarUrl     = user?.avatarId?.ifBlank { user.photoURL } ?: "",
-                        totalPoints   = ps.totalPoints,
-                        totalRebounds = ps.totalRebounds,
-                        totalAssists  = ps.totalAssists,
-                        totalFouls    = ps.totalFouls,
-                        freeThrowPct  = ftPct,
+                    val playerItems = playerStats.mapNotNull { ps ->
+                        val member = playerMembers.firstOrNull { it.id == ps.teamMemberId } ?: return@mapNotNull null
+                        val user   = userMap[member.userId]
+                        val ftPct  = if (ps.totalFreeThrowsAttempted == 0) null
+                                     else ps.totalFreeThrowsMade.toFloat() / ps.totalFreeThrowsAttempted
+                        PlayerMatchStatsItem(
+                            teamMemberId  = ps.teamMemberId,
+                            displayName   = user?.displayName?.ifBlank { user.email } ?: member.id,
+                            avatarUrl     = user?.avatarId?.ifBlank { user.photoURL } ?: "",
+                            totalPoints   = ps.totalPoints,
+                            totalRebounds = ps.totalRebounds,
+                            totalAssists  = ps.totalAssists,
+                            totalFouls    = ps.totalFouls,
+                            freeThrowPct  = ftPct,
+                        )
+                    }.sortedByDescending { it.totalPoints }
+
+                    Log.d(TAG, "Built ${playerItems.size} player items")
+
+                    uiState = uiState.copy(
+                        isLoading     = false,
+                        wins          = teamStats?.wins ?: 0,
+                        losses        = teamStats?.losses ?: 0,
+                        draws         = teamStats?.draws ?: 0,
+                        matchesPlayed = teamStats?.matchesPlayed ?: 0,
+                        topScorer     = playerItems.maxByOrNull { it.totalPoints },
+                        players       = playerItems,
                     )
-                }.sortedByDescending { it.totalPoints }
 
-                Log.d(TAG, "Built ${playerItems.size} player items")
-
-                uiState = uiState.copy(
-                    isLoading     = false,
-                    wins          = teamStats?.wins ?: 0,
-                    losses        = teamStats?.losses ?: 0,
-                    draws         = teamStats?.draws ?: 0,
-                    matchesPlayed = teamStats?.matchesPlayed ?: 0,
-                    topScorer     = playerItems.maxByOrNull { it.totalPoints },
-                    players       = playerItems,
-                )
-
+                }
             }.onFailure { e ->
                 Log.e(TAG, "Failed to load match stats analytics", e)
                 uiState = uiState.copy(isLoading = false, error = R.string.error_generic)

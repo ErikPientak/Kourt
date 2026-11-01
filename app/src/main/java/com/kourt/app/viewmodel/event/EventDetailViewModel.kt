@@ -23,6 +23,7 @@ import com.kourt.app.ui.screens.event.detail.NominatedPlayerUiItem
 import com.kourt.app.ui.screens.event.detail.RsvpMemberUiItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.util.Locale
 import javax.inject.Inject
@@ -59,131 +60,133 @@ class EventDetailViewModel @Inject constructor(
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true, error = null)
             runCatching {
-                // Parallel fetch
-                val eventDeferred = async { eventRepository.getEvent(eventId) }
-                val rsvpsDeferred = async { rsvpRepository.getRsvpsByEvent(eventId) }
-                val membershipsDeferred = async { teamMemberRepository.getMembersByUser(uid) }
-                val nominationDeferred = async { nominationRepository.getNomination(eventId) }
+                coroutineScope {
+                    // Parallel fetch
+                    val eventDeferred = async { eventRepository.getEvent(eventId) }
+                    val rsvpsDeferred = async { rsvpRepository.getRsvpsByEvent(eventId) }
+                    val membershipsDeferred = async { teamMemberRepository.getMembersByUser(uid) }
+                    val nominationDeferred = async { nominationRepository.getNomination(eventId) }
 
-                val event = eventDeferred.await()
-                val rsvps = rsvpsDeferred.await()
-                val memberships = membershipsDeferred.await()
-                val nomination = nominationDeferred.await()
+                    val event = eventDeferred.await()
+                    val rsvps = rsvpsDeferred.await()
+                    val memberships = membershipsDeferred.await()
+                    val nomination = nominationDeferred.await()
 
-                if (event == null) {
-                    uiState = uiState.copy(isLoading = false, error = R.string.error_load_failed)
-                    return@runCatching
-                }
+                    if (event == null) {
+                        uiState = uiState.copy(isLoading = false, error = R.string.error_load_failed)
+                        return@coroutineScope
+                    }
 
-                val membership = memberships.firstOrNull { it.teamId == event.teamId }
-                val role = membership?.role ?: ""
-                val isEditable = role in setOf("coach", "assistant", "admin")
-                val canRsvp = role in setOf("player", "parent")
+                    val membership = memberships.firstOrNull { it.teamId == event.teamId }
+                    val role = membership?.role ?: ""
+                    val isEditable = role in setOf("coach", "assistant", "admin")
+                    val canRsvp = role in setOf("player", "parent")
 
-                // Formatted date: e.g. "Wednesday, Apr 30 • 18:00"
-                val epochMillis = event.date.toDate().time
-                val locale = Locale.getDefault()
-                val datePattern = DateFormat.getBestDateTimePattern(locale, "EEEEMMMdy")
-                val sdf = java.text.SimpleDateFormat(datePattern, locale)
-                val dateString = sdf.format(event.date.toDate())
-                val formattedDate = if (event.startTime.isNotBlank()) "$dateString • ${event.startTime}" else dateString
+                    // Formatted date: e.g. "Wednesday, Apr 30 • 18:00"
+                    val epochMillis = event.date.toDate().time
+                    val locale = Locale.getDefault()
+                    val datePattern = DateFormat.getBestDateTimePattern(locale, "EEEEMMMdy")
+                    val sdf = java.text.SimpleDateFormat(datePattern, locale)
+                    val dateString = sdf.format(event.date.toDate())
+                    val formattedDate = if (event.startTime.isNotBlank()) "$dateString • ${event.startTime}" else dateString
 
-                val eventUiItem = EventDetailUiItem(
-                    eventId = event.id,
-                    teamId = event.teamId,
-                    title = event.title,
-                    type = event.type,
-                    status = event.status,
-                    formattedDate = formattedDate,
-                    location = event.location,
-                    notes = event.notes,
-                )
-
-                // RSVP counts
-                val rsvpYes = rsvps.count { it.status == "yes" }
-                val rsvpLate = rsvps.count { it.status == "late" }
-                val rsvpNo = rsvps.count { it.status == "no" }
-
-                val myRsvp = rsvps.firstOrNull { it.submittedBy == uid }
-                loadedMyRsvp = myRsvp
-                val myRsvpStatus = myRsvp?.status
-
-                // Fetch user details for going/not-going members
-                val goingRsvps = rsvps.filter { it.status == "yes" || it.status == "late" }
-                val notGoingRsvps = rsvps.filter { it.status == "no" }
-
-                val allRelevantUids = (goingRsvps + notGoingRsvps)
-                    .map { it.submittedBy }
-                    .filter { it.isNotBlank() }
-                    .distinct()
-
-                val usersDeferred = async {
-                    if (allRelevantUids.isNotEmpty()) userRepository.getUsersByIds(allRelevantUids)
-                    else emptyList()
-                }
-                val teamMembersDeferred = async { teamMemberRepository.getMembersByTeam(event.teamId) }
-
-                val userMap = usersDeferred.await().associateBy { it.id }
-                val memberRoleMap = teamMembersDeferred.await().associate { it.userId to it.role }
-
-                val goingMembers = goingRsvps.mapNotNull { rsvp ->
-                    val user = userMap[rsvp.submittedBy] ?: return@mapNotNull null
-                    val memberRole = memberRoleMap[rsvp.submittedBy]
-                        ?.replaceFirstChar { it.uppercase() } ?: ""
-                    RsvpMemberUiItem(
-                        userId = user.id,
-                        displayName = user.displayName.ifBlank { user.email },
-                        subtitle = memberRole,
-                        avatarUrl = user.avatarId.ifBlank { user.photoURL },
-                        rsvpStatus = rsvp.status,
+                    val eventUiItem = EventDetailUiItem(
+                        eventId = event.id,
+                        teamId = event.teamId,
+                        title = event.title,
+                        type = event.type,
+                        status = event.status,
+                        formattedDate = formattedDate,
+                        location = event.location,
+                        notes = event.notes,
                     )
-                }
 
-                val notGoingMembers = notGoingRsvps.mapNotNull { rsvp ->
-                    val user = userMap[rsvp.submittedBy] ?: return@mapNotNull null
-                    val reasonDisplay = rsvp.reason
-                        .replace("_", " ")
-                        .replaceFirstChar { it.uppercase() }
-                        .ifBlank { "No reason given" }
-                    RsvpMemberUiItem(
-                        userId = user.id,
-                        displayName = user.displayName.ifBlank { user.email },
-                        subtitle = reasonDisplay,
-                        avatarUrl = user.avatarId.ifBlank { user.photoURL },
-                        rsvpStatus = rsvp.status,
-                    )
-                }
+                    // RSVP counts
+                    val rsvpYes = rsvps.count { it.status == "yes" }
+                    val rsvpLate = rsvps.count { it.status == "late" }
+                    val rsvpNo = rsvps.count { it.status == "no" }
 
-                val nominatedPlayers = if (
-                    event.type.lowercase() == "match" && !nomination?.players.isNullOrEmpty()
-                ) {
-                    val nominatedIds = nomination!!.players
-                    val teamMembers = teamMemberRepository.getMembersByTeam(event.teamId)
-                        .associateBy { it.userId }
-                    userRepository.getUsersByIds(nominatedIds).mapNotNull { user ->
-                        val member = teamMembers[user.id] ?: return@mapNotNull null
-                        NominatedPlayerUiItem(
+                    val myRsvp = rsvps.firstOrNull { it.submittedBy == uid }
+                    loadedMyRsvp = myRsvp
+                    val myRsvpStatus = myRsvp?.status
+
+                    // Fetch user details for going/not-going members
+                    val goingRsvps = rsvps.filter { it.status == "yes" || it.status == "late" }
+                    val notGoingRsvps = rsvps.filter { it.status == "no" }
+
+                    val allRelevantUids = (goingRsvps + notGoingRsvps)
+                        .map { it.submittedBy }
+                        .filter { it.isNotBlank() }
+                        .distinct()
+
+                    val usersDeferred = async {
+                        if (allRelevantUids.isNotEmpty()) userRepository.getUsersByIds(allRelevantUids)
+                        else emptyList()
+                    }
+                    val teamMembersDeferred = async { teamMemberRepository.getMembersByTeam(event.teamId) }
+
+                    val userMap = usersDeferred.await().associateBy { it.id }
+                    val memberRoleMap = teamMembersDeferred.await().associate { it.userId to it.role }
+
+                    val goingMembers = goingRsvps.mapNotNull { rsvp ->
+                        val user = userMap[rsvp.submittedBy] ?: return@mapNotNull null
+                        val memberRole = memberRoleMap[rsvp.submittedBy]
+                            ?.replaceFirstChar { it.uppercase() } ?: ""
+                        RsvpMemberUiItem(
                             userId = user.id,
                             displayName = user.displayName.ifBlank { user.email },
+                            subtitle = memberRole,
                             avatarUrl = user.avatarId.ifBlank { user.photoURL },
-                            jerseyNumber = member.jerseyNumber,
+                            rsvpStatus = rsvp.status,
                         )
-                    }.sortedWith(compareBy({ it.jerseyNumber == 0 }, { it.jerseyNumber }))
-                } else emptyList()
+                    }
 
-                uiState = uiState.copy(
-                    isLoading = false,
-                    event = eventUiItem,
-                    myRsvpStatus = myRsvpStatus,
-                    rsvpYes = rsvpYes,
-                    rsvpLate = rsvpLate,
-                    rsvpNo = rsvpNo,
-                    goingMembers = goingMembers,
-                    notGoingMembers = notGoingMembers,
-                    isEditable = isEditable,
-                    canRsvp = canRsvp,
-                    nominatedPlayers = nominatedPlayers,
-                )
+                    val notGoingMembers = notGoingRsvps.mapNotNull { rsvp ->
+                        val user = userMap[rsvp.submittedBy] ?: return@mapNotNull null
+                        val reasonDisplay = rsvp.reason
+                            .replace("_", " ")
+                            .replaceFirstChar { it.uppercase() }
+                            .ifBlank { "No reason given" }
+                        RsvpMemberUiItem(
+                            userId = user.id,
+                            displayName = user.displayName.ifBlank { user.email },
+                            subtitle = reasonDisplay,
+                            avatarUrl = user.avatarId.ifBlank { user.photoURL },
+                            rsvpStatus = rsvp.status,
+                        )
+                    }
+
+                    val nominatedPlayers = if (
+                        event.type.lowercase() == "match" && !nomination?.players.isNullOrEmpty()
+                    ) {
+                        val nominatedIds = nomination!!.players
+                        val teamMembers = teamMemberRepository.getMembersByTeam(event.teamId)
+                            .associateBy { it.userId }
+                        userRepository.getUsersByIds(nominatedIds).mapNotNull { user ->
+                            val member = teamMembers[user.id] ?: return@mapNotNull null
+                            NominatedPlayerUiItem(
+                                userId = user.id,
+                                displayName = user.displayName.ifBlank { user.email },
+                                avatarUrl = user.avatarId.ifBlank { user.photoURL },
+                                jerseyNumber = member.jerseyNumber,
+                            )
+                        }.sortedWith(compareBy({ it.jerseyNumber == 0 }, { it.jerseyNumber }))
+                    } else emptyList()
+
+                    uiState = uiState.copy(
+                        isLoading = false,
+                        event = eventUiItem,
+                        myRsvpStatus = myRsvpStatus,
+                        rsvpYes = rsvpYes,
+                        rsvpLate = rsvpLate,
+                        rsvpNo = rsvpNo,
+                        goingMembers = goingMembers,
+                        notGoingMembers = notGoingMembers,
+                        isEditable = isEditable,
+                        canRsvp = canRsvp,
+                        nominatedPlayers = nominatedPlayers,
+                    )
+                }
             }.onFailure { e ->
                 Log.e(TAG, "Failed to load event detail for $eventId", e)
                 uiState = uiState.copy(isLoading = false, error = R.string.error_load_failed)

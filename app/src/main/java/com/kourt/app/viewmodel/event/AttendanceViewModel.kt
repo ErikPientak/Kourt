@@ -27,6 +27,7 @@ import com.kourt.app.ui.screens.event.attendance.AttendanceScreenActions
 import com.kourt.app.ui.screens.event.attendance.AttendanceScreenUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.Locale
@@ -70,68 +71,70 @@ class AttendanceViewModel @Inject constructor(
             uiState = uiState.copy(isLoading = true, error = null)
 
             runCatching {
-                // Parallel: fetch event + existing attendance docs + RSVPs
-                val eventDeferred      = async { eventRepository.getEvent(eventId) }
-                val attendanceDeferred = async { attendanceRepository.getAttendanceByEvent(eventId) }
-                val rsvpDeferred       = async { rsvpRepository.getRsvpsByEvent(eventId) }
+                coroutineScope {
+                    // Parallel: fetch event + existing attendance docs + RSVPs
+                    val eventDeferred      = async { eventRepository.getEvent(eventId) }
+                    val attendanceDeferred = async { attendanceRepository.getAttendanceByEvent(eventId) }
+                    val rsvpDeferred       = async { rsvpRepository.getRsvpsByEvent(eventId) }
 
-                val event          = eventDeferred.await()
-                val attendanceDocs = attendanceDeferred.await()
-                val rsvps          = rsvpDeferred.await()
+                    val event          = eventDeferred.await()
+                    val attendanceDocs = attendanceDeferred.await()
+                    val rsvps          = rsvpDeferred.await()
 
-                if (event == null) {
-                    uiState = uiState.copy(isLoading = false, error = R.string.error_load_failed)
-                    return@launch
-                }
+                    if (event == null) {
+                        uiState = uiState.copy(isLoading = false, error = R.string.error_load_failed)
+                        return@coroutineScope
+                    }
 
-                // Format event date
-                val locale = Locale.getDefault()
-                val pattern = DateFormat.getBestDateTimePattern(locale, "MMMd") ?: "MMM d"
-                val formatter = java.text.SimpleDateFormat(pattern, locale)
-                val dateLabel = formatter.format(Date(event.date.seconds * 1000))
+                    // Format event date
+                    val locale = Locale.getDefault()
+                    val pattern = DateFormat.getBestDateTimePattern(locale, "MMMd") ?: "MMM d"
+                    val formatter = java.text.SimpleDateFormat(pattern, locale)
+                    val dateLabel = formatter.format(Date(event.date.seconds * 1000))
 
-                // Fetch team members with player/parent roles
-                val teamMembers = teamMemberRepository.getMembersByTeam(event.teamId)
-                    .filter { it.role in setOf("player", "parent") }
+                    // Fetch team members with player/parent roles
+                    val teamMembers = teamMemberRepository.getMembersByTeam(event.teamId)
+                        .filter { it.role in setOf("player", "parent") }
 
-                // Lookup user display names and avatars
-                val userIds = teamMembers.map { it.userId }.filter { it.isNotBlank() }
-                val users = if (userIds.isNotEmpty()) {
-                    userRepository.getUsersByIds(userIds).associateBy { it.id }
-                } else emptyMap()
+                    // Lookup user display names and avatars
+                    val userIds = teamMembers.map { it.userId }.filter { it.isNotBlank() }
+                    val users = if (userIds.isNotEmpty()) {
+                        userRepository.getUsersByIds(userIds).associateBy { it.id }
+                    } else emptyMap()
 
-                // Existing saved attendance takes priority over RSVP defaults
-                val existingStatusByUserId = attendanceDocs
-                    .filter { it.userId.isNotBlank() }
-                    .associate { it.userId to it.status }
+                    // Existing saved attendance takes priority over RSVP defaults
+                    val existingStatusByUserId = attendanceDocs
+                        .filter { it.userId.isNotBlank() }
+                        .associate { it.userId to it.status }
 
-                teamId = event.teamId
-                loadedAttendanceByUserId = attendanceDocs.associateBy { it.userId }
-                memberIdByUserId = teamMembers.associate { it.userId to it.id }
+                    teamId = event.teamId
+                    loadedAttendanceByUserId = attendanceDocs.associateBy { it.userId }
+                    memberIdByUserId = teamMembers.associate { it.userId to it.id }
 
-                // RSVP-derived defaults (only used when no attendance doc exists)
-                val rsvpByUserId = rsvps.associateBy { it.submittedBy }
+                    // RSVP-derived defaults (only used when no attendance doc exists)
+                    val rsvpByUserId = rsvps.associateBy { it.submittedBy }
 
-                val memberItems = teamMembers.mapNotNull { member ->
-                    val user = users[member.userId] ?: return@mapNotNull null
-                    val status = existingStatusByUserId[member.userId]
-                        ?: rsvpDefaultStatus(rsvpByUserId[member.userId]?.status, rsvpByUserId[member.userId]?.reason)
-                    AttendanceMemberUiItem(
-                        userId = member.userId,
-                        displayName = user.displayName.ifBlank { user.email },
-                        avatarUrl = user.avatarId.ifBlank { user.photoURL },
-                        status = status,
+                    val memberItems = teamMembers.mapNotNull { member ->
+                        val user = users[member.userId] ?: return@mapNotNull null
+                        val status = existingStatusByUserId[member.userId]
+                            ?: rsvpDefaultStatus(rsvpByUserId[member.userId]?.status, rsvpByUserId[member.userId]?.reason)
+                        AttendanceMemberUiItem(
+                            userId = member.userId,
+                            displayName = user.displayName.ifBlank { user.email },
+                            avatarUrl = user.avatarId.ifBlank { user.photoURL },
+                            status = status,
+                        )
+                    }
+
+                    uiState = uiState.copy(
+                        isLoading = false,
+                        eventTitle = event.title,
+                        eventDate = dateLabel,
+                        members = memberItems,
                     )
+
+                    Log.d(TAG, "Loaded ${memberItems.size} members for event $eventId")
                 }
-
-                uiState = uiState.copy(
-                    isLoading = false,
-                    eventTitle = event.title,
-                    eventDate = dateLabel,
-                    members = memberItems,
-                )
-
-                Log.d(TAG, "Loaded ${memberItems.size} members for event $eventId")
             }.onFailure { e ->
                 Log.e(TAG, "Failed to load attendance for $eventId", e)
                 uiState = uiState.copy(isLoading = false, error = R.string.error_load_failed)

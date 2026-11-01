@@ -35,6 +35,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.min
@@ -80,84 +81,86 @@ class MatchStatsViewModel @Inject constructor(
             uiState = uiState.copy(isLoading = true, error = null)
 
             runCatching {
-                val eventDeferred      = async { eventRepository.getEvent(eventId) }
-                val nominationDeferred = async { nominationRepository.getNomination(eventId) }
-                val matchStatsDeferred = async { matchStatsRepository.getMatchStats(eventId) }
+                coroutineScope {
+                    val eventDeferred      = async { eventRepository.getEvent(eventId) }
+                    val nominationDeferred = async { nominationRepository.getNomination(eventId) }
+                    val matchStatsDeferred = async { matchStatsRepository.getMatchStats(eventId) }
 
-                val event      = eventDeferred.await()
-                val nomination = nominationDeferred.await()
-                val matchStats = matchStatsDeferred.await()
+                    val event      = eventDeferred.await()
+                    val nomination = nominationDeferred.await()
+                    val matchStats = matchStatsDeferred.await()
 
-                if (event == null) {
-                    uiState = uiState.copy(isLoading = false, error = R.string.error_load_failed)
-                    return@launch
-                }
-
-                teamId = event.teamId
-                existingMatchStats = matchStats
-
-                val nominatedMemberIds: List<String> = nomination?.players ?: emptyList()
-                val allMembers = teamMemberRepository.getMembersByTeam(event.teamId)
-                val nominatedMembers = if (nominatedMemberIds.isNotEmpty()) {
-                    allMembers.filter { it.userId in nominatedMemberIds }
-                } else {
-                    allMembers.filter { it.role == "player" }
-                }
-                Log.d(TAG, "Loaded ${nominatedMembers.size} nominatedMembers")
-
-                val userIds = nominatedMembers.map { it.userId }.filter { it.isNotBlank() }
-                val usersById = if (userIds.isNotEmpty()) {
-                    userRepository.getUsersByIds(userIds).associateBy { it.id }
-                } else emptyMap()
-
-                val existingStatsByMemberId = matchStats?.playerStats ?: emptyMap()
-
-                val playerItems = nominatedMembers.mapNotNull { member ->
-                    val user = usersById[member.userId] ?: return@mapNotNull null
-                    val existing = existingStatsByMemberId[member.id]
-                    PlayerStatEntryUiItem(
-                        userId = member.userId,
-                        teamMemberId = member.id,
-                        displayName = user.displayName.ifBlank { user.email },
-                        avatarUrl = user.avatarId.ifBlank { user.photoURL },
-                        jerseyNumber = member.jerseyNumber,
-                        points = existing?.points ?: 0,
-                        rebounds = existing?.rebounds ?: 0,
-                        assists = existing?.assists ?: 0,
-                        fouls = existing?.fouls ?: 0,
-                        freeThrowsAttempted = existing?.freeThrowsAttempted ?: 0,
-                        freeThrowsMade = existing?.freeThrowsMade ?: 0,
-                    )
-                }
-
-                uiState = uiState.copy(
-                    isLoading = false,
-                    eventTitle = event.title,
-                    opponentScore = matchStats?.opponentScore ?: 0,
-                    players = playerItems,
-                )
-
-                // Restore local draft when no Firestore doc exists yet
-                val draft = localMatchStatsRepository.getDraft(eventId)
-                if (draft != null && !draft.isPendingSync && matchStats == null) {
-                    val draftStats = localMatchStatsRepository.deserializePlayerStats(draft.playerStatsJson)
-                    val restored = playerItems.map { item ->
-                        draftStats[item.teamMemberId]?.let { s ->
-                            item.copy(
-                                points = s.points,
-                                rebounds = s.rebounds,
-                                assists = s.assists,
-                                fouls = s.fouls,
-                                freeThrowsAttempted = s.freeThrowsAttempted,
-                                freeThrowsMade = s.freeThrowsMade,
-                            )
-                        } ?: item
+                    if (event == null) {
+                        uiState = uiState.copy(isLoading = false, error = R.string.error_load_failed)
+                        return@coroutineScope
                     }
-                    uiState = uiState.copy(players = restored, opponentScore = draft.opponentScore)
-                    Log.d(TAG, "Restored local draft for event $eventId")
-                }
 
-                Log.d(TAG, "Loaded ${playerItems.size} players for match stats on event $eventId")
+                    teamId = event.teamId
+                    existingMatchStats = matchStats
+
+                    val nominatedMemberIds: List<String> = nomination?.players ?: emptyList()
+                    val allMembers = teamMemberRepository.getMembersByTeam(event.teamId)
+                    val nominatedMembers = if (nominatedMemberIds.isNotEmpty()) {
+                        allMembers.filter { it.userId in nominatedMemberIds }
+                    } else {
+                        allMembers.filter { it.role == "player" }
+                    }
+                    Log.d(TAG, "Loaded ${nominatedMembers.size} nominatedMembers")
+
+                    val userIds = nominatedMembers.map { it.userId }.filter { it.isNotBlank() }
+                    val usersById = if (userIds.isNotEmpty()) {
+                        userRepository.getUsersByIds(userIds).associateBy { it.id }
+                    } else emptyMap()
+
+                    val existingStatsByMemberId = matchStats?.playerStats ?: emptyMap()
+
+                    val playerItems = nominatedMembers.mapNotNull { member ->
+                        val user = usersById[member.userId] ?: return@mapNotNull null
+                        val existing = existingStatsByMemberId[member.id]
+                        PlayerStatEntryUiItem(
+                            userId = member.userId,
+                            teamMemberId = member.id,
+                            displayName = user.displayName.ifBlank { user.email },
+                            avatarUrl = user.avatarId.ifBlank { user.photoURL },
+                            jerseyNumber = member.jerseyNumber,
+                            points = existing?.points ?: 0,
+                            rebounds = existing?.rebounds ?: 0,
+                            assists = existing?.assists ?: 0,
+                            fouls = existing?.fouls ?: 0,
+                            freeThrowsAttempted = existing?.freeThrowsAttempted ?: 0,
+                            freeThrowsMade = existing?.freeThrowsMade ?: 0,
+                        )
+                    }
+
+                    uiState = uiState.copy(
+                        isLoading = false,
+                        eventTitle = event.title,
+                        opponentScore = matchStats?.opponentScore ?: 0,
+                        players = playerItems,
+                    )
+
+                    // Restore local draft when no Firestore doc exists yet
+                    val draft = localMatchStatsRepository.getDraft(eventId)
+                    if (draft != null && !draft.isPendingSync && matchStats == null) {
+                        val draftStats = localMatchStatsRepository.deserializePlayerStats(draft.playerStatsJson)
+                        val restored = playerItems.map { item ->
+                            draftStats[item.teamMemberId]?.let { s ->
+                                item.copy(
+                                    points = s.points,
+                                    rebounds = s.rebounds,
+                                    assists = s.assists,
+                                    fouls = s.fouls,
+                                    freeThrowsAttempted = s.freeThrowsAttempted,
+                                    freeThrowsMade = s.freeThrowsMade,
+                                )
+                            } ?: item
+                        }
+                        uiState = uiState.copy(players = restored, opponentScore = draft.opponentScore)
+                        Log.d(TAG, "Restored local draft for event $eventId")
+                    }
+
+                    Log.d(TAG, "Loaded ${playerItems.size} players for match stats on event $eventId")
+                }
             }.onFailure { e ->
                 Log.e(TAG, "Failed to load match stats for $eventId", e)
                 uiState = uiState.copy(isLoading = false, error = R.string.error_load_failed)
@@ -236,18 +239,27 @@ class MatchStatsViewModel @Inject constructor(
                 localMatchStatsRepository.deleteDraft(eventId)
             }.onFailure { e ->
                 Log.e(TAG, "Failed to save match stats online for $eventId, queuing for sync", e)
-                localMatchStatsRepository.saveDraft(
-                    PendingMatchStatsEntity(
-                        eventId = eventId,
-                        opponentScore = uiState.opponentScore,
-                        playerStatsJson = localMatchStatsRepository.serializePlayerStats(playerStatsMap),
-                        createdBy = toSave.createdBy,
-                        createdAtSeconds = toSave.createdAt.seconds,
-                        teamId = teamId,
-                        isPendingSync = true,
+                val queued = runCatching {
+                    localMatchStatsRepository.saveDraft(
+                        PendingMatchStatsEntity(
+                            eventId = eventId,
+                            opponentScore = uiState.opponentScore,
+                            playerStatsJson = localMatchStatsRepository.serializePlayerStats(playerStatsMap),
+                            createdBy = toSave.createdBy,
+                            createdAtSeconds = toSave.createdAt.seconds,
+                            teamId = teamId,
+                            isPendingSync = true,
+                        )
                     )
-                )
-                enqueueSyncWorker()
+                    enqueueSyncWorker()
+                }.onFailure { queueError ->
+                    Log.e(TAG, "Failed to queue match stats for $eventId", queueError)
+                }.isSuccess
+
+                if (!queued) {
+                    uiState = uiState.copy(isSaving = false, error = R.string.error_generic)
+                    return@launch
+                }
             }
 
             uiState = uiState.copy(isSaving = false, isSaved = true)
@@ -265,28 +277,32 @@ class MatchStatsViewModel @Inject constructor(
         draftSaveJob = viewModelScope.launch {
             delay(500)
             val uid = authRepository.currentUser?.uid ?: return@launch
-            localMatchStatsRepository.saveDraft(
-                PendingMatchStatsEntity(
-                    eventId = eventId,
-                    opponentScore = uiState.opponentScore,
-                    playerStatsJson = localMatchStatsRepository.serializePlayerStats(
-                        uiState.players.associate { p ->
-                            p.teamMemberId to PlayerMatchStat(
-                                points = p.points,
-                                rebounds = p.rebounds,
-                                assists = p.assists,
-                                fouls = p.fouls,
-                                freeThrowsAttempted = p.freeThrowsAttempted,
-                                freeThrowsMade = p.freeThrowsMade,
-                            )
-                        }
-                    ),
-                    createdBy = existingMatchStats?.createdBy ?: uid,
-                    createdAtSeconds = existingMatchStats?.createdAt?.seconds ?: Timestamp.now().seconds,
-                    teamId = teamId,
-                    isPendingSync = false,
+            runCatching {
+                localMatchStatsRepository.saveDraft(
+                    PendingMatchStatsEntity(
+                        eventId = eventId,
+                        opponentScore = uiState.opponentScore,
+                        playerStatsJson = localMatchStatsRepository.serializePlayerStats(
+                            uiState.players.associate { p ->
+                                p.teamMemberId to PlayerMatchStat(
+                                    points = p.points,
+                                    rebounds = p.rebounds,
+                                    assists = p.assists,
+                                    fouls = p.fouls,
+                                    freeThrowsAttempted = p.freeThrowsAttempted,
+                                    freeThrowsMade = p.freeThrowsMade,
+                                )
+                            }
+                        ),
+                        createdBy = existingMatchStats?.createdBy ?: uid,
+                        createdAtSeconds = existingMatchStats?.createdAt?.seconds ?: Timestamp.now().seconds,
+                        teamId = teamId,
+                        isPendingSync = false,
+                    )
                 )
-            )
+            }.onFailure { e ->
+                Log.w(TAG, "Failed to save local draft for $eventId", e)
+            }
         }
     }
 

@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -120,62 +121,64 @@ class ClubManagementViewModel @Inject constructor(
             uiState = uiState.copy(isMembersLoading = true, membersError = null)
 
             runCatching {
-                // 1. Fetch TeamMember docs for all teams in parallel
-                val teamMembersByTeam = teams.map { team ->
-                    async { team to teamMemberRepository.getMembersByTeam(team.id) }
-                }.awaitAll()
+                coroutineScope {
+                    // 1. Fetch TeamMember docs for all teams in parallel
+                    val teamMembersByTeam = teams.map { team ->
+                        async { team to teamMemberRepository.getMembersByTeam(team.id) }
+                    }.awaitAll()
 
-                // 2. Group all (TeamMember, teamName) entries per userId — keeps every membership.
-                val userIdToEntries = linkedMapOf<String, MutableList<Pair<com.kourt.app.data.model.TeamMember, String>>>()
-                for ((team, members) in teamMembersByTeam) {
-                    for (member in members) {
-                        if (member.userId.isNotEmpty()) {
-                            userIdToEntries.getOrPut(member.userId) { mutableListOf() }
-                                .add(member to team.name)
+                    // 2. Group all (TeamMember, teamName) entries per userId — keeps every membership.
+                    val userIdToEntries = linkedMapOf<String, MutableList<Pair<com.kourt.app.data.model.TeamMember, String>>>()
+                    for ((team, members) in teamMembersByTeam) {
+                        for (member in members) {
+                            if (member.userId.isNotEmpty()) {
+                                userIdToEntries.getOrPut(member.userId) { mutableListOf() }
+                                    .add(member to team.name)
+                            }
                         }
                     }
-                }
 
-                // 3. Resolve user display names in parallel
-                val userMap = userIdToEntries.keys
-                    .map { uid -> async { uid to userRepository.getUser(uid) } }
-                    .awaitAll()
-                    .toMap()
+                    // 3. Resolve user display names in parallel
+                    val userMap = userIdToEntries.keys
+                        .map { uid -> async { uid to userRepository.getUser(uid) } }
+                        .awaitAll()
+                        .toMap()
 
-                // 4. Build UI projections
-                val items = userIdToEntries.entries.mapNotNull { (userId, entries) ->
-                    val (primaryMember, _) = entries.first()
-                    val user = userMap[userId] ?: return@mapNotNull null
-                    val teamNames = entries.map { it.second }
-                    val memberships = entries.map { (member, teamName) ->
-                        ClubMembership(
-                            memberId = member.id,
-                            teamId = member.teamId,
-                            teamName = teamName,
-                            role = member.role.lowercase(),
+                    // 4. Build UI projections
+                    val items = userIdToEntries.entries.mapNotNull { (userId, entries) ->
+                        val (primaryMember, _) = entries.first()
+                        val user = userMap[userId] ?: return@mapNotNull null
+                        val teamNames = entries.map { it.second }
+                        val memberships = entries.map { (member, teamName) ->
+                            ClubMembership(
+                                memberId = member.id,
+                                teamId = member.teamId,
+                                teamName = teamName,
+                                role = member.role.lowercase(),
+                            )
+                        }
+                        // Badge shows the highest-ranked role across all of the user's teams.
+                        val topRole = memberships.minBy { ROLE_ORDER[it.role] ?: Int.MAX_VALUE }.role
+
+                        ClubMemberUiItem(
+                            memberId = primaryMember.id,
+                            userId = userId,
+                            displayName = user.displayName.ifBlank { user.email },
+                            role = topRole,
+                            subtitle = buildSubtitle(topRole, teamNames, user.displayName),
+                            avatarUrl = user.avatarId.ifBlank { user.photoURL },
+                            memberships = memberships,
                         )
                     }
-                    // Badge shows the highest-ranked role across all of the user's teams.
-                    val topRole = memberships.minBy { ROLE_ORDER[it.role] ?: Int.MAX_VALUE }.role
 
-                    ClubMemberUiItem(
-                        memberId = primaryMember.id,
-                        userId = userId,
-                        displayName = user.displayName.ifBlank { user.email },
-                        role = topRole,
-                        subtitle = buildSubtitle(topRole, teamNames, user.displayName),
-                        avatarUrl = user.avatarId.ifBlank { user.photoURL },
-                        memberships = memberships,
+                    val filtered = applyFilter(items, uiState.memberSearchQuery, uiState.memberFilter)
+                    uiState = uiState.copy(
+                        isMembersLoading = false,
+                        members = items,
+                        filteredMembers = filtered,
                     )
+                    Log.d(TAG, "Members loaded: ${items.size}")
                 }
-
-                val filtered = applyFilter(items, uiState.memberSearchQuery, uiState.memberFilter)
-                uiState = uiState.copy(
-                    isMembersLoading = false,
-                    members = items,
-                    filteredMembers = filtered,
-                )
-                Log.d(TAG, "Members loaded: ${items.size}")
             }.onFailure { e ->
                 Log.e(TAG, "Failed to load members", e)
                 uiState = uiState.copy(
