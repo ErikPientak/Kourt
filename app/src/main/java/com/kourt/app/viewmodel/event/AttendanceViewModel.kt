@@ -193,6 +193,10 @@ class AttendanceViewModel @Inject constructor(
         }
     }
 
+    fun onErrorShown() {
+        uiState = uiState.copy(error = null)
+    }
+
     fun onSavedConsumed() {
         uiState = uiState.copy(isSaved = false)
     }

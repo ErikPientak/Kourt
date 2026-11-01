@@ -25,6 +25,22 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+
+/** Today as an epoch day in the device's time zone (not UTC, which is a day behind after midnight). */
+internal fun todayEpochDay(): Long = LocalDate.now().toEpochDay()
+
+/**
+ * True once an event has finished: its day is before today, or it's today and its end time
+ * ("HH:mm") has passed. Without a readable end time it counts as finished when its day ends.
+ */
+internal fun isEventOver(epochDay: Long, endTime: String, now: LocalDateTime = LocalDateTime.now()): Boolean {
+    val day = LocalDate.ofEpochDay(epochDay)
+    val end = runCatching { LocalTime.parse(endTime) }.getOrNull()
+    return if (end == null) day < now.toLocalDate() else day.atTime(end) <= now
+}
 
 private val ROLE_ORDER = mapOf("admin" to 0, "coach" to 1, "assistant" to 2, "player" to 3, "parent" to 4)
 
@@ -41,6 +57,9 @@ abstract class BaseDashboardViewModel(
     protected abstract val logTag: String
 
     // ── Template methods ──────────────────────────────────────────────────────
+
+    /** Reloads the dashboard after a failed load (the snackbar's Retry). */
+    fun retryLoad() = loadDashboard()
 
     protected fun loadDashboard() {
         viewModelScope.launch {
@@ -101,11 +120,10 @@ abstract class BaseDashboardViewModel(
                     val today = Calendar.getInstance()
                     val todayYear = today.get(Calendar.YEAR)
                     val todayMonth = today.get(Calendar.MONTH)
-                    val todayEpochDay = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())
-
                     val sortedEvents = eventsDeferred.await().sortedBy { it.date.toDate() }
+                    // Still to come, or happening right now; finished ones drop off at their end time.
                     val futureEvents = sortedEvents.filter {
-                        TimeUnit.MILLISECONDS.toDays(it.date.toDate().time) >= todayEpochDay
+                        !isEventOver(TimeUnit.MILLISECONDS.toDays(it.date.toDate().time), it.endTime)
                     }
 
                     val upNextEvent = futureEvents.firstOrNull { it.status.lowercase() == "upcoming" }
@@ -154,7 +172,7 @@ abstract class BaseDashboardViewModel(
                         members = members,
                         calendarYear = todayYear,
                         calendarMonth = todayMonth,
-                        todayEpochDay = todayEpochDay,
+                        todayEpochDay = todayEpochDay(),
                         eventDaysInView = eventDaysInView,
                     )
                 }
@@ -241,6 +259,7 @@ abstract class BaseDashboardViewModel(
             dayOfWeek = SimpleDateFormat("EEE", locale).format(eventDate).uppercase(locale),
             dayOfMonth = cal.get(Calendar.DAY_OF_MONTH),
             startTime = startTime,
+            endTime = endTime,
             location = location,
             isToday = isToday,
             dateLabel = when {

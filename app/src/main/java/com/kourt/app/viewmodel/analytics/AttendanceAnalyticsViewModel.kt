@@ -16,6 +16,7 @@ import com.kourt.app.data.repository.remote.UserRepository
 import com.kourt.app.ui.screens.analytics.attendance.AttendanceAnalyticsScreenUiState
 import com.kourt.app.ui.screens.analytics.attendance.PlayerAttendanceItem
 import com.kourt.app.ui.screens.analytics.attendance.WeeklyAttendanceBar
+import com.kourt.app.viewmodel.dashboard.todayEpochDay
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -139,7 +140,7 @@ class AttendanceAnalyticsViewModel @Inject constructor(
                     Log.d(TAG, "Built ${playerItems.size} player items, team rate=${teamAttendanceRate}")
 
                     // ── Weekly trend bars ─────────────────────────────────────
-                    val todayEpoch = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())
+                    val todayEpoch = todayEpochDay()
                     val windowStart = todayEpoch - WINDOW_DAYS
 
                     val recentEvents = events.filter { event ->

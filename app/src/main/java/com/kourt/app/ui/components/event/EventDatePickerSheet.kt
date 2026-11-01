@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.kourt.app.R
 import com.kourt.app.ui.components.KourtButton
 import com.kourt.app.ui.components.KourtCalendar
+import com.kourt.app.viewmodel.dashboard.todayEpochDay
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -74,7 +75,7 @@ fun EventDatePickerSheet(
                 year = calYear,
                 month = calMonth,
                 selectedEpochDay = selectedEpochDay
-                    ?: TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis()),
+                    ?: todayEpochDay(),
                 eventDays = emptySet(),
                 onPreviousMonth = {
                     val cal = Calendar.getInstance().apply {

@@ -25,6 +25,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import com.kourt.app.ui.components.BaseScreenWithBottomNav
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -32,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -51,6 +53,7 @@ import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.Tabs.MembersTab
 import com.kourt.app.ui.Tabs.PlayerHomeTab
 import com.kourt.app.ui.Tabs.ScheduleTab
+import com.kourt.app.ui.components.ErrorSnackbarEffect
 import com.kourt.app.ui.components.EventCard
 import com.kourt.app.ui.components.KourtAvatarLeading
 import com.kourt.app.ui.components.KourtTeamAvatar
@@ -72,6 +75,13 @@ fun PlayerDashboardScreen(
     viewModel: PlayerDashboardViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
+    val snackbarHostState = remember { SnackbarHostState() }
+    ErrorSnackbarEffect(
+        snackbarHostState = snackbarHostState,
+        error = uiState.error,
+        onShown = viewModel::onErrorShown,
+        onRetry = viewModel::retryLoad,
+    )
 
     val navBackStackEntry by navigation.getNavController().currentBackStackEntryAsState()
     LaunchedEffect(navBackStackEntry) {
@@ -87,6 +97,7 @@ fun PlayerDashboardScreen(
     }
 
     PlayerDashboardContent(
+        snackbarHostState = snackbarHostState,
         uiState = uiState,
         actions = viewModel,
         onSettingsTap = { navigation.navigateToSettingsScreen() },
@@ -96,6 +107,7 @@ fun PlayerDashboardScreen(
 
 @Composable
 private fun PlayerDashboardContent(
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     uiState: PlayerDashboardScreenUiState,
     actions: PlayerDashboardScreenActions,
     onSettingsTap: () -> Unit,
@@ -104,6 +116,7 @@ private fun PlayerDashboardContent(
     var selectedTab by rememberSaveable { mutableIntStateOf(TAB_HOME) }
 
     BaseScreenWithBottomNav(
+        snackbarHostState = snackbarHostState,
         topBar = {
             PlayerDashboardTopBar(
                 playerName = uiState.playerName,

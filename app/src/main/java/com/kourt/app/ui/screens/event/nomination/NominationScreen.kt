@@ -23,10 +23,12 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +41,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.R
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.BaseScreen
+import com.kourt.app.ui.components.ErrorSnackbarEffect
 import com.kourt.app.ui.components.KourtAvatarLeading
 import com.kourt.app.ui.components.KourtButton
 import com.kourt.app.viewmodel.event.NominationViewModel
@@ -49,6 +52,12 @@ fun NominationScreen(
     viewModel: NominationViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
+    val snackbarHostState = remember { SnackbarHostState() }
+    ErrorSnackbarEffect(
+        snackbarHostState = snackbarHostState,
+        error = uiState.error,
+        onShown = viewModel::onErrorShown,
+    )
 
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
@@ -58,6 +67,7 @@ fun NominationScreen(
     }
 
     NominationScreenContent(
+        snackbarHostState = snackbarHostState,
         uiState = uiState,
         onBack = navigation::returnBack,
         onTogglePlayer = viewModel::onTogglePlayer,
@@ -67,12 +77,14 @@ fun NominationScreen(
 
 @Composable
 private fun NominationScreenContent(
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     uiState: NominationScreenUiState,
     onBack: () -> Unit,
     onTogglePlayer: (String) -> Unit,
     onNominate: () -> Unit,
 ) {
     BaseScreen(
+        snackbarHostState = snackbarHostState,
         title = stringResource(R.string.nomination_title),
         onBack = onBack,
     ) { padding ->

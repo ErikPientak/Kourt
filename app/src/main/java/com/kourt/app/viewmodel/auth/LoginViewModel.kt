@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import android.util.Log
 import com.kourt.app.R
 import com.kourt.app.data.model.User
+import com.kourt.app.data.repository.local.AppPreferencesRepository
 import com.kourt.app.data.repository.remote.AuthRepository
 import com.kourt.app.data.repository.remote.ClubRepository
 import com.kourt.app.data.repository.remote.TeamMemberRepository
@@ -16,6 +17,8 @@ import com.kourt.app.data.repository.remote.UserRepository
 import com.kourt.app.ui.screens.auth.login.LoginDestination
 import com.kourt.app.ui.screens.auth.login.LoginScreenActions
 import com.kourt.app.ui.screens.auth.login.LoginScreenUiState
+import com.kourt.app.viewmodel.StartRoute
+import com.kourt.app.viewmodel.resolveStartRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,6 +31,7 @@ class LoginViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val teamMemberRepository: TeamMemberRepository,
     private val clubRepository: ClubRepository,
+    private val appPreferences: AppPreferencesRepository,
 ) : ViewModel(), LoginScreenActions {
 
     var uiState by mutableStateOf(LoginScreenUiState())
@@ -100,19 +104,22 @@ class LoginViewModel @Inject constructor(
         uiState = uiState.copy(passwordResetSent = false)
     }
     internal suspend fun resolveDestination(uid: String) {
-        val adminClub = runCatching { clubRepository.getClubByAdminId(uid) }.getOrNull()
-        if (adminClub != null) {
-            Log.d(TAG, "User is admin of club ${adminClub.id}, routing to ClubManagement")
-            uiState = uiState.copy(isLoading = false, destination = LoginDestination.CLUB_MANAGEMENT)
-            return
+        val route = runCatching { resolveStartRoute(uid, clubRepository, teamMemberRepository) }
+            .getOrElse { e ->
+                // Signed in but the lookup failed (offline): stay here so the user can retry,
+                // instead of sending an existing member to Setup.
+                Log.e(TAG, "Failed to resolve start route", e)
+                uiState = uiState.copy(isLoading = false, error = R.string.error_load_failed)
+                return
+            }
+        appPreferences.lastStartRoute = route.name
+        val destination = when (route) {
+            StartRoute.CLUB_MANAGEMENT -> LoginDestination.CLUB_MANAGEMENT
+            StartRoute.COACH_DASHBOARD -> LoginDestination.COACH_DASHBOARD
+            StartRoute.PLAYER_DASHBOARD -> LoginDestination.PLAYER_DASHBOARD
+            StartRoute.SETUP -> LoginDestination.SETUP
         }
-        val members = runCatching { teamMemberRepository.getMembersByUser(uid) }.getOrElse { emptyList() }
-        val destination = when {
-            members.isEmpty() -> LoginDestination.SETUP
-            members.any { it.role.lowercase() in setOf("coach", "assistant") } -> LoginDestination.COACH_DASHBOARD
-            else -> LoginDestination.PLAYER_DASHBOARD
-        }
-        Log.d(TAG, "Routing to $destination (memberCount=${members.size})")
+        Log.d(TAG, "Routing to $destination")
         uiState = uiState.copy(isLoading = false, destination = destination)
     }
 

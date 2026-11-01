@@ -89,6 +89,7 @@ fun CoachHomeTab(
                     eventType = event.type,
                     status = event.status,
                     epochDay = event.epochDay,
+                    endTime = event.endTime,
                     dayOfWeek = event.dayOfWeek,
                     dayOfMonth = event.dayOfMonth,
                     startTime = event.startTime,

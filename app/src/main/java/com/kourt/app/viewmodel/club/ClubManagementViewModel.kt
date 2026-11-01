@@ -22,6 +22,7 @@ import com.kourt.app.ui.screens.club.management.ClubManagementScreenUiState
 import com.kourt.app.ui.screens.club.management.EventStatusFilter
 import com.kourt.app.ui.screens.club.management.MemberFilter
 import com.kourt.app.ui.screens.dashboard.coach.EventUiItem
+import com.kourt.app.viewmodel.dashboard.isEventOver
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -56,6 +57,13 @@ class ClubManagementViewModel @Inject constructor(
     }
 
     // ── Club + teams ──────────────────────────────────────────────────────────
+
+    /** Reloads the club after a failed load (the snackbar's Retry). */
+    fun retryLoad() = loadClubData()
+
+    fun onErrorShown() {
+        uiState = uiState.copy(error = null)
+    }
 
     private fun loadClubData() {
         viewModelScope.launch {
@@ -290,6 +298,7 @@ class ClubManagementViewModel @Inject constructor(
                 Log.d(TAG, "Made admin: userId=${member.userId}, clubId=${uiState.clubId}")
             }.onFailure { e ->
                 Log.e(TAG, "Failed to make admin", e)
+                uiState = uiState.copy(error = R.string.error_generic)
             }
         }
     }
@@ -316,6 +325,7 @@ class ClubManagementViewModel @Inject constructor(
                 Log.d(TAG, "Removed member: memberId=$memberId")
             }.onFailure { e ->
                 Log.e(TAG, "Failed to remove member", e)
+                uiState = uiState.copy(error = R.string.error_generic)
             }
         }
     }
@@ -361,6 +371,7 @@ class ClubManagementViewModel @Inject constructor(
                 loadMembers(uiState.teams)
             }.onFailure { e ->
                 Log.e(TAG, "Failed to set role", e)
+                uiState = uiState.copy(error = R.string.error_generic)
             }
         }
     }
@@ -395,11 +406,10 @@ class ClubManagementViewModel @Inject constructor(
     }
 
     private fun applyEventFilter(events: List<EventUiItem>, filter: EventStatusFilter): List<EventUiItem> {
-        val today = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())
         return when (filter) {
             EventStatusFilter.ALL       -> events
-            EventStatusFilter.UPCOMING  -> events.filter { it.epochDay >= today && it.status != "cancelled" }
-            EventStatusFilter.PAST      -> events.filter { it.epochDay < today && it.status != "cancelled" }
+            EventStatusFilter.UPCOMING  -> events.filter { !isEventOver(it.epochDay, it.endTime) && it.status != "cancelled" }
+            EventStatusFilter.PAST      -> events.filter { isEventOver(it.epochDay, it.endTime) && it.status != "cancelled" }
             EventStatusFilter.CANCELLED -> events.filter { it.status == "cancelled" }
         }
     }
@@ -429,6 +439,7 @@ class ClubManagementViewModel @Inject constructor(
             dayOfWeek = SimpleDateFormat("EEE", locale).format(eventDate).uppercase(locale),
             dayOfMonth = cal.get(Calendar.DAY_OF_MONTH),
             startTime = startTime,
+            endTime = endTime,
             location = location,
             isToday = isToday,
             dateLabel = when {
@@ -475,6 +486,7 @@ class ClubManagementViewModel @Inject constructor(
                 Log.d(TAG, "Event cancelled: $eventId")
             }.onFailure { e ->
                 Log.e(TAG, "Failed to cancel event $eventId", e)
+                uiState = uiState.copy(error = R.string.error_generic)
             }
         }
     }
@@ -501,6 +513,7 @@ class ClubManagementViewModel @Inject constructor(
                 Log.d(TAG, "Event deleted: $eventId")
             }.onFailure { e ->
                 Log.e(TAG, "Failed to delete event $eventId", e)
+                uiState = uiState.copy(error = R.string.error_generic)
             }
         }
     }
@@ -557,6 +570,7 @@ class ClubManagementViewModel @Inject constructor(
                 Log.d(TAG, "Team deleted: ${team.id}")
             }.onFailure { e ->
                 Log.e(TAG, "Failed to delete team ${team.id}", e)
+                uiState = uiState.copy(error = R.string.error_generic)
             }
         }
     }

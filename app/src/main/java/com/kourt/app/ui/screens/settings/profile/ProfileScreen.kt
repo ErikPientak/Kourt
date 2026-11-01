@@ -30,11 +30,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,6 +53,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.R
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.BaseScreen
+import com.kourt.app.ui.components.ErrorSnackbarEffect
 import com.kourt.app.ui.components.KourtAvatarLeading
 import com.kourt.app.ui.components.KourtTeamAvatar
 import com.kourt.app.ui.components.bottomSheets.AvatarPickerBottomSheet
@@ -66,6 +69,12 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
+    val snackbarHostState = remember { SnackbarHostState() }
+    ErrorSnackbarEffect(
+        snackbarHostState = snackbarHostState,
+        error = uiState.actionError,
+        onShown = viewModel::onActionErrorShown,
+    )
 
     LaunchedEffect(uiState.navigateToSetup) {
         if (uiState.navigateToSetup) {
@@ -96,6 +105,7 @@ fun ProfileScreen(
     }
 
     ProfileScreenContent(
+        snackbarHostState = snackbarHostState,
         uiState = uiState,
         actions = viewModel,
         navigation = navigation
@@ -104,6 +114,7 @@ fun ProfileScreen(
 
 @Composable
 private fun ProfileScreenContent(
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     uiState: ProfileScreenUiState,
     actions: ProfileScreenActions,
     navigation: INavigationRouter,
@@ -208,6 +219,7 @@ private fun ProfileScreenContent(
     }
 
     BaseScreen(
+        snackbarHostState = snackbarHostState,
         title = stringResource(R.string.profile_title),
         onBack = { navigation.returnBack() },
     ) { padding ->

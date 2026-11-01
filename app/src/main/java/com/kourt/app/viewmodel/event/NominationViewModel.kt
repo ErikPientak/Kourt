@@ -101,6 +101,10 @@ class NominationViewModel @Inject constructor(
         )
     }
 
+    fun onErrorShown() {
+        uiState = uiState.copy(error = null)
+    }
+
     override fun onSave() {
         if (uiState.isLoading) return
         viewModelScope.launch {

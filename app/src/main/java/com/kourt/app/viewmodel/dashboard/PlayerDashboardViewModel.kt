@@ -348,6 +348,10 @@ class PlayerDashboardViewModel @Inject constructor(
         uiState = uiState.copy(navigateToEventDetailId = null)
     }
 
+    fun onErrorShown() {
+        uiState = uiState.copy(error = null)
+    }
+
     fun refreshEvents() {
         val team = uiState.activeTeam ?: return
         loadTeamData(team.teamId, team.teamName)

@@ -242,6 +242,7 @@
     <string name="error_already_member">You are already a member of this team</string>
     <string name="error_load_failed">Failed to load data. Please try again.</string>
     <string name="error_generic">Something went wrong. Please try again.</string>
+    <string name="error_recent_login_required">For security, sign out and sign in again before deleting your account.</string>
     <string name="error_display_name_required">Please enter a name</string>
     <string name="error_login_failed">Login failed. Please check your credentials.</string>
     <string name="error_google_sign_in_failed">Google sign-in failed. Please try again.</string>

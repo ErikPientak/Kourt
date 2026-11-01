@@ -14,6 +14,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -33,6 +35,7 @@ import com.kourt.app.ui.theme.KourtTheme
  * @param bottomBar Slot for the bottom navigation component.
  * @param floatingActionButton Slot for an optional FAB. [Scaffold] positions it
  *   automatically above the bottom bar. Defaults to an empty composable.
+ * @param snackbarHostState Where [ErrorSnackbarEffect] shows messages; `null` for none.
  * @param content Slot for the screen body. Receives [PaddingValues] from
  *   [Scaffold] that the caller must apply to avoid content being obscured.
  */
@@ -42,6 +45,7 @@ fun BaseScreenWithBottomNav(
     modifier: Modifier = Modifier,
     bottomBar: @Composable () -> Unit,
     floatingActionButton: @Composable () -> Unit = {},
+    snackbarHostState: SnackbarHostState? = null,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     Scaffold(
@@ -51,6 +55,7 @@ fun BaseScreenWithBottomNav(
         topBar = topBar,
         bottomBar = bottomBar,
         floatingActionButton = floatingActionButton,
+        snackbarHost = { snackbarHostState?.let { SnackbarHost(it) } },
         content = content,
     )
 }

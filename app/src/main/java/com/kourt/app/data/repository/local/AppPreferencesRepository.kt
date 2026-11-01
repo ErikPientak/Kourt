@@ -11,6 +11,7 @@ private const val KEY_LANGUAGE = "language"
 private const val KEY_ACTIVE_CLUB_ID = "active_club_id"
 private const val KEY_ACTIVE_TEAM_ID = "active_team_id"
 private const val KEY_ACTIVE_CHILD_ID = "active_child_id"
+private const val KEY_LAST_START_ROUTE = "last_start_route"
 
 @Singleton
 open class AppPreferencesRepository @Inject constructor(
@@ -37,4 +38,19 @@ open class AppPreferencesRepository @Inject constructor(
     var activeChildId: String
         get() = prefs.getString(KEY_ACTIVE_CHILD_ID, "") ?: ""
         set(value) = prefs.edit().putString(KEY_ACTIVE_CHILD_ID, value).apply()
+
+    /** Name of the last resolved StartRoute, used when the app starts offline. */
+    open var lastStartRoute: String
+        get() = prefs.getString(KEY_LAST_START_ROUTE, "") ?: ""
+        set(value) = prefs.edit().putString(KEY_LAST_START_ROUTE, value).apply()
+
+    /** Forgets everything tied to the signed-in account; theme and language stay. */
+    open fun clearSession() {
+        prefs.edit()
+            .remove(KEY_ACTIVE_CLUB_ID)
+            .remove(KEY_ACTIVE_TEAM_ID)
+            .remove(KEY_ACTIVE_CHILD_ID)
+            .remove(KEY_LAST_START_ROUTE)
+            .apply()
+    }
 }

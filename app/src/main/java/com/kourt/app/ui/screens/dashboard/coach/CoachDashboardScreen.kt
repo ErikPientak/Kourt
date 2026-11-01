@@ -63,9 +63,12 @@ import com.kourt.app.ui.components.UpNextCard
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.remember
 import androidx.compose.ui.text.input.KeyboardType
 import com.kourt.app.ui.Tabs.CoachHomeTab
+import com.kourt.app.ui.components.ErrorSnackbarEffect
 import com.kourt.app.ui.components.bottomSheets.ChangeRoleBottomSheet
 import com.kourt.app.ui.components.bottomSheets.GrowYourTeamBottomSheet
 import com.kourt.app.ui.components.bottomSheets.RosterActionBottomSheet
@@ -81,6 +84,13 @@ fun CoachDashboardScreen(
     viewModel: CoachDashboardViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
+    val snackbarHostState = remember { SnackbarHostState() }
+    ErrorSnackbarEffect(
+        snackbarHostState = snackbarHostState,
+        error = uiState.error,
+        onShown = viewModel::onErrorShown,
+        onRetry = viewModel::retryLoad,
+    )
 
     val navBackStackEntry by navigation.getNavController().currentBackStackEntryAsState()
     LaunchedEffect(navBackStackEntry) {
@@ -129,6 +139,7 @@ fun CoachDashboardScreen(
     }
 
     CoachDashboardContent(
+        snackbarHostState = snackbarHostState,
         uiState = uiState,
         actions = viewModel,
         navigation = navigation
@@ -137,6 +148,7 @@ fun CoachDashboardScreen(
 
 @Composable
 private fun CoachDashboardContent(
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     uiState: CoachDashboardScreenUiState,
     actions: CoachDashboardScreenActions,
     navigation: INavigationRouter,
@@ -207,6 +219,7 @@ private fun CoachDashboardContent(
     }
 
     BaseScreenWithBottomNav(
+        snackbarHostState = snackbarHostState,
         topBar = {
             CoachDashboardTopBar(
                 coachName = uiState.coachName,

@@ -26,6 +26,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -48,6 +49,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.R
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.BaseScreen
+import com.kourt.app.ui.components.ErrorSnackbarEffect
 import com.kourt.app.viewmodel.settings.SettingsViewModel
 
 private data class AppLanguage(val code: String, @StringRes val nameRes: Int)
@@ -67,6 +69,12 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
+    val snackbarHostState = remember { SnackbarHostState() }
+    ErrorSnackbarEffect(
+        snackbarHostState = snackbarHostState,
+        error = uiState.error,
+        onShown = viewModel::onErrorShown,
+    )
 
     LaunchedEffect(uiState.isLoggedOut) {
         if (uiState.isLoggedOut) {
@@ -76,6 +84,7 @@ fun SettingsScreen(
     }
 
     SettingsScreenContent(
+        snackbarHostState = snackbarHostState,
         uiState = uiState,
         onToggleTheme = onToggleTheme,
         onSetLanguage = onSetLanguage,
@@ -89,6 +98,7 @@ fun SettingsScreen(
 
 @Composable
 private fun SettingsScreenContent(
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     uiState: SettingsScreenUiState,
     isDarkTheme: Boolean,
     currentLanguage: String,
@@ -195,6 +205,7 @@ private fun SettingsScreenContent(
     }
 
     BaseScreen(
+        snackbarHostState = snackbarHostState,
         title = stringResource(R.string.settings_title),
         onBack = onBack,
     ) { padding ->

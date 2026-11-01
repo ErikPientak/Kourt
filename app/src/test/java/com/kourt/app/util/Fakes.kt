@@ -260,16 +260,30 @@ internal class FakeMatchStatsRepository : MatchStatsRepository(firestore = TestI
 internal class FakeAppPreferencesRepository : AppPreferencesRepository(context = TestInstantiator.allocate(android.content.Context::class.java)) {
 
     private var _activeTeamId: String = ""
+    private var _lastStartRoute: String = ""
+    var sessionCleared: Boolean = false
 
     override var activeTeamId: String
         get() = _activeTeamId
         set(value) { _activeTeamId = value }
+
+    override var lastStartRoute: String
+        get() = _lastStartRoute
+        set(value) { _lastStartRoute = value }
+
+    override fun clearSession() {
+        sessionCleared = true
+        _activeTeamId = ""
+        _lastStartRoute = ""
+    }
 
     companion object {
         fun create(): FakeAppPreferencesRepository {
             val r = TestInstantiator.allocate(FakeAppPreferencesRepository::class.java)
             // Touch property via reflection-free access by writing through the setter.
             r.activeTeamId = ""
+            r.lastStartRoute = ""
+            r.sessionCleared = false
             return r
         }
     }

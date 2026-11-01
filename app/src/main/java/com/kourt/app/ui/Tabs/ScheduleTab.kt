@@ -25,6 +25,7 @@ import com.kourt.app.ui.components.EventCard
 import com.kourt.app.ui.components.KourtCalendar
 import com.kourt.app.ui.components.ScheduleEventCard
 import com.kourt.app.ui.screens.dashboard.coach.CoachDashboardScreenUiState
+import com.kourt.app.viewmodel.dashboard.isEventOver
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -120,9 +121,8 @@ fun ScheduleTab(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 items(visibleEvents, key = { it.eventId }) { event ->
-                    val today = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())
                     val isPastMatch = event.type.lowercase() == "match" &&
-                        event.epochDay >= 0 && event.epochDay < today
+                        event.epochDay >= 0 && isEventOver(event.epochDay, event.endTime)
                     val hasStats = event.eventId in uiState.matchStatsEventIds
 
                     if (showRsvp) {
@@ -131,6 +131,7 @@ fun ScheduleTab(
                             eventType = event.type,
                             status = event.status,
                             epochDay = event.epochDay,
+                            endTime = event.endTime,
                             dayOfWeek = event.dayOfWeek,
                             dayOfMonth = event.dayOfMonth,
                             startTime = event.startTime,

@@ -5,6 +5,7 @@ import androidx.compose.runtime.Immutable
 import com.kourt.app.data.model.TeamMember
 import com.kourt.app.ui.screens.club.management.ClubMemberUiItem
 import com.kourt.app.ui.screens.club.management.MemberFilter
+import com.kourt.app.viewmodel.dashboard.todayEpochDay
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
@@ -27,6 +28,8 @@ data class EventUiItem(
     val dayOfWeek: String,
     val dayOfMonth: Int,
     val startTime: String,
+    /** "HH:mm"; used to treat an event as past once it has ended. */
+    val endTime: String = "",
     val location: String,
     val isToday: Boolean,
     val dateLabel: String,
@@ -60,7 +63,7 @@ data class CoachDashboardScreenUiState(
     @StringRes val error: Int? = null,
     val calendarYear: Int = Calendar.getInstance().get(Calendar.YEAR),
     val calendarMonth: Int = Calendar.getInstance().get(Calendar.MONTH),
-    val selectedEpochDay: Long = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis()),
+    val selectedEpochDay: Long = todayEpochDay(),
     val eventDaysInView: Set<Long> = emptySet(),
     val navigateToAddEvent: Boolean = false,
     val navigateToEventDetailId: String? = null,

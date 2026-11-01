@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kourt.app.ui.theme.KourtTheme
+import com.kourt.app.viewmodel.dashboard.todayEpochDay
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -139,7 +140,8 @@ fun KourtCalendar(
         days
     }
 
-    val todayEpochDay = remember { TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis()) }
+    // Not remembered, so the highlight moves on at midnight.
+    val todayEpochDay = todayEpochDay()
 
     Column(modifier = modifier) {
         // ── Month navigation header ───────────────────────────────────────────

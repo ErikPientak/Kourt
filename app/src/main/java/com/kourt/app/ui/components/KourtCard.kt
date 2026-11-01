@@ -30,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
@@ -47,6 +48,7 @@ import com.kourt.app.ui.components.bottomSheets.avatarResId
 import com.kourt.app.ui.components.bottomSheets.contentColorForBackground
 import com.kourt.app.ui.theme.KourtTheme
 import com.kourt.app.ui.theme.White
+import com.kourt.app.viewmodel.dashboard.isEventOver
 import java.util.concurrent.TimeUnit
 
 /**
@@ -300,8 +302,9 @@ fun KourtDateLeading(
 ) {
     val hasColor = color != Color.Unspecified
     val bgColor = if (hasColor) color.copy(alpha = 0.15f) else MaterialTheme.colorScheme.outline
-    val labelColor = if (hasColor) color.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-    val numberColor = if (hasColor) color else MaterialTheme.colorScheme.onBackground
+    // The tint and the outline grey are near-white in light mode, so white text only works on dark.
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val textColor = if (isDark) White else MaterialTheme.colorScheme.onSurface
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -314,12 +317,12 @@ fun KourtDateLeading(
         Text(
             text = dayOfWeek.uppercase(),
             style = MaterialTheme.typography.labelSmall,
-            color = White,
+            color = textColor,
         )
         Text(
             text = dayOfMonth.toString(),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            color = White,
+            color = textColor,
         )
     }
 }
@@ -433,6 +436,8 @@ fun EventCard(
     eventType: String,
     status: String = "scheduled",
     epochDay: Long = -1,
+    /** "HH:mm"; with [epochDay], the card shows as past once the event has ended. */
+    endTime: String = "",
     dayOfWeek: String,
     dayOfMonth: Int,
     startTime: String,
@@ -450,9 +455,8 @@ fun EventCard(
     onClick: (() -> Unit)? = null,
 ) {
     val isCancelled = status.lowercase() == "cancelled"
-    val today = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())
     val isPast = status.lowercase() in setOf("past", "completed") ||
-                 (epochDay >= 0 && epochDay < today && !isCancelled)
+                 (epochDay >= 0 && isEventOver(epochDay, endTime) && !isCancelled)
 
     val cardAlpha = if (isCancelled || isPast) 0.80f else 1f
 

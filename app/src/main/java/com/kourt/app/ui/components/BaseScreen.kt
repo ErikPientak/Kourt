@@ -1,5 +1,6 @@
 package com.kourt.app.ui.components
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
@@ -16,16 +17,25 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.kourt.app.R
 import com.kourt.app.ui.theme.KourtTheme
 
 /**
@@ -40,6 +50,7 @@ import com.kourt.app.ui.theme.KourtTheme
  * @param trailingIcon Optional slot for a trailing action (e.g. settings gear, kebab
  *   menu). The caller provides the full [IconButton] so the click handler and icon
  *   remain flexible. Pass `null` (default) to omit entirely — no space is reserved.
+ * @param snackbarHostState Where [ErrorSnackbarEffect] shows messages; `null` for none.
  * @param content Slot for the screen body. Receives [PaddingValues] from [Scaffold]
  *   that the caller must apply (e.g. via [Modifier.padding]) to avoid content being
  *   obscured by the top bar or system bars.
@@ -51,6 +62,7 @@ fun BaseScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     trailingIcon: (@Composable () -> Unit)? = null,
+    snackbarHostState: SnackbarHostState? = null,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val outlineColor = MaterialTheme.colorScheme.surface
@@ -100,8 +112,39 @@ fun BaseScreen(
                 )
             )
         },
+        snackbarHost = { snackbarHostState?.let { SnackbarHost(it) } },
         content = content,
     )
+}
+
+/**
+ * Shows [error] once in [snackbarHostState], then calls [onShown] so the screen can clear it.
+ * With [onRetry] the snackbar gets a Retry action, for loads that failed.
+ */
+@Composable
+fun ErrorSnackbarEffect(
+    snackbarHostState: SnackbarHostState,
+    @StringRes error: Int?,
+    onShown: () -> Unit,
+    onRetry: (() -> Unit)? = null,
+) {
+    val message = error?.let { stringResource(it) }
+    val retryLabel = stringResource(R.string.members_error_retry)
+    val currentOnShown by rememberUpdatedState(onShown)
+    val currentOnRetry by rememberUpdatedState(onRetry)
+
+    LaunchedEffect(message) {
+        if (message == null) return@LaunchedEffect
+        val result = snackbarHostState.showSnackbar(
+            message = message,
+            actionLabel = if (currentOnRetry != null) retryLabel else null,
+            duration = if (currentOnRetry != null) SnackbarDuration.Long else SnackbarDuration.Short,
+        )
+        // Cleared only after it's been shown: clearing first would restart this effect
+        // and cancel the snackbar straight away.
+        currentOnShown()
+        if (result == SnackbarResult.ActionPerformed) currentOnRetry?.invoke()
+    }
 }
 
 // ── Previews ─────────────────────────────────────────────────────────────────

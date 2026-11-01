@@ -18,6 +18,8 @@ data class ProfileScreenUiState(
     @StringRes val joinCodeForChildError: Int? = null,
     val isLoading: Boolean = true,
     @StringRes val error: Int? = null,
+    /** A failed action (leave team, avatar, …); shown as a snackbar, unlike [error] which replaces the screen. */
+    @StringRes val actionError: Int? = null,
     val navigateToClubManagement: Boolean = false,
     val navigateToPlayerDashboard: Boolean = false,
     val navigateToCoachDashboard: Boolean = false,

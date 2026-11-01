@@ -64,7 +64,7 @@ fun LoginScreen(
 
     LaunchedEffect(uiState.destination) {
         when (uiState.destination) {
-            LoginDestination.SETUP -> navigation.navigateToSetupScreen()
+            LoginDestination.SETUP -> navigation.navigateToSetupScreen(clearBackStack = true)
             LoginDestination.CLUB_MANAGEMENT -> navigation.navigateToClubManagementScreen()
             LoginDestination.COACH_DASHBOARD -> navigation.navigateToDashboard()
             LoginDestination.PLAYER_DASHBOARD -> navigation.navigateToPlayerDashboard()

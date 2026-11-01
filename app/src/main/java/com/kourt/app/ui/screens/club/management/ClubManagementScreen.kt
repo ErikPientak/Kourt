@@ -27,6 +27,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -35,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -60,6 +62,7 @@ import com.kourt.app.ui.components.TeamCard
 import com.kourt.app.ui.Tabs.EventsTab
 import com.kourt.app.ui.Tabs.MembersTab
 import com.kourt.app.ui.Tabs.TeamsTab
+import com.kourt.app.ui.components.ErrorSnackbarEffect
 import com.kourt.app.ui.components.bottomSheets.AssignTeamBottomSheet
 import com.kourt.app.viewmodel.club.ClubManagementViewModel
 
@@ -73,6 +76,13 @@ fun ClubManagementScreen(
     viewModel: ClubManagementViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
+    val snackbarHostState = remember { SnackbarHostState() }
+    ErrorSnackbarEffect(
+        snackbarHostState = snackbarHostState,
+        error = uiState.error,
+        onShown = viewModel::onErrorShown,
+        onRetry = viewModel::retryLoad,
+    )
 
     val navBackStackEntry by navigation.getNavController().currentBackStackEntryAsState()
     LaunchedEffect(navBackStackEntry) {
@@ -82,6 +92,7 @@ fun ClubManagementScreen(
     }
 
     ClubManagementScreenContent(
+        snackbarHostState = snackbarHostState,
         uiState = uiState,
         actions = viewModel,
         navigation = navigation
@@ -91,6 +102,7 @@ fun ClubManagementScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ClubManagementScreenContent(
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     uiState: ClubManagementScreenUiState,
     actions: ClubManagementScreenActions,
     navigation: INavigationRouter
@@ -228,6 +240,7 @@ private fun ClubManagementScreenContent(
     }
 
     BaseScreenWithBottomNav(
+        snackbarHostState = snackbarHostState,
         topBar = {
             ClubManagementTopBar(
                 title = uiState.clubName.ifBlank { stringResource(com.kourt.app.R.string.club_management_title) },

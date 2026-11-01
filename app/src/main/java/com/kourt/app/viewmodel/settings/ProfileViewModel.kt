@@ -49,6 +49,10 @@ class ProfileViewModel @Inject constructor(
         loadProfile()
     }
 
+    fun onActionErrorShown() {
+        uiState = uiState.copy(actionError = null)
+    }
+
     private fun loadProfile() {
         viewModelScope.launch {
             val firebaseUser = authRepository.currentUser
@@ -306,7 +310,7 @@ class ProfileViewModel @Inject constructor(
                 )
             }.onFailure { e ->
                 Log.e(TAG, "onRemoveChildConfirm: failed", e)
-                uiState = uiState.copy(showRemoveChildConfirm = false, childToRemove = null)
+                uiState = uiState.copy(showRemoveChildConfirm = false, childToRemove = null, actionError = R.string.error_generic)
             }
         }
     }
@@ -340,6 +344,7 @@ class ProfileViewModel @Inject constructor(
                 uiState = uiState.copy(selectedChild = updated)
             }.onFailure { e ->
                 Log.e(TAG, "onChildLeaveTeam: failed", e)
+                uiState = uiState.copy(actionError = R.string.error_generic)
             }
         }
     }
@@ -382,6 +387,7 @@ class ProfileViewModel @Inject constructor(
                 Log.d(TAG, "onAvatarSelected: saved avatarId=$avatarId")
             }.onFailure { e ->
                 Log.e(TAG, "onAvatarSelected: failed to save", e)
+                uiState = uiState.copy(actionError = R.string.error_generic)
             }
         }
     }
@@ -425,6 +431,7 @@ class ProfileViewModel @Inject constructor(
                 )
             }.onFailure { e ->
                 Log.e(TAG, "onLeaveTeamConfirm: failed", e)
+                uiState = uiState.copy(actionError = R.string.error_generic)
             }
         }
     }

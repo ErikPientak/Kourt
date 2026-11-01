@@ -236,6 +236,7 @@
     <string name="error_already_member">Již jste členem tohoto týmu</string>
     <string name="error_load_failed">Načtení se nezdařilo. Zkuste to prosím znovu.</string>
     <string name="error_generic">Něco se nepodařilo. Zkuste to prosím znovu.</string>
+    <string name="error_recent_login_required">Z bezpečnostních důvodů se před smazáním účtu odhlaste a znovu přihlaste.</string>
     <string name="error_display_name_required">Zadejte prosím jméno</string>
     <string name="error_login_failed">Přihlášení se nezdařilo. Zkontrolujte prosím své údaje.</string>
     <string name="error_google_sign_in_failed">Přihlášení přes Google se nezdařilo. Zkuste to prosím znovu.</string>

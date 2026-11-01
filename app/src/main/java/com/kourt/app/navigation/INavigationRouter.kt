@@ -7,7 +7,11 @@ interface INavigationRouter {
     fun returnBack()
     fun navigateToLoginScreen()
     fun navigateToRegisterScreen()
-fun navigateToSetupScreen()
+    /**
+     * @param clearBackStack true after signing in or registering, so Back can't return to
+     * the auth screens; false when Setup is opened from Profile and should go back there.
+     */
+    fun navigateToSetupScreen(clearBackStack: Boolean = false)
     fun navigateToCreateClubScreen()
     fun navigateToReviewConfirm(
         clubName: String,
@@ -19,6 +23,7 @@ fun navigateToSetupScreen()
         accentColor: String,
         initials: String,
     )
+    /** Club Management is a home screen, so the back stack is cleared like for the dashboards. */
     fun navigateToClubManagementScreen()
     fun navigateToAddTeamScreen(clubId: String)
     fun navigateToEditTeamScreen(teamId: String)

@@ -21,8 +21,11 @@ class NavigationRouterImpl(private val navController: NavController) : INavigati
         navController.navigate(Destination.RegisterScreen.route)
     }
 
-override fun navigateToSetupScreen() {
-        navController.navigate(Destination.SetupScreen.route)
+    override fun navigateToSetupScreen(clearBackStack: Boolean) {
+        navController.navigate(Destination.SetupScreen.route) {
+            if (clearBackStack) popUpTo(0) { inclusive = true }
+            launchSingleTop = true
+        }
     }
 
     override fun navigateToCreateClubScreen() {
@@ -52,7 +55,10 @@ override fun navigateToSetupScreen() {
     }
 
     override fun navigateToClubManagementScreen() {
-        navController.navigate(Destination.ClubManagementScreen.route)
+        navController.navigate(Destination.ClubManagementScreen.route) {
+            popUpTo(0) { inclusive = true }
+            launchSingleTop = true
+        }
     }
 
     override fun navigateToAddTeamScreen(clubId: String) {

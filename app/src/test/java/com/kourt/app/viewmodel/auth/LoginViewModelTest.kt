@@ -11,7 +11,9 @@ package com.kourt.app.viewmodel.auth
  *      * mixed-case role      -> COACH_DASHBOARD
  *      * empty members        -> SETUP
  *      * only player/parent   -> PLAYER_DASHBOARD
- *      * teamMember lookup throws -> SETUP fallback (runCatching)
+ *      * staff role in one team wins over player in another -> COACH_DASHBOARD
+ *      * teamMember lookup throws -> stays on Login with error_load_failed
+ *      * a resolved route is remembered for offline launches
  *  - onSignInWithEmail failure -> error_login_failed
  *  - onForgetPassword success / failure
  *  - onPasswordResetConsumed clears the success flag
@@ -27,6 +29,7 @@ import com.kourt.app.R
 import com.kourt.app.data.model.Club
 import com.kourt.app.data.model.TeamMember
 import com.kourt.app.ui.screens.auth.login.LoginDestination
+import com.kourt.app.util.FakeAppPreferencesRepository
 import com.kourt.app.util.FakeAuthRepository
 import com.kourt.app.util.FakeClubRepository
 import com.kourt.app.util.FakeTeamMemberRepository
@@ -54,6 +57,7 @@ class LoginViewModelTest {
     private lateinit var userRepository: FakeUserRepository
     private lateinit var teamMemberRepository: FakeTeamMemberRepository
     private lateinit var clubRepository: FakeClubRepository
+    private lateinit var appPreferences: FakeAppPreferencesRepository
     private lateinit var viewModel: LoginViewModel
 
     @Before
@@ -62,11 +66,13 @@ class LoginViewModelTest {
         userRepository = FakeUserRepository.create()
         teamMemberRepository = FakeTeamMemberRepository.create()
         clubRepository = FakeClubRepository.create()
+        appPreferences = FakeAppPreferencesRepository.create()
         viewModel = LoginViewModel(
             authRepository = authRepository,
             userRepository = userRepository,
             teamMemberRepository = teamMemberRepository,
             clubRepository = clubRepository,
+            appPreferences = appPreferences,
         )
     }
 
@@ -165,8 +171,24 @@ class LoginViewModelTest {
     }
 
     @Test
-    fun `given teamMember lookup throws, when resolveDestination called, then destination falls back to SETUP`() = runTest {
-        // Arrange — runCatching wraps the throw and maps it to emptyList -> SETUP branch
+    fun `given player in one team and coach in another, when resolveDestination called, then COACH_DASHBOARD is chosen`() = runTest {
+        // Arrange — order must not matter
+        teamMemberRepository.membersByUser = listOf(
+            TeamMember(id = "m1", userId = TEST_UID, teamId = "t1", role = "player"),
+            TeamMember(id = "m2", userId = TEST_UID, teamId = "t2", role = "coach"),
+        )
+
+        // Act
+        viewModel.resolveDestination(TEST_UID)
+        advanceUntilIdle()
+
+        // Assert
+        assertEquals(LoginDestination.COACH_DASHBOARD, viewModel.uiState.destination)
+    }
+
+    @Test
+    fun `given teamMember lookup throws, when resolveDestination called, then user stays on Login with an error`() = runTest {
+        // Arrange — an offline lookup must not look like "no team yet"
         teamMemberRepository.failOnGetMembersByUser = true
 
         // Act
@@ -174,7 +196,22 @@ class LoginViewModelTest {
         advanceUntilIdle()
 
         // Assert
-        assertEquals(LoginDestination.SETUP, viewModel.uiState.destination)
+        assertEquals(LoginDestination.NONE, viewModel.uiState.destination)
+        assertEquals(R.string.error_load_failed, viewModel.uiState.error)
+        assertFalse(viewModel.uiState.isLoading)
+    }
+
+    @Test
+    fun `given a route resolves, when resolveDestination called, then it is remembered for offline launches`() = runTest {
+        // Arrange
+        teamMemberRepository.membersByUser = listOf(TeamMember(id = "m1", userId = TEST_UID, role = "player"))
+
+        // Act
+        viewModel.resolveDestination(TEST_UID)
+        advanceUntilIdle()
+
+        // Assert
+        assertEquals("PLAYER_DASHBOARD", appPreferences.lastStartRoute)
     }
 
     // ── onSignInWithEmail failure path ────────────────────────────────────────

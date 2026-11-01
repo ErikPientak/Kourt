@@ -64,6 +64,8 @@ open class AuthRepository @Inject constructor(
     }
 
     suspend fun deleteAccount(): Result<Unit> = runCatching {
-        auth.currentUser?.delete()?.await() ?: error("No user signed in")
+        // delete() completes with null, so the result can't be used to detect "no user".
+        val user = auth.currentUser ?: error("No user signed in")
+        user.delete().await()
     }
 }

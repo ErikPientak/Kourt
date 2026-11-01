@@ -65,7 +65,7 @@ open class TeamMemberRepository @Inject constructor(
         collection.document(memberId).update("role", newRole).await()
     }
 
-    fun changeJerseyNumber(memberId: String, newJerseyNumber: Int) {
-        collection.document(memberId).update("jerseyNumber", newJerseyNumber)
+    suspend fun changeJerseyNumber(memberId: String, newJerseyNumber: Int) {
+        collection.document(memberId).update("jerseyNumber", newJerseyNumber).await()
     }
 }

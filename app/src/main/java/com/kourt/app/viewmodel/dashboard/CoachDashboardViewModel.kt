@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
+import com.kourt.app.R
 import com.kourt.app.data.repository.local.AppPreferencesRepository
 import com.kourt.app.data.repository.remote.AuthRepository
 import com.kourt.app.data.repository.remote.EventRepository
@@ -106,9 +107,8 @@ class CoachDashboardViewModel @Inject constructor(
 
     private fun loadMatchStatsPresence(allEvents: List<EventUiItem>) {
         viewModelScope.launch {
-            val today = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())
             val pastMatchEventIds = allEvents
-                .filter { it.type.lowercase() == "match" && it.epochDay < today }
+                .filter { it.type.lowercase() == "match" && isEventOver(it.epochDay, it.endTime) }
                 .map { it.eventId }
             if (pastMatchEventIds.isEmpty()) return@launch
             runCatching {
@@ -231,6 +231,9 @@ class CoachDashboardViewModel @Inject constructor(
                 teamMemberRepository.changeRole(memberId, newRole)
                 onRoleMenuDismiss()
                 refreshEvents()
+            }.onFailure { e ->
+                Log.e(logTag, "Failed to change role for $memberId", e)
+                uiState = uiState.copy(error = R.string.error_generic)
             }
         }
     }
@@ -251,6 +254,7 @@ class CoachDashboardViewModel @Inject constructor(
                 refreshEvents()
             }.onFailure { e ->
                 Log.e(logTag, "Failed to remove member $memberId", e)
+                uiState = uiState.copy(error = R.string.error_generic)
             }
         }
     }
@@ -279,6 +283,7 @@ class CoachDashboardViewModel @Inject constructor(
                 refreshEvents()
             }.onFailure { e ->
                 Log.e(logTag, "Failed to change jersey number for $memberId", e)
+                uiState = uiState.copy(error = R.string.error_generic)
             }
         }
     }
@@ -368,6 +373,10 @@ class CoachDashboardViewModel @Inject constructor(
 
     fun onEventDetailNavigated() {
         uiState = uiState.copy(navigateToEventDetailId = null)
+    }
+
+    fun onErrorShown() {
+        uiState = uiState.copy(error = null)
     }
 
     fun refreshEvents() {

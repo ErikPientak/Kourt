@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.kourt.app.R
 import com.kourt.app.ui.screens.dashboard.coach.EventUiItem
 import com.kourt.app.ui.theme.KourtTheme
+import com.kourt.app.viewmodel.dashboard.isEventOver
 import java.util.concurrent.TimeUnit
 
 private val PracticeBlue = Color(0xFF2563EB)
@@ -43,8 +44,7 @@ fun ScheduleEventCard(
     ctaText: String? = null,
 ) {
     val isCancelled = event.status.lowercase() == "cancelled"
-    val today = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())
-    val isPast = event.epochDay >= 0 && event.epochDay < today && !isCancelled
+    val isPast = event.epochDay >= 0 && isEventOver(event.epochDay, event.endTime) && !isCancelled
     val colorScheme = MaterialTheme.colorScheme
     val badgeColor = when {
         isCancelled || isPast                   -> Color(0xFF6B7280)

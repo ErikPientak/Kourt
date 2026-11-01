@@ -6,6 +6,7 @@ import com.kourt.app.ui.screens.club.management.ClubMemberUiItem
 import com.kourt.app.ui.screens.club.management.MemberFilter
 import com.kourt.app.ui.screens.dashboard.coach.EventUiItem
 import com.kourt.app.ui.screens.dashboard.coach.TeamUiItem
+import com.kourt.app.viewmodel.dashboard.todayEpochDay
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
@@ -36,7 +37,7 @@ data class PlayerDashboardScreenUiState(
     val isRsvpSubmitting: Boolean = false,
     val calendarYear: Int = Calendar.getInstance().get(Calendar.YEAR),
     val calendarMonth: Int = Calendar.getInstance().get(Calendar.MONTH),
-    val selectedEpochDay: Long = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis()),
+    val selectedEpochDay: Long = todayEpochDay(),
     val eventDaysInView: Set<Long> = emptySet(),
     val navigateToEventDetailId: String? = null,
     )
