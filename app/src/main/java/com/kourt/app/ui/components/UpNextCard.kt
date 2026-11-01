@@ -98,13 +98,13 @@ fun UpNextCard(
                                 .padding(horizontal = 10.dp, vertical = 4.dp),
                         ) {
                             Text(
-                                text = event.type.uppercase(),
+                                text = eventTypeLabel(event.type).uppercase(),
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                 color = Color.White,
                             )
                         }
                         Text(
-                            text = event.dateLabel,
+                            text = eventDateLabel(event),
                             style = MaterialTheme.typography.labelSmall,
                             color = Color.White.copy(alpha = 0.75f),
                         )

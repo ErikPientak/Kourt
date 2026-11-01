@@ -109,9 +109,9 @@ fun MvpCard(
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalAlignment = Alignment.Bottom,
                 ) {
-                    MvpStatChip(value = player.points, label = "PTS", accentColor = accentColor)
-                    MvpStatChip(value = player.rebounds, label = "REB", accentColor = accentColor)
-                    MvpStatChip(value = player.assists, label = "AST", accentColor = accentColor)
+                    MvpStatChip(value = player.points, label = stringResource(R.string.match_stats_analytics_pts), accentColor = accentColor)
+                    MvpStatChip(value = player.rebounds, label = stringResource(R.string.match_stats_analytics_reb), accentColor = accentColor)
+                    MvpStatChip(value = player.assists, label = stringResource(R.string.match_stats_analytics_ast), accentColor = accentColor)
                 }
             }
         }

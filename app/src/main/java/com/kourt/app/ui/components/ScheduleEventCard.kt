@@ -83,13 +83,13 @@ fun ScheduleEventCard(
                         .padding(horizontal = 8.dp, vertical = 4.dp),
                 ) {
                     Text(
-                        text = event.type.uppercase(),
+                        text = eventTypeLabel(event.type).uppercase(),
                         style = MaterialTheme.typography.labelSmall,
                         color = badgeColor,
                     )
                 }
                 Text(
-                    text = "${event.dateLabel}  •  ${event.startTime}",
+                    text = "${eventDateLabel(event)}  •  ${event.startTime}",
                     style = MaterialTheme.typography.labelSmall,
                     color = colorScheme.onSurface.copy(alpha = 0.6f),
                 )

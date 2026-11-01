@@ -48,10 +48,10 @@ private val StatusUnexcusedColor = Color(0xFFEF4444)
 
 // Label → Firestore value
 private val statusPills = listOf(
-    "On Time"   to "on_time",
-    "Late"      to "late",
-    "Excused"   to "excused",
-    "Unexcused" to "unexcused",
+    R.string.attendance_status_on_time   to "on_time",
+    R.string.attendance_status_late      to "late",
+    R.string.attendance_status_excused   to "excused",
+    R.string.attendance_status_unexcused to "unexcused",
 )
 
 // ── Entry point ───────────────────────────────────────────────────────────────
@@ -248,7 +248,7 @@ private fun AttendanceMemberCard(
             ) {
                 statusPills.forEach { (label, value) ->
                     AttendanceStatusPill(
-                        label = label,
+                        label = stringResource(label),
                         value = value,
                         isSelected = member.status == value,
                         selectedColor = statusPillColor(value),

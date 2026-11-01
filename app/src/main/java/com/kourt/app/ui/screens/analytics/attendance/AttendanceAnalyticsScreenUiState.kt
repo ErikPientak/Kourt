@@ -2,10 +2,19 @@ package com.kourt.app.ui.screens.analytics.attendance
 
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
+import com.kourt.app.R
+
+/** How reliably a player attends; [label] is what the card shows. */
+enum class Reliability(@StringRes val label: Int) {
+    EXCELLENT(R.string.reliability_excellent),
+    CONSISTENT(R.string.reliability_consistent),
+    NEEDS_ATTENTION(R.string.reliability_needs_attention),
+}
 
 @Immutable
 data class WeeklyAttendanceBar(
-    val weekLabel: String,
+    /** ISO week number, shown as "W15" (en) / "T15" (cs). */
+    val weekNumber: Int,
     val rate: Float,           // 0f..1f
     val isCurrentWeek: Boolean = false,
 )
@@ -19,7 +28,7 @@ data class PlayerAttendanceItem(
     val onTimeRate: Float,       // green progress segment
     val lateRate: Float,         // orange progress segment
     val absentRate: Float,       // red progress segment (excused + unexcused)
-    val reliabilityLabel: String, // "EXCELLENT" | "CONSISTENT" | "NEEDS ATTENTION"
+    val reliability: Reliability,
 )
 
 data class AttendanceAnalyticsScreenUiState(

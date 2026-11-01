@@ -100,7 +100,7 @@ internal fun SetupScreenContent(
                 IconButton(onClick = onBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Navigate back",
+                        contentDescription = stringResource(R.string.common_back_cd),
                         tint = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.size(24.dp),
                     )

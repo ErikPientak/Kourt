@@ -44,7 +44,7 @@ fun RepeatRow(
         if (repeatDays.isEmpty()) return@remember ""
         repeatDays
             .sorted()
-            .joinToString(" , ") { isoDay ->
+            .joinToString(", ") { isoDay ->
                 Calendar.getInstance().apply { set(Calendar.DAY_OF_WEEK, isoToCalendarDay(isoDay)) }
                     .getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, locale)
                     ?: ""

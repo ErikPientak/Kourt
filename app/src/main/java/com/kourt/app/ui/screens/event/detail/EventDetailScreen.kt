@@ -49,6 +49,8 @@ import com.kourt.app.ui.components.BaseScreen
 import com.kourt.app.ui.components.KourtAvatarLeading
 import com.kourt.app.ui.components.bottomSheets.RsvpReasonBottomSheet
 import com.kourt.app.ui.components.bottomSheets.RsvpSelectionBottomSheet
+import com.kourt.app.ui.components.roleLabel
+import com.kourt.app.ui.components.rsvpReasonLabel
 import com.kourt.app.ui.theme.KourtTheme
 import com.kourt.app.viewmodel.event.EventDetailViewModel
 
@@ -647,9 +649,11 @@ private fun MemberRow(
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.onSurface,
             )
-            if (member.subtitle.isNotBlank()) {
+            // Not coming: why (or "No reason given"). Coming: their role in the team.
+            val subtitle = member.reason?.let { rsvpReasonLabel(it) } ?: roleLabel(member.role)
+            if (subtitle.isNotBlank()) {
                 Text(
-                    text = member.subtitle,
+                    text = subtitle,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
                 )
@@ -736,8 +740,8 @@ private val previewGoingMembers = listOf(
 )
 
 private val previewNotGoingMembers = listOf(
-    RsvpMemberUiItem("u5", "Tom Blake", "Sick", "", "no"),
-    RsvpMemberUiItem("u6", "Anna Park", "Out of town", "", "no"),
+    RsvpMemberUiItem("u5", "Tom Blake", "player", "", "no", reason = "sick"),
+    RsvpMemberUiItem("u6", "Anna Park", "player", "", "no", reason = "out_of_town"),
 )
 
 private val previewNominatedPlayers = listOf(

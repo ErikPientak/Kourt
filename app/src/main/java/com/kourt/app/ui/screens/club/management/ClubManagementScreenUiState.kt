@@ -34,8 +34,10 @@ data class ClubMemberUiItem(
     val displayName: String,
     /** Raw lowercase role string ("player", "coach", "parent", "admin", …). */
     val role: String,
-    /** Pre-formatted subtitle line shown below the name on the card. */
-    val subtitle: String,
+    /** Teams shown below the name ("Team: …"); empty for none. */
+    val teamNames: String = "",
+    /** For parents, their child's name ("Guardian of: …"), shown instead of [teamNames]. */
+    val childName: String? = null,
     val avatarUrl: String = "",
     val jerseyNumber: Int = 0,
     /** Every team this user belongs to in the club. Only populated on Club Management. */

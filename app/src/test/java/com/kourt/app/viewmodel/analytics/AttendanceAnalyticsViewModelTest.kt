@@ -26,6 +26,7 @@ import com.kourt.app.data.model.Event
 import com.kourt.app.data.model.PlayerStats
 import com.kourt.app.data.model.TeamMember
 import com.kourt.app.data.model.User
+import com.kourt.app.ui.screens.analytics.attendance.Reliability
 import com.kourt.app.util.FakeAppPreferencesRepository
 import com.kourt.app.util.FakeAttendanceRepository
 import com.kourt.app.util.FakeEventRepository
@@ -118,7 +119,7 @@ class AttendanceAnalyticsViewModelTest {
         // Assert
         val player = vm.uiState.players.single()
         assertNear(0.9f, player.attendanceRate)
-        assertEquals("EXCELLENT", player.reliabilityLabel)
+        assertEquals(Reliability.EXCELLENT, player.reliability)
     }
 
     @Test
@@ -145,7 +146,7 @@ class AttendanceAnalyticsViewModelTest {
         // Assert
         val player = vm.uiState.players.single()
         assertNear(0.7f, player.attendanceRate)
-        assertEquals("CONSISTENT", player.reliabilityLabel)
+        assertEquals(Reliability.CONSISTENT, player.reliability)
     }
 
     @Test
@@ -172,7 +173,7 @@ class AttendanceAnalyticsViewModelTest {
         // Assert
         val player = vm.uiState.players.single()
         assertNear(0.5f, player.attendanceRate)
-        assertEquals("NEEDS ATTENTION", player.reliabilityLabel)
+        assertEquals(Reliability.NEEDS_ATTENTION, player.reliability)
     }
 
     // ── Attendance rate formula ───────────────────────────────────────────────

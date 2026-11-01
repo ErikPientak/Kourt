@@ -95,7 +95,7 @@ fun BaseScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Navigate back",
+                            contentDescription = stringResource(R.string.common_back_cd),
                         )
                     }
                 },

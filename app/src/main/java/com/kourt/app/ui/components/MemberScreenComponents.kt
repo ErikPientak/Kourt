@@ -151,7 +151,7 @@ fun MembersList(
             MemberCard(
                 playerName = member.displayName,
                 role = member.role,
-                teamName = member.subtitle,
+                teamName = memberSubtitle(member),
                 avatarUrl = member.avatarUrl,
                 showMenu = showMenu,
                 onMenuClick = if (showMenu) ({ onMenuClick(member.memberId) }) else null,

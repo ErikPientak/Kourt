@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.kourt.app.data.model.Team
 import com.kourt.app.ui.components.TeamCard
 import com.kourt.app.ui.components.roleBadgeColor
+import com.kourt.app.ui.components.roleLabel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,7 +72,7 @@ fun AssignTeamBottomSheet(
                     TeamCard(
                         teamName = team.name,
                         headCoach = team.headCoach,
-                        badge = role?.uppercase(),
+                        badge = role?.let { roleLabel(it).uppercase() },
                         badgeColor = role?.let { roleBadgeColor(it) } ?: Color.Transparent,
                         onClick = {
                             onTeamSelected(team.id)

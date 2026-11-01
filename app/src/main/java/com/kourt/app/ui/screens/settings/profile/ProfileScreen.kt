@@ -60,6 +60,7 @@ import com.kourt.app.ui.components.bottomSheets.AvatarPickerBottomSheet
 import com.kourt.app.ui.components.bottomSheets.ChildActionBottomSheet
 import com.kourt.app.ui.components.bottomSheets.avatarResId
 import com.kourt.app.ui.components.roleBadgeColor
+import com.kourt.app.ui.components.roleLabel
 import com.kourt.app.ui.theme.White
 import com.kourt.app.viewmodel.settings.ProfileViewModel
 
@@ -550,7 +551,8 @@ private fun MembershipRow(
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
-                    text = item.subtitle,
+                    // Club-admin rows have no team; their subtitle is the localised "Club".
+                    text = if (item.teamId == null) stringResource(R.string.profile_admin_club) else item.subtitle,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
                 )
@@ -575,7 +577,7 @@ private fun RoleBadgePill(
             .padding(horizontal = 10.dp, vertical = 4.dp),
     ) {
         Text(
-            text = role.uppercase(),
+            text = roleLabel(role).uppercase(),
             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
             color = color,
         )

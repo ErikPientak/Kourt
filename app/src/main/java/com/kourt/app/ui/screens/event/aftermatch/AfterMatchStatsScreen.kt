@@ -1,5 +1,6 @@
 package com.kourt.app.ui.screens.event.aftermatch
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
@@ -65,15 +66,15 @@ import com.kourt.app.viewmodel.event.AfterMatchStatsViewModel
 private val NameColumnWidth  = 130.dp
 private val StatColumnWidth  = 56.dp
 
-private data class ReadStatCol(val label: String, val value: (PlayerStatRowItem) -> String)
+private data class ReadStatCol(@StringRes val label: Int, val value: (PlayerStatRowItem) -> String)
 
 private val readStatColumns = listOf(
-    ReadStatCol("PTS")  { it.points.toString() },
-    ReadStatCol("REB")  { it.rebounds.toString() },
-    ReadStatCol("AST")  { it.assists.toString() },
-    ReadStatCol("FLS")  { it.fouls.toString() },
-    ReadStatCol("FTA")  { it.freeThrowsAttempted.toString() },
-    ReadStatCol("FTM")  { it.freeThrowsMade.toString() },
+    ReadStatCol(R.string.match_stats_analytics_pts)   { it.points.toString() },
+    ReadStatCol(R.string.match_stats_analytics_reb)   { it.rebounds.toString() },
+    ReadStatCol(R.string.match_stats_analytics_ast)   { it.assists.toString() },
+    ReadStatCol(R.string.match_stats_analytics_fouls) { it.fouls.toString() },
+    ReadStatCol(R.string.match_stats_fta)             { it.freeThrowsAttempted.toString() },
+    ReadStatCol(R.string.match_stats_ftm)             { it.freeThrowsMade.toString() },
 )
 
 // ── Entry point ───────────────────────────────────────────────────────────────
@@ -126,7 +127,7 @@ internal fun AfterMatchStatsScreenContent(
                 },
                 title = {
                     val titleText = if (uiState.opponentName.isNotBlank() && uiState.eventDate.isNotBlank()) {
-                        "Match (${uiState.opponentName}) - ${uiState.eventDate}"
+                        stringResource(R.string.after_match_stats_match_title, uiState.opponentName, uiState.eventDate)
                     } else {
                         stringResource(R.string.after_match_stats_title)
                     }
@@ -140,7 +141,7 @@ internal fun AfterMatchStatsScreenContent(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.after_match_stats_back_cd),
+                            contentDescription = stringResource(R.string.common_back_cd),
                         )
                     }
                 },
@@ -415,7 +416,7 @@ private fun ReadStatHeaderRow(
         ) {
             readStatColumns.forEach { col ->
                 Text(
-                    text = col.label,
+                    text = stringResource(col.label),
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     textAlign = TextAlign.Center,

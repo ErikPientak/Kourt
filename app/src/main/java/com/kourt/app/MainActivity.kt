@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.kourt.app.data.repository.local.savedAppLanguage
 import com.kourt.app.navigation.NavGraph
 import com.kourt.app.ui.theme.KourtTheme
 import com.kourt.app.viewmodel.MainViewModel
@@ -29,9 +30,7 @@ class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
 
     override fun attachBaseContext(newBase: Context) {
-        val prefs = newBase.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
-        val languageCode = prefs.getString("language", "en") ?: "en"
-        val locale = Locale(languageCode)
+        val locale = Locale.forLanguageTag(savedAppLanguage(newBase))
         Locale.setDefault(locale)
         val config = Configuration(newBase.resources.configuration)
         config.setLocale(locale)

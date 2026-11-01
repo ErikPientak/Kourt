@@ -128,12 +128,10 @@ class EventDetailViewModel @Inject constructor(
 
                     val goingMembers = goingRsvps.mapNotNull { rsvp ->
                         val user = userMap[rsvp.userId] ?: return@mapNotNull null
-                        val memberRole = memberRoleMap[rsvp.userId]
-                            ?.replaceFirstChar { it.uppercase() } ?: ""
                         RsvpMemberUiItem(
                             userId = user.id,
                             displayName = user.displayName.ifBlank { user.email },
-                            subtitle = memberRole,
+                            role = memberRoleMap[rsvp.userId].orEmpty(),
                             avatarUrl = user.avatarId.ifBlank { user.photoURL },
                             rsvpStatus = rsvp.status,
                         )
@@ -141,16 +139,13 @@ class EventDetailViewModel @Inject constructor(
 
                     val notGoingMembers = notGoingRsvps.mapNotNull { rsvp ->
                         val user = userMap[rsvp.userId] ?: return@mapNotNull null
-                        val reasonDisplay = rsvp.reason
-                            .replace("_", " ")
-                            .replaceFirstChar { it.uppercase() }
-                            .ifBlank { "No reason given" }
                         RsvpMemberUiItem(
                             userId = user.id,
                             displayName = user.displayName.ifBlank { user.email },
-                            subtitle = reasonDisplay,
+                            role = memberRoleMap[rsvp.userId].orEmpty(),
                             avatarUrl = user.avatarId.ifBlank { user.photoURL },
                             rsvpStatus = rsvp.status,
+                            reason = rsvp.reason,
                         )
                     }
 

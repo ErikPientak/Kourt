@@ -187,7 +187,6 @@ class PlayerDashboardViewModel @Inject constructor(
                 userId = user.id,
                 displayName = user.displayName.ifBlank { user.email },
                 role = "",
-                subtitle = "",
                 avatarUrl = user.avatarId.ifBlank { user.photoURL },
             )
         }

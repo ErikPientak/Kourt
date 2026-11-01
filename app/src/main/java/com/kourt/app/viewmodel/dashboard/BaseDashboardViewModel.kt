@@ -141,21 +141,16 @@ abstract class BaseDashboardViewModel(
                     val members = teamMembers.mapNotNull { m ->
                         val u = userMap[m.userId] ?: return@mapNotNull null
                         val role = m.role.lowercase()
-                        val subtitle = when (role) {
-                            "parent" -> {
-                                val childName = u.childIds
-                                    .firstOrNull { it in userIds }
-                                    ?.let { userMap[it]?.displayName }
-                                if (childName != null) "Guardian of: $childName" else "Team: $teamName"
-                            }
-                            else -> "Team: $teamName"
-                        }
+                        val childName = if (role == "parent") {
+                            u.childIds.firstOrNull { it in userIds }?.let { userMap[it]?.displayName }
+                        } else null
                         ClubMemberUiItem(
                             memberId = m.id,
                             userId = m.userId,
                             displayName = u.displayName.ifBlank { u.email },
                             role = role,
-                            subtitle = subtitle,
+                            teamNames = teamName,
+                            childName = childName,
                             avatarUrl = u.avatarId.ifBlank { u.photoURL },
                             jerseyNumber = m.jerseyNumber,
                         )
@@ -262,11 +257,8 @@ abstract class BaseDashboardViewModel(
             endTime = endTime,
             location = location,
             isToday = isToday,
-            dateLabel = when {
-                isToday -> "Today"
-                isTomorrow -> "Tomorrow"
-                else -> SimpleDateFormat(shortDatePattern, locale).format(eventDate)
-            },
+            isTomorrow = isTomorrow,
+            dateLabel = SimpleDateFormat(shortDatePattern, locale).format(eventDate),
             epochDay = TimeUnit.MILLISECONDS.toDays(eventDate.time),
             subtitle = notes,
         )

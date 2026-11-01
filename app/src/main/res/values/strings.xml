@@ -391,7 +391,6 @@
 
     <!-- After Match Stats (read-only result screen) -->
     <string name="after_match_stats_title">Match Result</string>
-    <string name="after_match_stats_back_cd">Navigate back</string>
     <string name="after_match_stats_win_badge">WIN</string>
     <string name="after_match_stats_loss_badge">LOSS</string>
     <string name="after_match_stats_player_of_match">PLAYER OF THE MATCH</string>
@@ -471,4 +470,25 @@
     <string name="match_stats_analytics_draws">D</string>
     <string name="match_stats_analytics_prev_cd">Previous analytics screen</string>
 
+    <!-- Labels for values stored in Firestore and shared UI text -->
+    <string name="match_stats_fta">FTA</string>
+    <string name="match_stats_ftm">FTM</string>
+    <string name="attendance_status_on_time">On Time</string>
+    <string name="attendance_status_late">Late</string>
+    <string name="attendance_status_excused">Excused</string>
+    <string name="attendance_status_unexcused">Unexcused</string>
+    <string name="role_admin">Admin</string>
+    <string name="profile_admin_club">Club</string>
+    <string name="date_today">Today</string>
+    <string name="date_tomorrow">Tomorrow</string>
+    <string name="member_subtitle_team">Team: %1$s</string>
+    <string name="member_subtitle_guardian">Guardian of: %1$s</string>
+    <string name="reliability_excellent">EXCELLENT</string>
+    <string name="reliability_consistent">CONSISTENT</string>
+    <string name="reliability_needs_attention">NEEDS ATTENTION</string>
+    <string name="analytics_week_label">W%1$d</string>
+    <string name="rsvp_reason_none">No reason given</string>
+    <string name="after_match_stats_match_title">Match (%1$s) - %2$s</string>
+    <string name="common_back_cd">Navigate back</string>
+    <string name="avatar_picker_title">Choose Avatar</string>
 </resources>

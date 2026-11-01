@@ -7,7 +7,7 @@ data class CreateClubScreenUiState(
     val shortName: String = "",
     val president: String = "",
     val technicalDirector: String = "",
-    val country: String = "USA",
+    val country: String = "US",
     val city: String = "",
     val accentColor: String = "#9CA3AF",
     val isLoading: Boolean = false,

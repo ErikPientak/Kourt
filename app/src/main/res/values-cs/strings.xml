@@ -16,14 +16,14 @@
     <!-- Setup -->
     <string name="setup_greeting">Rádi tě tu vidíme!</string>
     <string name="setup_title">Nastavení</string>
-    <string name="setup_subtitle">Vyber si, jak chceš na hřišti pokračovat.</string>
-    <string name="setup_description">Teď musíme nastavit tvůj klub. Jsi trenér, nebo se k někomu přidáváš?</string>
+    <string name="setup_subtitle">Vyberte si, jak chcete na hřišti pokračovat.</string>
+    <string name="setup_description">Teď je potřeba nastavit váš klub. Jste trenér, nebo se k někomu přidáváte?</string>
     <string name="setup_create_club_title">Vytvořit nový klub</string>
     <string name="setup_create_club_subtitle">Jsi trenér? Sestav si soupisku, plánuj tréninky a zápasy.</string>
     <string name="setup_create_club_button">Vytvořit klub</string>
     <string name="setup_join_team_title">Přidat se k týmu</string>
-    <string name="setup_join_team_subtitle">Máš kód od svého trenéra? Zadej ho a přidej se k týmu.</string>
-    <string name="setup_join_code_placeholder">Zadej kód…</string>
+    <string name="setup_join_team_subtitle">Máte kód od svého trenéra? Zadejte ho a přidejte se k týmu.</string>
+    <string name="setup_join_code_placeholder">Zadejte kód…</string>
     <string name="setup_join_button">Přidat se</string>
     <string name="setup_parent_title">Jsem rodič</string>
     <string name="setup_parent_subtitle">Zaregistrujte své dítě a spravujte jeho rozvrh a docházku.</string>
@@ -292,7 +292,7 @@
     <string name="event_end_time_label">Čas ukončení</string>
     <string name="event_repeat_weekly_label">Opakovat týdně</string>
     <string name="event_repeat_on_title">Opakovat v</string>
-    <string name="event_repeat_summary">Každé %1$s</string>
+    <string name="event_repeat_summary">Každý týden: %1$s</string>
     <string name="event_location_label">Lokalita</string>
     <string name="event_location_placeholder">Hledat adresu tělocvičny nebo haly</string>
     <string name="event_notes_label">Poznámky trenéra</string>
@@ -313,7 +313,7 @@
     <string name="error_event_no_occurrences">Žádný z vybraných dnů nespadá do zvoleného období</string>
     <string name="error_event_range_too_long">Opakovaná událost může trvat nejvýše jeden rok</string>
     <string name="error_event_time_required">Čas začátku a konce je povinný</string>
-    <string name="event_repeat_occurs_summary">Probíhá každé %1$s</string>
+    <string name="event_repeat_occurs_summary">Probíhá každý týden: %1$s</string>
     <string name="dialog_done">Hotovo</string>
 
     <!-- Event Detail -->
@@ -386,7 +386,6 @@
 
     <!-- After Match Stats (read-only result screen) -->
     <string name="after_match_stats_title">Výsledek zápasu</string>
-    <string name="after_match_stats_back_cd">Zpět</string>
     <string name="after_match_stats_win_badge">VÝHRA</string>
     <string name="after_match_stats_loss_badge">PROHRA</string>
     <string name="after_match_stats_player_of_match">HRÁČ UTKÁNÍ</string>
@@ -465,4 +464,26 @@
     <string name="match_stats_analytics_losses">P</string>
     <string name="match_stats_analytics_draws">R</string>
     <string name="match_stats_analytics_prev_cd">Předchozí obrazovka analýzy</string>
+
+    <!-- Labels for values stored in Firestore and shared UI text -->
+    <string name="match_stats_fta">TH</string>
+    <string name="match_stats_ftm">THP</string>
+    <string name="attendance_status_on_time">Včas</string>
+    <string name="attendance_status_late">Pozdě</string>
+    <string name="attendance_status_excused">Omluveno</string>
+    <string name="attendance_status_unexcused">Neomluveno</string>
+    <string name="role_admin">Správce</string>
+    <string name="profile_admin_club">Klub</string>
+    <string name="date_today">Dnes</string>
+    <string name="date_tomorrow">Zítra</string>
+    <string name="member_subtitle_team">Tým: %1$s</string>
+    <string name="member_subtitle_guardian">Dítě: %1$s</string>
+    <string name="reliability_excellent">VÝBORNÁ</string>
+    <string name="reliability_consistent">STÁLÁ</string>
+    <string name="reliability_needs_attention">POTŘEBUJE POZORNOST</string>
+    <string name="analytics_week_label">T%1$d</string>
+    <string name="rsvp_reason_none">Bez udání důvodu</string>
+    <string name="after_match_stats_match_title">Zápas (%1$s) – %2$s</string>
+    <string name="common_back_cd">Zpět</string>
+    <string name="avatar_picker_title">Vyberte avatara</string>
 </resources>

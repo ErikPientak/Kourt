@@ -42,6 +42,7 @@ import com.kourt.app.R
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.BaseScreen
 import com.kourt.app.ui.components.KourtButton
+import com.kourt.app.ui.components.countryName
 import com.kourt.app.ui.theme.KourtTheme
 import com.kourt.app.viewmodel.club.ReviewConfirmViewModel
 
@@ -159,7 +160,7 @@ private fun ReviewConfirmContent(
                         CardFieldRow(
                             leadingIcon = Icons.Filled.LocationOn,
                             label = stringResource(R.string.review_label_country),
-                            value = uiState.country,
+                            value = countryName(uiState.country),
                         )
                         CardDivider()
                         CardFieldRow(
@@ -362,7 +363,7 @@ private fun ReviewConfirmScreenDarkPreview() {
                 shortName = "CHI",
                 president = "Jerry Reinsdorf",
                 technicalDirector = "Arturas Karnisovas",
-                country = "USA",
+                country = "US",
                 city = "Chicago",
             ),
             actions = object : ReviewConfirmScreenActions {
@@ -384,7 +385,7 @@ private fun ReviewConfirmScreenLightPreview() {
                 shortName = "CHI",
                 president = "Jerry Reinsdorf",
                 technicalDirector = "Arturas Karnisovas",
-                country = "USA",
+                country = "US",
                 city = "Chicago",
             ),
             actions = object : ReviewConfirmScreenActions {
@@ -406,7 +407,7 @@ private fun ReviewConfirmScreenLoadingPreview() {
                 shortName = "CHI",
                 president = "Jerry Reinsdorf",
                 technicalDirector = "Arturas Karnisovas",
-                country = "USA",
+                country = "US",
                 city = "Chicago",
                 isLoading = true,
             ),

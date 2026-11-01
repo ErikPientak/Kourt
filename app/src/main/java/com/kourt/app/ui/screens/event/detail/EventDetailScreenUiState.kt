@@ -27,9 +27,12 @@ data class EventDetailUiItem(
 data class RsvpMemberUiItem(
     val userId: String,
     val displayName: String,
-    val subtitle: String,
+    /** Raw team role ("player", …), shown for people who are coming. */
+    val role: String,
     val avatarUrl: String,
     val rsvpStatus: String,
+    /** Raw reason key for people who aren't coming ("" = none given); null for people who are. */
+    val reason: String? = null,
 )
 
 @Immutable

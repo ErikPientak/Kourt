@@ -475,7 +475,7 @@ private fun AttendanceBarChart(
                 Spacer(Modifier.height(4.dp))
 
                 Text(
-                    text = bar.weekLabel,
+                    text = stringResource(R.string.analytics_week_label, bar.weekNumber),
                     style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp),
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (bar.isCurrentWeek) 0.8f else 0.4f),
                     textAlign = TextAlign.Center,
@@ -494,10 +494,10 @@ private fun PlayerBreakdownRow(
     accent: Color,
     modifier: Modifier = Modifier,
 ) {
-    val reliabilityColor = when (player.reliabilityLabel) {
-        "EXCELLENT"       -> ExcellentColor
-        "CONSISTENT"      -> ConsistentColor
-        else              -> NeedsAttentionColor
+    val reliabilityColor = when (player.reliability) {
+        Reliability.EXCELLENT       -> ExcellentColor
+        Reliability.CONSISTENT      -> ConsistentColor
+        Reliability.NEEDS_ATTENTION -> NeedsAttentionColor
     }
 
     Surface(
@@ -557,7 +557,7 @@ private fun PlayerBreakdownRow(
                 )
 
                 Text(
-                    text = player.reliabilityLabel,
+                    text = stringResource(player.reliability.label),
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                     color = reliabilityColor,
                 )
@@ -635,7 +635,7 @@ private val previewPlayers = listOf(
         onTimeRate       = 0.78f,
         lateRate         = 0.17f,
         absentRate       = 0.05f,
-        reliabilityLabel = "EXCELLENT",
+        reliability = Reliability.EXCELLENT,
     ),
     PlayerAttendanceItem(
         teamMemberId     = "m2",
@@ -645,7 +645,7 @@ private val previewPlayers = listOf(
         onTimeRate       = 0.65f,
         lateRate         = 0.17f,
         absentRate       = 0.18f,
-        reliabilityLabel = "CONSISTENT",
+        reliability = Reliability.CONSISTENT,
     ),
     PlayerAttendanceItem(
         teamMemberId     = "m3",
@@ -655,7 +655,7 @@ private val previewPlayers = listOf(
         onTimeRate       = 0.60f,
         lateRate         = 0.18f,
         absentRate       = 0.22f,
-        reliabilityLabel = "CONSISTENT",
+        reliability = Reliability.CONSISTENT,
     ),
     PlayerAttendanceItem(
         teamMemberId     = "m4",
@@ -665,7 +665,7 @@ private val previewPlayers = listOf(
         onTimeRate       = 0.45f,
         lateRate         = 0.20f,
         absentRate       = 0.35f,
-        reliabilityLabel = "NEEDS ATTENTION",
+        reliability = Reliability.NEEDS_ATTENTION,
     ),
     PlayerAttendanceItem(
         teamMemberId     = "m5",
@@ -675,15 +675,15 @@ private val previewPlayers = listOf(
         onTimeRate       = 0.30f,
         lateRate         = 0.20f,
         absentRate       = 0.50f,
-        reliabilityLabel = "NEEDS ATTENTION",
+        reliability = Reliability.NEEDS_ATTENTION,
     ),
 )
 
 private val previewBars = listOf(
-    WeeklyAttendanceBar(weekLabel = "W15", rate = 0.58f),
-    WeeklyAttendanceBar(weekLabel = "W16", rate = 0.62f),
-    WeeklyAttendanceBar(weekLabel = "W17", rate = 0.74f),
-    WeeklyAttendanceBar(weekLabel = "W18", rate = 0.83f, isCurrentWeek = true),
+    WeeklyAttendanceBar(weekNumber = 15, rate = 0.58f),
+    WeeklyAttendanceBar(weekNumber = 16, rate = 0.62f),
+    WeeklyAttendanceBar(weekNumber = 17, rate = 0.74f),
+    WeeklyAttendanceBar(weekNumber = 18, rate = 0.83f, isCurrentWeek = true),
 )
 
 private val previewUiState = AttendanceAnalyticsScreenUiState(

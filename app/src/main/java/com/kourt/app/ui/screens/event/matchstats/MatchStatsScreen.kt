@@ -1,6 +1,7 @@
 package com.kourt.app.ui.screens.event.matchstats
 
 import android.widget.Toast
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -53,15 +54,15 @@ import com.kourt.app.viewmodel.event.MatchStatsViewModel
 private val AvatarColumnWidth = 68.dp
 private val StatColumnWidth   = 72.dp
 
-private data class StatColumnDef(val label: String, val field: StatField)
+private data class StatColumnDef(@StringRes val label: Int, val field: StatField)
 
 private val statColumns = listOf(
-    StatColumnDef("PTS",  StatField.POINTS),
-    StatColumnDef("REB",  StatField.REBOUNDS),
-    StatColumnDef("AST",  StatField.ASSISTS),
-    StatColumnDef("FLS",  StatField.FOULS),
-    StatColumnDef("FTA",  StatField.FREE_THROWS_ATTEMPTED),
-    StatColumnDef("FTM",  StatField.FREE_THROWS_MADE),
+    StatColumnDef(R.string.match_stats_analytics_pts,   StatField.POINTS),
+    StatColumnDef(R.string.match_stats_analytics_reb,   StatField.REBOUNDS),
+    StatColumnDef(R.string.match_stats_analytics_ast,   StatField.ASSISTS),
+    StatColumnDef(R.string.match_stats_analytics_fouls, StatField.FOULS),
+    StatColumnDef(R.string.match_stats_fta,             StatField.FREE_THROWS_ATTEMPTED),
+    StatColumnDef(R.string.match_stats_ftm,             StatField.FREE_THROWS_MADE),
 )
 
 // ── Entry point ───────────────────────────────────────────────────────────────
@@ -304,7 +305,7 @@ private fun StatHeaderRow(
         ) {
             statColumns.forEach { col ->
                 Text(
-                    text = col.label,
+                    text = stringResource(col.label),
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     textAlign = TextAlign.Center,

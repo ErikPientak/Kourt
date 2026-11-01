@@ -53,17 +53,11 @@ import com.kourt.app.ui.components.bottomSheets.ColorPickerBottomSheet
 import com.kourt.app.ui.components.KourtButton
 import com.kourt.app.ui.components.authTextFieldColors
 import com.kourt.app.ui.components.bottomSheets.contentColorForBackground
+import com.kourt.app.ui.components.countryName
 import com.kourt.app.viewmodel.club.CreateClubViewModel
 
-private val COUNTRIES = listOf(
-    "USA",
-    "Canada",
-    "Czech Republic",
-    "Slovakia",
-    "Germany",
-    "France",
-    "UK",
-)
+// ISO 3166 codes; the club stores the code and the name is shown in the app language.
+private val COUNTRIES = listOf("US", "CA", "CZ", "SK", "DE", "FR", "GB")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -325,7 +319,7 @@ private fun CreateClubScreenContent(
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         OutlinedTextField(
-                            value = uiState.country,
+                            value = countryName(uiState.country),
                             onValueChange = {},
                             readOnly = true,
                             modifier = Modifier
@@ -355,7 +349,7 @@ private fun CreateClubScreenContent(
                                 DropdownMenuItem(
                                     text = {
                                         Text(
-                                            text = country,
+                                            text = countryName(country),
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = MaterialTheme.colorScheme.onSurface,
                                         )

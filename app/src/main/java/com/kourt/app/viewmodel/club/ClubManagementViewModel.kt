@@ -173,7 +173,10 @@ class ClubManagementViewModel @Inject constructor(
                             userId = userId,
                             displayName = user.displayName.ifBlank { user.email },
                             role = topRole,
-                            subtitle = buildSubtitle(topRole, teamNames, user.displayName),
+                            teamNames = teamNames.joinToString(" · "),
+                            childName = if (topRole == "parent") {
+                                user.childIds.firstNotNullOfOrNull { userMap[it]?.displayName }
+                            } else null,
                             avatarUrl = user.avatarId.ifBlank { user.photoURL },
                             memberships = memberships,
                         )
@@ -194,21 +197,6 @@ class ClubManagementViewModel @Inject constructor(
                     membersError = R.string.error_load_failed,
                 )
             }
-        }
-    }
-
-    /**
-     * Formats the subtitle line shown on each member card.
-     *
-     * Parents see "Athlete: <athleteName>" (populated later once parent–child
-     * linking is implemented; falls back to the team name in the interim).
-     * All other roles see "Team: <teamName>".
-     */
-    private fun buildSubtitle(role: String, teamNames: List<String>, athleteName: String): String {
-        return if (role.lowercase() == "parent") {
-            "Athlete: $athleteName"
-        } else {
-            teamNames.joinToString(" · ")
         }
     }
 
@@ -442,11 +430,8 @@ class ClubManagementViewModel @Inject constructor(
             endTime = endTime,
             location = location,
             isToday = isToday,
-            dateLabel = when {
-                isToday    -> "Today"
-                isTomorrow -> "Tomorrow"
-                else       -> SimpleDateFormat(shortDatePattern, locale).format(eventDate)
-            },
+            isTomorrow = isTomorrow,
+            dateLabel = SimpleDateFormat(shortDatePattern, locale).format(eventDate),
             epochDay = TimeUnit.MILLISECONDS.toDays(eventDate.time),
             subtitle = notes,
         )

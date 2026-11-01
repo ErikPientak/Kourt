@@ -15,6 +15,7 @@ import com.kourt.app.data.repository.remote.TeamMemberRepository
 import com.kourt.app.data.repository.remote.UserRepository
 import com.kourt.app.ui.screens.analytics.attendance.AttendanceAnalyticsScreenUiState
 import com.kourt.app.ui.screens.analytics.attendance.PlayerAttendanceItem
+import com.kourt.app.ui.screens.analytics.attendance.Reliability
 import com.kourt.app.ui.screens.analytics.attendance.WeeklyAttendanceBar
 import com.kourt.app.viewmodel.dashboard.todayEpochDay
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -100,10 +101,10 @@ class AttendanceAnalyticsViewModel @Inject constructor(
                         val lateRate       = late / total
                         val absentRate     = (excused + unexcused) / total
 
-                        val reliabilityLabel = when {
-                            attendanceRate >= 0.9f -> "EXCELLENT"
-                            attendanceRate >= 0.7f -> "CONSISTENT"
-                            else                   -> "NEEDS ATTENTION"
+                        val reliability = when {
+                            attendanceRate >= 0.9f -> Reliability.EXCELLENT
+                            attendanceRate >= 0.7f -> Reliability.CONSISTENT
+                            else                   -> Reliability.NEEDS_ATTENTION
                         }
 
                         PlayerAttendanceItem(
@@ -115,7 +116,7 @@ class AttendanceAnalyticsViewModel @Inject constructor(
                             onTimeRate     = onTimeRate,
                             lateRate       = lateRate,
                             absentRate     = absentRate,
-                            reliabilityLabel = reliabilityLabel,
+                            reliability = reliability,
                         )
                     }.sortedByDescending { it.attendanceRate }
 
@@ -189,7 +190,7 @@ class AttendanceAnalyticsViewModel @Inject constructor(
                             val isoWeek = LocalDate.ofEpochDay(weekKey * 7L)
                                 .get(IsoFields.WEEK_OF_WEEK_BASED_YEAR)
                             WeeklyAttendanceBar(
-                                weekLabel     = "W$isoWeek",
+                                weekNumber    = isoWeek,
                                 rate          = weekRate,
                                 isCurrentWeek = weekKey == currentWeekBucket,
                             )

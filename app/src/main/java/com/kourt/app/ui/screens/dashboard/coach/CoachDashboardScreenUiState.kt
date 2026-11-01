@@ -32,7 +32,9 @@ data class EventUiItem(
     val endTime: String = "",
     val location: String,
     val isToday: Boolean,
+    /** Formatted date; shown via eventDateLabel(), which says "Today"/"Tomorrow" when they apply. */
     val dateLabel: String,
+    val isTomorrow: Boolean = false,
     val epochDay: Long,
     val subtitle: String,
     val rsvpYes: Int = 0,

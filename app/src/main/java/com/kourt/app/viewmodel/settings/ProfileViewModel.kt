@@ -138,8 +138,8 @@ class ProfileViewModel @Inject constructor(
                     clubId = club.id,
                     teamId = null,
                     clubName = club.name,
-                    subtitle = "Club",
-                    role = "ADMIN",
+                    subtitle = "",
+                    role = "admin",
                     accentColor = club.accentColor,
                     initials = club.initials,
                 )

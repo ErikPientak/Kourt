@@ -465,7 +465,7 @@ private fun RepeatOnBottomSheet(
         val ordered = (Calendar.MONDAY..Calendar.SATURDAY).toList() + listOf(Calendar.SUNDAY)
         tempDays
             .sortedBy { ordered.indexOf(it) }
-            .joinToString(" , ") { dayConst ->
+            .joinToString(", ") { dayConst ->
                 Calendar.getInstance().apply { set(Calendar.DAY_OF_WEEK, dayConst) }
                     .getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, locale)
                     ?: ""

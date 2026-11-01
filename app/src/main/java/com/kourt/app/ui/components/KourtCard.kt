@@ -401,13 +401,13 @@ fun MemberCard(
         subtitle = teamName,
         leadingContent = { KourtAvatarLeading(fallbackText = playerName, photoUrl = avatarUrl) },
         modifier = modifier,
-        badge = role.uppercase(),
+        badge = roleLabel(role).uppercase(),
         badgeColor = roleBadgeColor(role),
         trailingContent = if (showMenu) {
             {
                 Icon(
                     imageVector = Icons.Default.MoreVert,
-                    contentDescription = "More options",
+                    contentDescription = stringResource(R.string.members_more_options_cd, playerName),
                     tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     modifier = Modifier
                         .size(20.dp)
