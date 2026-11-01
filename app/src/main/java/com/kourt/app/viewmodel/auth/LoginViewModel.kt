@@ -40,7 +40,7 @@ class LoginViewModel @Inject constructor(
     override fun onSignInWithEmail(email: String, password: String) {
         if (uiState.isLoading) return
         viewModelScope.launch {
-            uiState = uiState.copy(isLoading = true, error = null)
+            uiState = uiState.copy(isLoading = true, error = null, passwordResetSent = false)
             val result = authRepository.signInWithEmail(email, password)
             if (result.isSuccess) {
                 Log.d(TAG, "Email sign-in successful: ${result.getOrNull()?.email}")
@@ -56,7 +56,7 @@ class LoginViewModel @Inject constructor(
     override fun onSignInWithGoogle(context: Context) {
         if (uiState.isLoading) return
         viewModelScope.launch {
-            uiState = uiState.copy(isLoading = true, error = null)
+            uiState = uiState.copy(isLoading = true, error = null, passwordResetSent = false)
             val result = authRepository.signInWithGoogle(context)
             if (result.isSuccess) {
                 val firebaseUser = result.getOrNull()!!

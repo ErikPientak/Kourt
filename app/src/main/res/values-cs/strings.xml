@@ -388,6 +388,7 @@
     <string name="after_match_stats_title">Výsledek zápasu</string>
     <string name="after_match_stats_win_badge">VÝHRA</string>
     <string name="after_match_stats_loss_badge">PROHRA</string>
+    <string name="after_match_stats_draw_badge">REMÍZA</string>
     <string name="after_match_stats_player_of_match">HRÁČ UTKÁNÍ</string>
     <string name="after_match_stats_mvp_badge">MVP</string>
     <string name="after_match_stats_player_stats_title">Statistiky hráčů</string>

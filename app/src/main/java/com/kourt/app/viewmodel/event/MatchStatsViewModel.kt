@@ -40,7 +40,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.math.min
 import kotlin.math.sign
 
 private const val TAG = "MatchStatsViewModel"
@@ -178,18 +177,7 @@ class MatchStatsViewModel @Inject constructor(
 
     override fun onStatChanged(teamMemberId: String, stat: StatField, delta: Int) {
         val updatedPlayers = uiState.players.map { player ->
-            if (player.teamMemberId != teamMemberId) return@map player
-            when (stat) {
-                StatField.POINTS                -> player.copy(points = maxOf(0, player.points + delta))
-                StatField.REBOUNDS              -> player.copy(rebounds = maxOf(0, player.rebounds + delta))
-                StatField.ASSISTS               -> player.copy(assists = maxOf(0, player.assists + delta))
-                StatField.FOULS                 -> player.copy(fouls = maxOf(0, min(player.fouls + delta, 5)))
-                StatField.FREE_THROWS_ATTEMPTED -> player.copy(freeThrowsAttempted = maxOf(0, player.freeThrowsAttempted + delta))
-                StatField.FREE_THROWS_MADE      -> {
-                    player.copy(freeThrowsMade = maxOf(0, player.freeThrowsMade + delta),
-                        points = maxOf(0, player.points + delta))
-                }
-            }
+            if (player.teamMemberId != teamMemberId) player else player.applyStatChange(stat, delta)
         }
         uiState = uiState.copy(players = updatedPlayers)
         scheduleDraftSave()
@@ -387,3 +375,25 @@ internal fun Throwable.isConnectionError(): Boolean =
         (this is FirebaseFirestoreException &&
             (code == FirebaseFirestoreException.Code.UNAVAILABLE ||
                 code == FirebaseFirestoreException.Code.DEADLINE_EXCEEDED))
+
+/**
+ * One tap on a stat stepper. Free throws stay consistent: a made free throw is also an attempt
+ * and a point, so "made" raises "attempted" with it, "attempted" can't drop below "made", and
+ * points change only by the free throws actually added or removed.
+ */
+internal fun PlayerStatEntryUiItem.applyStatChange(stat: StatField, delta: Int): PlayerStatEntryUiItem = when (stat) {
+    StatField.POINTS -> copy(points = maxOf(0, points + delta))
+    StatField.REBOUNDS -> copy(rebounds = maxOf(0, rebounds + delta))
+    StatField.ASSISTS -> copy(assists = maxOf(0, assists + delta))
+    StatField.FOULS -> copy(fouls = (fouls + delta).coerceIn(0, 5))
+    StatField.FREE_THROWS_ATTEMPTED -> copy(freeThrowsAttempted = maxOf(freeThrowsMade, freeThrowsAttempted + delta))
+    StatField.FREE_THROWS_MADE -> {
+        val made = maxOf(0, freeThrowsMade + delta)
+        val applied = made - freeThrowsMade
+        copy(
+            freeThrowsMade = made,
+            freeThrowsAttempted = maxOf(freeThrowsAttempted, made),
+            points = maxOf(0, points + applied),
+        )
+    }
+}

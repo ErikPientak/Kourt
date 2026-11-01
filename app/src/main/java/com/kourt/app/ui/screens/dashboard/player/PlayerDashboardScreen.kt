@@ -36,7 +36,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
@@ -48,7 +47,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.R
-import com.kourt.app.navigation.Destination
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.Tabs.MembersTab
 import com.kourt.app.ui.Tabs.PlayerHomeTab
@@ -57,6 +55,7 @@ import com.kourt.app.ui.components.ErrorSnackbarEffect
 import com.kourt.app.ui.components.EventCard
 import com.kourt.app.ui.components.KourtAvatarLeading
 import com.kourt.app.ui.components.KourtTeamAvatar
+import com.kourt.app.ui.components.RefreshOnReturn
 import com.kourt.app.ui.components.UpNextCard
 import com.kourt.app.ui.components.bottomSheets.RsvpReasonBottomSheet
 import com.kourt.app.ui.components.bottomSheets.RsvpSelectionBottomSheet
@@ -83,12 +82,8 @@ fun PlayerDashboardScreen(
         onRetry = viewModel::retryLoad,
     )
 
-    val navBackStackEntry by navigation.getNavController().currentBackStackEntryAsState()
-    LaunchedEffect(navBackStackEntry) {
-        if (navBackStackEntry?.destination?.route == Destination.PlayerDashboardScreen.route) {
-            viewModel.refreshEvents()
-        }
-    }
+    // Reload when coming back from another screen (e.g. after an edit), not on first open or rotation.
+    RefreshOnReturn { viewModel.refreshEvents() }
 
     LaunchedEffect(uiState.navigateToEventDetailId) {
         val id = uiState.navigateToEventDetailId ?: return@LaunchedEffect

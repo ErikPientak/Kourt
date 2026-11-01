@@ -130,12 +130,13 @@ class PlayerDashboardViewModel @Inject constructor(
                 val late = rsvps.count { it.status == "late" }
                 val no = rsvps.count { it.status == "no" }
                 val current = uiState.upNextEvent
-                uiState = uiState.copy(
-                    myRsvpStatus = myRsvp?.status,
-                    upNextEvent = current?.takeIf { it.eventId == eventId }
-                        ?.copy(rsvpYes = yes, rsvpLate = late, rsvpNo = no)
-                        ?: current,
-                )
+                // Only apply if this is still the event on screen (the user may have switched team).
+                if (current?.eventId == eventId) {
+                    uiState = uiState.copy(
+                        myRsvpStatus = myRsvp?.status,
+                        upNextEvent = current.copy(rsvpYes = yes, rsvpLate = late, rsvpNo = no),
+                    )
+                }
                 Log.d(logTag, "RSVP data for $eventId: mine=${myRsvp?.status} yes=$yes late=$late no=$no")
                 rsvps
             }.onFailure { Log.w(logTag, "Failed to load RSVP data for $eventId") }.getOrNull()

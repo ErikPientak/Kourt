@@ -57,7 +57,8 @@ class EventDetailViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            uiState = uiState.copy(isLoading = true, error = null)
+            // Full-screen spinner only before the first load; later refreshes (after an RSVP, on return) keep the screen.
+            uiState = uiState.copy(isLoading = uiState.event == null, error = null)
             runCatching {
                 coroutineScope {
                     // Parallel fetch

@@ -39,8 +39,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.navigation.compose.currentBackStackEntryAsState
-import com.kourt.app.navigation.Destination
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
@@ -63,6 +61,7 @@ import com.kourt.app.ui.Tabs.EventsTab
 import com.kourt.app.ui.Tabs.MembersTab
 import com.kourt.app.ui.Tabs.TeamsTab
 import com.kourt.app.ui.components.ErrorSnackbarEffect
+import com.kourt.app.ui.components.RefreshOnReturn
 import com.kourt.app.ui.components.bottomSheets.AssignTeamBottomSheet
 import com.kourt.app.viewmodel.club.ClubManagementViewModel
 
@@ -84,12 +83,8 @@ fun ClubManagementScreen(
         onRetry = viewModel::retryLoad,
     )
 
-    val navBackStackEntry by navigation.getNavController().currentBackStackEntryAsState()
-    LaunchedEffect(navBackStackEntry) {
-        if (navBackStackEntry?.destination?.route == Destination.ClubManagementScreen.route) {
-            viewModel.refreshTeams()
-        }
-    }
+    // Reload when coming back from another screen (e.g. after an edit), not on first open or rotation.
+    RefreshOnReturn { viewModel.refreshTeams() }
 
     ClubManagementScreenContent(
         snackbarHostState = snackbarHostState,

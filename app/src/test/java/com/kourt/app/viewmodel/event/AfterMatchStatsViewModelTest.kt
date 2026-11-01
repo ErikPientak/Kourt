@@ -4,8 +4,8 @@ package com.kourt.app.viewmodel.event
  * Tests for [AfterMatchStatsViewModel].
  *
  * Covers:
- *  - MVP selection: highest (points + rebounds + assists)
- *  - isWin = myTeamScore > opponentScore (strict — ties are NOT wins)
+ *  - MVP selection: highest (points + rebounds + assists); none when the top score is 0 or shared
+ *  - outcome: WIN / DRAW / LOSS from the two scores
  *  - Players are sorted by score descending
  *  - Players whose member or user is missing are dropped
  *  - opponentName falls back to event title when opponent is blank
@@ -19,6 +19,8 @@ import com.kourt.app.data.model.MatchStats
 import com.kourt.app.data.model.PlayerMatchStat
 import com.kourt.app.data.model.TeamMember
 import com.kourt.app.data.model.User
+import com.kourt.app.ui.screens.event.aftermatch.MatchOutcome
+import com.kourt.app.ui.screens.event.aftermatch.PlayerStatRowItem
 import com.kourt.app.util.FakeEventRepository
 import com.kourt.app.util.FakeMatchStatsRepository
 import com.kourt.app.util.FakeTeamMemberRepository
@@ -33,6 +35,7 @@ import org.junit.Test
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -198,10 +201,27 @@ class AfterMatchStatsViewModelTest {
         assertEquals(listOf("m1"), vm.uiState.players.map { it.teamMemberId })
     }
 
+    private fun row(id: String, points: Int, rebounds: Int = 0, assists: Int = 0) = PlayerStatRowItem(
+        teamMemberId = id, displayName = id, avatarUrl = "",
+        points = points, rebounds = rebounds, assists = assists,
+        fouls = 0, freeThrowsAttempted = 0, freeThrowsMade = 0,
+    )
+
+    @Test
+    fun `given nobody scored, then there is no MVP`() {
+        assertNull(pickMvp(listOf(row("m1", 0), row("m2", 0))))
+    }
+
+    @Test
+    fun `given two players share the top score, then there is no MVP`() {
+        // m1: 10+5 = 15, m2: 15 = 15
+        assertNull(pickMvp(listOf(row("m1", 10, rebounds = 5), row("m2", 15), row("m3", 4))))
+    }
+
     // ── Win detection ─────────────────────────────────────────────────────────
 
     @Test
-    fun `given my team score is greater than opponent, then isWin is true`() = runTest {
+    fun `given my team score is greater than opponent, then outcome is WIN`() = runTest {
         // Arrange
         stubScreen(matchStats = MatchStats(eventId = EVENT_ID, myTeamScore = 80, opponentScore = 60))
 
@@ -210,13 +230,13 @@ class AfterMatchStatsViewModelTest {
         advanceUntilIdle()
 
         // Assert
-        assertTrue(vm.uiState.isWin)
+        assertEquals(MatchOutcome.WIN, vm.uiState.outcome)
         assertEquals(80, vm.uiState.myTeamScore)
         assertEquals(60, vm.uiState.opponentScore)
     }
 
     @Test
-    fun `given my team score is less than opponent, then isWin is false`() = runTest {
+    fun `given my team score is less than opponent, then outcome is LOSS`() = runTest {
         // Arrange
         stubScreen(matchStats = MatchStats(eventId = EVENT_ID, myTeamScore = 50, opponentScore = 70))
 
@@ -225,12 +245,12 @@ class AfterMatchStatsViewModelTest {
         advanceUntilIdle()
 
         // Assert
-        assertFalse(vm.uiState.isWin)
+        assertEquals(MatchOutcome.LOSS, vm.uiState.outcome)
     }
 
     @Test
-    fun `given a tied score, then isWin is false`() = runTest {
-        // Arrange — strict greater-than means a tie is not a win
+    fun `given a tied score, then outcome is DRAW`() = runTest {
+        // Arrange
         stubScreen(matchStats = MatchStats(eventId = EVENT_ID, myTeamScore = 70, opponentScore = 70))
 
         // Act
@@ -238,7 +258,7 @@ class AfterMatchStatsViewModelTest {
         advanceUntilIdle()
 
         // Assert
-        assertFalse(vm.uiState.isWin)
+        assertEquals(MatchOutcome.DRAW, vm.uiState.outcome)
     }
 
     // ── opponentName fallback ─────────────────────────────────────────────────

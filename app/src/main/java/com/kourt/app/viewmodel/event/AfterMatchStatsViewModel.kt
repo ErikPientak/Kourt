@@ -13,6 +13,7 @@ import com.kourt.app.data.repository.remote.MatchStatsRepository
 import com.kourt.app.data.repository.remote.TeamMemberRepository
 import com.kourt.app.data.repository.remote.UserRepository
 import com.kourt.app.ui.screens.event.aftermatch.AfterMatchStatsScreenUiState
+import com.kourt.app.ui.screens.event.aftermatch.MatchOutcome
 import com.kourt.app.ui.screens.event.aftermatch.PlayerStatRowItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -50,7 +51,8 @@ class AfterMatchStatsViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            uiState = uiState.copy(isLoading = true, error = null)
+            // Full-screen spinner only before the first load; refreshing on return keeps the screen.
+            uiState = uiState.copy(isLoading = uiState.eventTitle.isEmpty(), error = null)
 
             runCatching {
                 coroutineScope {
@@ -107,8 +109,8 @@ class AfterMatchStatsViewModel @Inject constructor(
                         )
                     }.sortedByDescending { it.score }
 
-                    val mvp = playerItems.maxByOrNull { it.score }
-                    val isWin = matchStats.myTeamScore > matchStats.opponentScore
+                    val mvp = pickMvp(playerItems)
+                    val outcome = matchOutcome(matchStats.myTeamScore, matchStats.opponentScore)
 
                     uiState = uiState.copy(
                         isLoading = false,
@@ -117,11 +119,11 @@ class AfterMatchStatsViewModel @Inject constructor(
                         eventDate = formattedDate,
                         myTeamScore = matchStats.myTeamScore,
                         opponentScore = matchStats.opponentScore,
-                        isWin = isWin,
+                        outcome = outcome,
                         mvpItem = mvp,
                         players = playerItems,
                     )
-                    Log.d(TAG, "Loaded after-match stats for event $eventId: ${playerItems.size} players, isWin=$isWin")
+                    Log.d(TAG, "Loaded after-match stats for event $eventId: ${playerItems.size} players, outcome=$outcome")
                 }
             }.onFailure { e ->
                 Log.e(TAG, "Failed to load after-match stats for $eventId", e)
@@ -129,4 +131,20 @@ class AfterMatchStatsViewModel @Inject constructor(
             }
         }
     }
+}
+
+internal fun matchOutcome(myTeamScore: Int, opponentScore: Int): MatchOutcome = when {
+    myTeamScore > opponentScore -> MatchOutcome.WIN
+    myTeamScore < opponentScore -> MatchOutcome.LOSS
+    else -> MatchOutcome.DRAW
+}
+
+/**
+ * Player of the match: the one highest score (points + rebounds + assists).
+ * Nobody when no one scored, or when the top score is shared, so the card never picks at random.
+ */
+internal fun pickMvp(players: List<PlayerStatRowItem>): PlayerStatRowItem? {
+    val top = players.maxOfOrNull { it.score } ?: return null
+    if (top == 0) return null
+    return players.singleOrNull { it.score == top }
 }

@@ -35,8 +35,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.navigation.compose.currentBackStackEntryAsState
-import com.kourt.app.navigation.Destination
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -69,6 +67,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.text.input.KeyboardType
 import com.kourt.app.ui.Tabs.CoachHomeTab
 import com.kourt.app.ui.components.ErrorSnackbarEffect
+import com.kourt.app.ui.components.RefreshOnReturn
 import com.kourt.app.ui.components.bottomSheets.ChangeRoleBottomSheet
 import com.kourt.app.ui.components.bottomSheets.GrowYourTeamBottomSheet
 import com.kourt.app.ui.components.bottomSheets.RosterActionBottomSheet
@@ -92,12 +91,8 @@ fun CoachDashboardScreen(
         onRetry = viewModel::retryLoad,
     )
 
-    val navBackStackEntry by navigation.getNavController().currentBackStackEntryAsState()
-    LaunchedEffect(navBackStackEntry) {
-        if (navBackStackEntry?.destination?.route == Destination.CoachDashboardScreen.route) {
-            viewModel.refreshEvents()
-        }
-    }
+    // Reload when coming back from another screen (e.g. after an edit), not on first open or rotation.
+    RefreshOnReturn { viewModel.refreshEvents() }
 
     LaunchedEffect(uiState.navigateToAddEvent) {
         if (uiState.navigateToAddEvent) {

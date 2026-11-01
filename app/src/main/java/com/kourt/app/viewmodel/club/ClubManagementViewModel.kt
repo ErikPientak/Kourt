@@ -303,18 +303,20 @@ class ClubManagementViewModel @Inject constructor(
     }
 
     override fun onRemoveConfirm(memberId: String) {
+        val member = uiState.memberForRemove ?: uiState.members.find { it.memberId == memberId } ?: return
         uiState = uiState.copy(memberForRemove = null)
         viewModelScope.launch {
+            // One card is one person: "remove from the club" means every team they're in here.
+            val membershipIds = member.memberships.map { it.memberId }.ifEmpty { listOf(memberId) }
             runCatching {
-                teamMemberRepository.removeMember(memberId)
-                val updated = uiState.members.filter { it.memberId != memberId }
-                val filtered = applyFilter(updated, uiState.memberSearchQuery, uiState.memberFilter)
-                uiState = uiState.copy(members = updated, filteredMembers = filtered)
-                Log.d(TAG, "Removed member: memberId=$memberId")
+                membershipIds.forEach { teamMemberRepository.removeMember(it) }
+                Log.d(TAG, "Removed userId=${member.userId} from ${membershipIds.size} team(s)")
             }.onFailure { e ->
                 Log.e(TAG, "Failed to remove member", e)
                 uiState = uiState.copy(error = R.string.error_generic)
             }
+            // Reload either way, so the list shows what was actually removed.
+            loadMembers(uiState.teams)
         }
     }
 

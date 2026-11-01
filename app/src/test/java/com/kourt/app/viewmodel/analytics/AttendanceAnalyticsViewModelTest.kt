@@ -34,6 +34,7 @@ import com.kourt.app.util.FakePlayerStatsRepository
 import com.kourt.app.util.FakeTeamMemberRepository
 import com.kourt.app.util.FakeUserRepository
 import com.kourt.app.util.MainCoroutineRule
+import com.kourt.app.viewmodel.dashboard.todayEpochDay
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -228,19 +229,18 @@ class AttendanceAnalyticsViewModelTest {
 
     @Test
     fun `given last week rate exceeds previous, then trend is improving`() = runTest {
-        // Arrange — two events in the most recent week with both members on_time (rate 1.0)
-        // and one event in the previous week with no attendance (rate 0.0)
-        val today = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())
-        val previousWeekEpochDay = today - 8L     // last week bucket
-        val currentWeekEpochDay = today           // current week bucket
+        // Arrange — previous week 1 of 2 present (0.5), current week 2 of 2 present (1.0)
+        val today = todayEpochDay()
+        val previousWeekEpochDay = today - 7L     // always in the previous Monday–Sunday week
+        val currentWeekEpochDay = today
         val members = listOf(
             TeamMember(id = "m1", userId = "u1", teamId = TEAM_ID, role = "player"),
             TeamMember(id = "m2", userId = "u2", teamId = TEAM_ID, role = "player"),
         )
         val users = listOf(User(id = "u1"), User(id = "u2"))
         val events = listOf(
-            Event(id = "e_prev", teamId = TEAM_ID, date = epochDayToTimestamp(previousWeekEpochDay)),
-            Event(id = "e_curr", teamId = TEAM_ID, date = epochDayToTimestamp(currentWeekEpochDay)),
+            Event(id = "e_prev", teamId = TEAM_ID, type = "practice", date = epochDayToTimestamp(previousWeekEpochDay)),
+            Event(id = "e_curr", teamId = TEAM_ID, type = "practice", date = epochDayToTimestamp(currentWeekEpochDay)),
         )
 
         appPrefs.activeTeamId = TEAM_ID
@@ -249,7 +249,10 @@ class AttendanceAnalyticsViewModelTest {
         eventRepository.eventsByTeam = events
         userRepository.users = users
         attendanceRepository.attendanceByEvent = mapOf(
-            "e_prev" to emptyList(),
+            "e_prev" to listOf(
+                Attendance(eventId = "e_prev", userId = "u1", status = "on_time"),
+                Attendance(eventId = "e_prev", userId = "u2", status = "unexcused"),
+            ),
             "e_curr" to listOf(
                 Attendance(eventId = "e_curr", userId = "u1", status = "on_time"),
                 Attendance(eventId = "e_curr", userId = "u2", status = "on_time"),
@@ -260,7 +263,7 @@ class AttendanceAnalyticsViewModelTest {
         val vm = newViewModel()
         advanceUntilIdle()
 
-        // Assert — trend bars should have at least 2; current week rate (1.0) > previous (0.0)
+        // Assert — current week rate (1.0) > previous (0.5)
         assertTrue("expected >= 2 trend bars, got ${vm.uiState.trendBars.size}", vm.uiState.trendBars.size >= 2)
         assertTrue(vm.uiState.isTrendImproving)
         assertTrue("expected trendDelta > 0, got ${vm.uiState.trendDelta}", vm.uiState.trendDelta > 0f)
@@ -268,9 +271,9 @@ class AttendanceAnalyticsViewModelTest {
 
     @Test
     fun `given last week rate is below previous, then trend is declining`() = runTest {
-        // Arrange — previous week full attendance, current week zero attendance
-        val today = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())
-        val previousWeekEpochDay = today - 8L
+        // Arrange — previous week full attendance, current week everyone recorded absent
+        val today = todayEpochDay()
+        val previousWeekEpochDay = today - 7L
         val currentWeekEpochDay = today
         val members = listOf(
             TeamMember(id = "m1", userId = "u1", teamId = TEAM_ID, role = "player"),
@@ -278,8 +281,8 @@ class AttendanceAnalyticsViewModelTest {
         )
         val users = listOf(User(id = "u1"), User(id = "u2"))
         val events = listOf(
-            Event(id = "e_prev", teamId = TEAM_ID, date = epochDayToTimestamp(previousWeekEpochDay)),
-            Event(id = "e_curr", teamId = TEAM_ID, date = epochDayToTimestamp(currentWeekEpochDay)),
+            Event(id = "e_prev", teamId = TEAM_ID, type = "practice", date = epochDayToTimestamp(previousWeekEpochDay)),
+            Event(id = "e_curr", teamId = TEAM_ID, type = "practice", date = epochDayToTimestamp(currentWeekEpochDay)),
         )
 
         appPrefs.activeTeamId = TEAM_ID
@@ -292,7 +295,10 @@ class AttendanceAnalyticsViewModelTest {
                 Attendance(eventId = "e_prev", userId = "u1", status = "on_time"),
                 Attendance(eventId = "e_prev", userId = "u2", status = "on_time"),
             ),
-            "e_curr" to emptyList(),
+            "e_curr" to listOf(
+                Attendance(eventId = "e_curr", userId = "u1", status = "unexcused"),
+                Attendance(eventId = "e_curr", userId = "u2", status = "excused"),
+            ),
         )
 
         // Act

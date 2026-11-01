@@ -244,8 +244,8 @@ internal fun LoginScreenContent(
 
         Spacer(modifier = Modifier.height(28.dp))
 
+        // Stays until the next sign-in or reset attempt; clearing it here hid it after one frame.
         if (uiState.passwordResetSent) {
-            LaunchedEffect(Unit) { actions.onPasswordResetConsumed() }
             Text(
                 text = stringResource(R.string.auth_reset_email_sent),
                 color = MaterialTheme.colorScheme.primary,

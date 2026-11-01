@@ -393,6 +393,7 @@
     <string name="after_match_stats_title">Match Result</string>
     <string name="after_match_stats_win_badge">WIN</string>
     <string name="after_match_stats_loss_badge">LOSS</string>
+    <string name="after_match_stats_draw_badge">DRAW</string>
     <string name="after_match_stats_player_of_match">PLAYER OF THE MATCH</string>
     <string name="after_match_stats_mvp_badge">MVP</string>
     <string name="after_match_stats_player_stats_title">Player Stats</string>

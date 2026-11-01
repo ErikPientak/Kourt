@@ -18,6 +18,8 @@ data class PlayerStatRowItem(
     val score get() = points + rebounds + assists
 }
 
+enum class MatchOutcome { WIN, DRAW, LOSS }
+
 @Immutable
 data class AfterMatchStatsScreenUiState(
     val isLoading: Boolean = true,
@@ -27,7 +29,7 @@ data class AfterMatchStatsScreenUiState(
     val eventDate: String = "",
     val myTeamScore: Int = 0,
     val opponentScore: Int = 0,
-    val isWin: Boolean = false,
+    val outcome: MatchOutcome = MatchOutcome.LOSS,
     val mvpItem: PlayerStatRowItem? = null,
     val players: List<PlayerStatRowItem> = emptyList(),
 )

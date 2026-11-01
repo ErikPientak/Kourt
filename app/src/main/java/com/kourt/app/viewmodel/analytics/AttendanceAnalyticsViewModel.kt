@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kourt.app.R
+import com.kourt.app.data.model.Attendance
 import com.kourt.app.data.repository.local.AppPreferencesRepository
 import com.kourt.app.data.repository.remote.AttendanceRepository
 import com.kourt.app.data.repository.remote.EventRepository
@@ -23,6 +24,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.IsoFields
 import java.util.concurrent.TimeUnit
@@ -144,15 +146,18 @@ class AttendanceAnalyticsViewModel @Inject constructor(
                     val todayEpoch = todayEpochDay()
                     val windowStart = todayEpoch - WINDOW_DAYS
 
-                    val recentEvents = events.filter { event ->
+                    // Only trainings that took place: matches and cancelled events have no attendance.
+                    val recentPractices = events.filter { event ->
                         val eventEpochDay = TimeUnit.SECONDS.toDays(event.date.seconds)
-                        eventEpochDay in windowStart..todayEpoch
+                        eventEpochDay in windowStart..todayEpoch &&
+                            event.type.lowercase() == "practice" &&
+                            event.status.lowercase() != "cancelled"
                     }
 
-                    Log.d(TAG, "Recent events in window: ${recentEvents.size}")
+                    Log.d(TAG, "Recent practices in window: ${recentPractices.size}")
 
-                    // Fetch attendance for all recent events in parallel
-                    val attendanceByEvent = recentEvents.map { event ->
+                    // Fetch attendance for all recent practices in parallel
+                    val attendanceByEvent = recentPractices.map { event ->
                         async {
                             val records = runCatching {
                                 attendanceRepository.getAttendanceByEvent(event.id)
@@ -164,37 +169,12 @@ class AttendanceAnalyticsViewModel @Inject constructor(
                         }
                     }.awaitAll().toMap()
 
-                    val memberCount = playerMembers.size.coerceAtLeast(1)
-
-                    // Group by ISO week bucket (epochDay / 7)
-                    val weekBuckets = recentEvents.groupBy { event ->
-                        val eventEpochDay = TimeUnit.SECONDS.toDays(event.date.seconds)
-                        eventEpochDay / 7
-                    }
-
-                    val currentWeekBucket = todayEpoch / 7
-
-                    val trendBars = weekBuckets.entries
-                        .sortedBy { it.key }
-                        .takeLast(MAX_BARS)
-                        .map { (weekKey, weekEvents) ->
-                            val totalPresent = weekEvents.sumOf { event ->
-                                val records = attendanceByEvent[event.id] ?: emptyList()
-                                records.count { it.status == "on_time" || it.status == "late" }
-                            }
-                            val totalPossible = memberCount * weekEvents.size
-                            val weekRate = if (totalPossible > 0)
-                                (totalPresent.toFloat() / totalPossible).coerceIn(0f, 1f)
-                            else 0f
-
-                            val isoWeek = LocalDate.ofEpochDay(weekKey * 7L)
-                                .get(IsoFields.WEEK_OF_WEEK_BASED_YEAR)
-                            WeeklyAttendanceBar(
-                                weekNumber    = isoWeek,
-                                rate          = weekRate,
-                                isCurrentWeek = weekKey == currentWeekBucket,
-                            )
-                        }
+                    val trendBars = buildWeeklyTrendBars(
+                        eventDays = recentPractices.associate { it.id to TimeUnit.SECONDS.toDays(it.date.seconds) },
+                        attendanceByEvent = attendanceByEvent,
+                        todayEpochDay = todayEpoch,
+                        maxBars = MAX_BARS,
+                    )
 
                     Log.d(TAG, "Built ${trendBars.size} trend bars")
 
@@ -235,4 +215,39 @@ class AttendanceAnalyticsViewModel @Inject constructor(
             }
         }
     }
+}
+
+/**
+ * One bar per Monday-to-Sunday week: players present (on time or late) out of the players
+ * recorded at that week's trainings. Trainings without any recorded attendance are left out,
+ * so a session the coach never logged doesn't show up as 0 %.
+ *
+ * @param eventDays eventId → epoch day of each training in the window.
+ */
+internal fun buildWeeklyTrendBars(
+    eventDays: Map<String, Long>,
+    attendanceByEvent: Map<String, List<Attendance>>,
+    todayEpochDay: Long,
+    maxBars: Int,
+): List<WeeklyAttendanceBar> {
+    fun mondayOf(epochDay: Long) = LocalDate.ofEpochDay(epochDay).with(DayOfWeek.MONDAY).toEpochDay()
+
+    val currentWeek = mondayOf(todayEpochDay)
+    return eventDays
+        .filterKeys { attendanceByEvent[it].orEmpty().isNotEmpty() }
+        .entries
+        .groupBy({ mondayOf(it.value) }, { attendanceByEvent[it.key].orEmpty() })
+        .toSortedMap()
+        .entries
+        .toList()
+        .takeLast(maxBars)
+        .map { (weekStart, recordsPerEvent) ->
+            val records = recordsPerEvent.flatten()
+            val present = records.count { it.status == "on_time" || it.status == "late" }
+            WeeklyAttendanceBar(
+                weekNumber = LocalDate.ofEpochDay(weekStart).get(IsoFields.WEEK_OF_WEEK_BASED_YEAR),
+                rate = present.toFloat() / records.size,
+                isCurrentWeek = weekStart == currentWeek,
+            )
+        }
 }

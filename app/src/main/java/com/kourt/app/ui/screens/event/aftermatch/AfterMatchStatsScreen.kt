@@ -49,13 +49,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.compose.currentBackStackEntryAsState
 import com.kourt.app.R
-import com.kourt.app.navigation.Destination
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.BaseScreenWithBottomNav
 import com.kourt.app.ui.components.KourtAvatarLeading
 import com.kourt.app.ui.components.MvpCard
+import com.kourt.app.ui.components.RefreshOnReturn
 import com.kourt.app.ui.theme.KourtTheme
 import com.kourt.app.ui.theme.OrangeDark
 import com.kourt.app.ui.theme.OrangeLight
@@ -85,13 +84,8 @@ fun AfterMatchStatsScreen(
     viewModel: AfterMatchStatsViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
-    val navBackStackEntry by navigation.getNavController().currentBackStackEntryAsState()
-
-    LaunchedEffect(navBackStackEntry) {
-        if (navBackStackEntry?.destination?.route == Destination.AfterMatchStatsScreen.route) {
-            viewModel.loadData()
-        }
-    }
+    // Reload when coming back from another screen (e.g. after an edit), not on first open or rotation.
+    RefreshOnReturn { viewModel.loadData() }
 
     AfterMatchStatsScreenContent(
         uiState = uiState,
@@ -207,7 +201,7 @@ internal fun AfterMatchStatsScreenContent(
                     myTeamScore = uiState.myTeamScore,
                     opponentScore = uiState.opponentScore,
                     opponentName = uiState.opponentName,
-                    isWin = uiState.isWin,
+                    outcome = uiState.outcome,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 12.dp),
@@ -265,7 +259,7 @@ private fun ResultScoreCard(
     myTeamScore: Int,
     opponentScore: Int,
     opponentName: String,
-    isWin: Boolean,
+    outcome: MatchOutcome,
     modifier: Modifier = Modifier,
 ) {
     val isDark = MaterialTheme.colorScheme.background.blue < 0.5f
@@ -326,15 +320,19 @@ private fun ResultScoreCard(
                 }
             }
 
-            // WIN / LOSS badge
-            val (badgeText, badgeBg, badgeFg) = if (isWin) {
-                Triple(
+            // WIN / DRAW / LOSS badge
+            val (badgeText, badgeBg, badgeFg) = when (outcome) {
+                MatchOutcome.WIN -> Triple(
                     stringResource(R.string.after_match_stats_win_badge),
                     Color(0xFF16A34A),
                     Color.White,
                 )
-            } else {
-                Triple(
+                MatchOutcome.DRAW -> Triple(
+                    stringResource(R.string.after_match_stats_draw_badge),
+                    Color(0xFFF97316),
+                    Color.White,
+                )
+                MatchOutcome.LOSS -> Triple(
                     stringResource(R.string.after_match_stats_loss_badge),
                     Color(0xFFDC2626),
                     Color.White,
@@ -549,7 +547,7 @@ private fun AfterMatchStatsDarkWinPreview() {
                 eventDate = "Oct 15",
                 myTeamScore = 84,
                 opponentScore = 72,
-                isWin = true,
+                outcome = MatchOutcome.WIN,
                 mvpItem = previewMvp,
                 players = previewPlayers,
             ),
@@ -569,7 +567,7 @@ private fun AfterMatchStatsDarkLossPreview() {
                 eventDate = "Nov 3",
                 myTeamScore = 68,
                 opponentScore = 91,
-                isWin = false,
+                outcome = MatchOutcome.LOSS,
                 mvpItem = previewMvp,
                 players = previewPlayers,
             ),
@@ -589,7 +587,7 @@ private fun AfterMatchStatsLightWinPreview() {
                 eventDate = "Oct 15",
                 myTeamScore = 84,
                 opponentScore = 72,
-                isWin = true,
+                outcome = MatchOutcome.WIN,
                 mvpItem = previewMvp,
                 players = previewPlayers,
             ),

@@ -17,6 +17,7 @@ import com.kourt.app.ui.screens.club.management.ClubMemberUiItem
 import com.kourt.app.ui.screens.club.management.MemberFilter
 import com.kourt.app.ui.screens.dashboard.coach.EventUiItem
 import com.kourt.app.ui.screens.dashboard.coach.TeamUiItem
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -109,8 +110,14 @@ abstract class BaseDashboardViewModel(
         }
     }
 
+    /** The running team load; replaced (and cancelled) when the user switches team or refreshes. */
+    private var teamDataJob: Job? = null
+
     protected fun loadTeamData(teamId: String, teamName: String) {
-        viewModelScope.launch {
+        // Without this, a slower load for the previous team could finish last and show its
+        // events under the new team's name.
+        teamDataJob?.cancel()
+        teamDataJob = viewModelScope.launch {
             onMembersLoadingStart()
             runCatching {
                 coroutineScope {

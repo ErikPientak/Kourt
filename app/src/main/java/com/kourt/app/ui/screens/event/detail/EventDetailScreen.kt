@@ -32,7 +32,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,10 +42,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kourt.app.R
-import com.kourt.app.navigation.Destination
 import com.kourt.app.navigation.INavigationRouter
 import com.kourt.app.ui.components.BaseScreen
 import com.kourt.app.ui.components.KourtAvatarLeading
+import com.kourt.app.ui.components.RefreshOnReturn
 import com.kourt.app.ui.components.bottomSheets.RsvpReasonBottomSheet
 import com.kourt.app.ui.components.bottomSheets.RsvpSelectionBottomSheet
 import com.kourt.app.ui.components.roleLabel
@@ -62,13 +61,8 @@ fun EventDetailScreen(
     viewModel: EventDetailViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
-    val navBackStackEntry by navigation.getNavController().currentBackStackEntryAsState()
-
-    LaunchedEffect(navBackStackEntry) {
-        if (navBackStackEntry?.destination?.route == Destination.EventDetailScreen.route) {
-            viewModel.loadEventDetail()
-        }
-    }
+    // Reload when coming back from another screen (e.g. after an edit), not on first open or rotation.
+    RefreshOnReturn { viewModel.loadEventDetail() }
 
     EventDetailContent(
         uiState = uiState,

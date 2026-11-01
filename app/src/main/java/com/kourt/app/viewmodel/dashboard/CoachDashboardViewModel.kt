@@ -106,6 +106,7 @@ class CoachDashboardViewModel @Inject constructor(
     }
 
     private fun loadMatchStatsPresence(allEvents: List<EventUiItem>) {
+        val teamId = uiState.activeTeam?.teamId
         viewModelScope.launch {
             val pastMatchEventIds = allEvents
                 .filter { it.type.lowercase() == "match" && isEventOver(it.epochDay, it.endTime) }
@@ -115,6 +116,8 @@ class CoachDashboardViewModel @Inject constructor(
                 val withStats = pastMatchEventIds.filter { eventId ->
                     matchStatsRepository.getMatchStats(eventId) != null
                 }.toSet()
+                // The user may have switched team while this was running.
+                if (uiState.activeTeam?.teamId != teamId) return@runCatching
                 uiState = uiState.copy(matchStatsEventIds = withStats)
                 Log.d(logTag, "Found match stats for ${withStats.size} past events")
             }.onFailure { e ->
