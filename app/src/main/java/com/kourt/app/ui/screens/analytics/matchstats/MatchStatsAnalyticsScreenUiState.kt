@@ -22,6 +22,8 @@ data class MatchStatsAnalyticsScreenUiState(
     val losses: Int = 0,
     val draws: Int = 0,
     val matchesPlayed: Int = 0,
+    val pointsFor: Int = 0,
+    val pointsAgainst: Int = 0,
     val topScorer: PlayerMatchStatsItem? = null,
     val players: List<PlayerMatchStatsItem> = emptyList(),
 )

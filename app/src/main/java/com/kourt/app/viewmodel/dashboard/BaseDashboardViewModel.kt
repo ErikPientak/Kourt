@@ -43,6 +43,8 @@ internal fun isEventOver(epochDay: Long, endTime: String, now: LocalDateTime = L
     return if (end == null) day < now.toLocalDate() else day.atTime(end) <= now
 }
 
+private val DASHBOARD_ROLES = setOf("coach", "assistant", "player", "parent")
+
 private val ROLE_ORDER = mapOf("admin" to 0, "coach" to 1, "assistant" to 2, "player" to 3, "parent" to 4)
 
 abstract class BaseDashboardViewModel(
@@ -76,8 +78,8 @@ abstract class BaseDashboardViewModel(
                     val membershipsDeferred = async { teamMemberRepository.getMembersByUser(uid) }
 
                     val name = nameDeferred.await()?.displayName.orEmpty()
-                    val memberships = membershipsDeferred.await()
-                        .filter { it.role.lowercase() in memberRoles }
+                    val allMemberships = membershipsDeferred.await()
+                    val memberships = allMemberships.filter { it.role.lowercase() in memberRoles }
 
                     val teams = memberships
                         .map { m -> async { teamRepository.getTeam(m.teamId) } }
@@ -94,8 +96,34 @@ abstract class BaseDashboardViewModel(
                             )
                         }
 
+                    // Teams the user belongs to through the other dashboard (coach <-> player), for the switcher.
+                    val ownTeamIds = teams.map { it.teamId }.toSet()
+                    val otherRoles = DASHBOARD_ROLES - memberRoles
+                    val otherTeams = allMemberships
+                        .filter { it.role.lowercase() in otherRoles && it.teamId !in ownTeamIds }
+                        .map { m -> async { m to teamRepository.getTeam(m.teamId) } }
+                        .awaitAll()
+                        .mapNotNull { (m, team) ->
+                            team?.let {
+                                TeamUiItem(
+                                    teamId = it.id,
+                                    teamName = it.name,
+                                    clubId = it.clubId,
+                                    accentColor = it.accentColor,
+                                    initials = it.initials,
+                                    joinCode = it.joinCode,
+                                    role = m.role.lowercase(),
+                                )
+                            }
+                        }
+                    onOtherTeamsLoaded(otherTeams)
+
                     val savedId = appPreferencesRepository.activeTeamId
                     val activeTeam = teams.firstOrNull { it.teamId == savedId } ?: teams.firstOrNull()
+                    // Save the fallback too: the analytics screens read the saved id, not the dashboard's pick.
+                    if (activeTeam != null && activeTeam.teamId != savedId) {
+                        appPreferencesRepository.activeTeamId = activeTeam.teamId
+                    }
 
                     Log.d(logTag, "Loaded ${teams.size} teams, active=${activeTeam?.teamId}")
                     onDashboardLoaded(name, teams, activeTeam)
@@ -190,6 +218,15 @@ abstract class BaseDashboardViewModel(
     protected abstract fun onLoadingStart()
     protected abstract fun onLoadingEnd()
     protected abstract fun onMembersLoadingStart()
+    /** Teams reached through the other dashboard; shown in the team switcher. */
+    protected open fun onOtherTeamsLoaded(teams: List<TeamUiItem>) {}
+
+    /** Remembers [team] as the active one before the app opens the other dashboard for it. */
+    protected fun rememberOtherTeam(team: TeamUiItem) {
+        appPreferencesRepository.activeClubId = team.clubId
+        appPreferencesRepository.activeTeamId = team.teamId
+    }
+
     protected abstract fun onLoadError(@StringRes error: Int)
     protected abstract fun onDashboardLoaded(name: String, teams: List<TeamUiItem>, activeTeam: TeamUiItem?)
     protected abstract fun onTeamDataLoaded(

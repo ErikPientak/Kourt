@@ -29,6 +29,8 @@ data class PlayerAttendanceItem(
     val lateRate: Float,         // orange progress segment
     val absentRate: Float,       // red progress segment (excused + unexcused)
     val reliability: Reliability,
+    /** False for a player with no attendance logged yet; shown as "No records yet" and kept out of team averages. */
+    val hasRecords: Boolean = true,
 )
 
 data class AttendanceAnalyticsScreenUiState(
@@ -38,6 +40,9 @@ data class AttendanceAnalyticsScreenUiState(
     val teamOnTimeRate: Float = 0f,
     val teamLateRate: Float = 0f,
     val teamAbsentRate: Float = 0f,
+    val teamOnTimeCount: Int = 0,
+    val teamLateCount: Int = 0,
+    val teamAbsentCount: Int = 0,
     val mostReliablePlayer: PlayerAttendanceItem? = null,
     val trendBars: List<WeeklyAttendanceBar> = emptyList(),
     val trendDelta: Float = 0f,

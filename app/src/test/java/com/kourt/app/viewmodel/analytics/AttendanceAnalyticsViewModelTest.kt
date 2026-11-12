@@ -209,8 +209,8 @@ class AttendanceAnalyticsViewModelTest {
     }
 
     @Test
-    fun `given a player with zero total stats, then they are excluded from results`() = runTest {
-        // Arrange — total == 0 -> mapNotNull skips
+    fun `given a player with zero total stats, then they are listed as no records and left out of averages`() = runTest {
+        // Arrange — total == 0 -> shown with hasRecords = false, not counted in team figures
         val members = listOf(TeamMember(id = "m1", userId = "u1", teamId = TEAM_ID, role = "player"))
         val stats = listOf(PlayerStats(teamMemberId = "m1", teamId = TEAM_ID))
         val users = listOf(User(id = "u1", displayName = "NoStats"))
@@ -221,8 +221,11 @@ class AttendanceAnalyticsViewModelTest {
         advanceUntilIdle()
 
         // Assert
-        assertTrue(vm.uiState.players.isEmpty())
+        val player = vm.uiState.players.single()
+        assertEquals("NoStats", player.displayName)
+        assertFalse(player.hasRecords)
         assertNull(vm.uiState.mostReliablePlayer)
+        assertNear(0f, vm.uiState.teamAttendanceRate)
     }
 
     // ── Trend direction ───────────────────────────────────────────────────────

@@ -246,7 +246,7 @@
     <string name="error_create_club_failed">Klub se nepodařilo vytvořit. Zkuste to prosím znovu.</string>
 
     <!-- Schedule tab -->
-    <string name="schedule_upcoming_events">NÁSLEDUJÍCÍ UDÁLOSTI</string>
+    <string name="schedule_upcoming_events">UDÁLOSTI</string>
     <string name="schedule_no_events">Na tento den nejsou naplánovány žádné události</string>
     <string name="schedule_log_attendance">Zapsat docházku</string>
     <string name="schedule_log_statistics">Zapsat statistiky</string>
@@ -438,6 +438,9 @@
     <!-- Attendance Analytics -->
     <string name="attendance_analytics_title">Analýza docházky</string>
     <string name="attendance_analytics_rate_label">MÍRA DOCHÁZKY</string>
+    <string name="attendance_analytics_on_time_count">VČAS</string>
+    <string name="attendance_analytics_late_count">POZDĚ</string>
+    <string name="attendance_analytics_absent_count">ABSENCE</string>
     <string name="attendance_analytics_most_reliable">NEJSPOLEHLIVĚJŠÍ</string>
     <string name="attendance_analytics_trend_label">TREND DOCHÁZKY</string>
     <string name="attendance_analytics_trend_improving">Zlepšuje se</string>
@@ -464,6 +467,8 @@
     <string name="match_stats_analytics_wins">V</string>
     <string name="match_stats_analytics_losses">P</string>
     <string name="match_stats_analytics_draws">R</string>
+    <string name="match_stats_analytics_points_for">DANÉ BODY</string>
+    <string name="match_stats_analytics_points_against">OBDRŽENÉ BODY</string>
     <string name="match_stats_analytics_prev_cd">Předchozí obrazovka analýzy</string>
 
     <!-- Labels for values stored in Firestore and shared UI text -->
@@ -487,4 +492,18 @@
     <string name="after_match_stats_match_title">Zápas (%1$s) – %2$s</string>
     <string name="common_back_cd">Zpět</string>
     <string name="avatar_picker_title">Vyberte avatara</string>
+    <string name="event_detail_more_cd">Další akce</string>
+    <string name="event_scope_this">Pouze tuto událost</string>
+    <string name="event_scope_following">Tuto a následující události</string>
+    <string name="event_scope_all">Všechny události v sérii</string>
+    <string name="delete_event_blocked_title">Událost nelze smazat</string>
+    <string name="delete_event_blocked_message">Pro tuto událost je zaznamenaná docházka nebo statistiky zápasu, proto ji nelze smazat. Místo toho ji zrušte.</string>
+    <string name="event_delete_skipped">Počet událostí se zaznamenanými výsledky, které zůstaly zachovány: %1$d.</string>
+    <string name="action_ok">OK</string>
+    <string name="error_event_has_results">Tato událost má zaznamenané výsledky a nelze ji smazat. Místo toho ji zrušte.</string>
+    <string name="event_detail_ended_title">Tato událost skončila</string>
+    <string name="event_detail_ended_subtitle">Odpovědi jsou uzavřeny</string>
+    <string name="attendance_analytics_no_records">Zatím bez záznamů</string>
+    <string name="event_detail_opponent">proti %1$s</string>
+    <string name="event_detail_late_label">POZDĚ</string>
 </resources>

@@ -6,7 +6,7 @@ package com.kourt.app.viewmodel.event
  *   "late" -> "on_time"
  *   "no" + non-blank reason -> "excused"
  *   "no" + blank reason     -> "unexcused"
- *   null / unknown          -> "unexcused"
+ *   null / unknown          -> no selection (null), so nobody is marked absent by default
  *
  * The mapping is private; we exercise it through loadAttendance() by stubbing
  * one RSVP per member and reading uiState.members[*].status.
@@ -115,11 +115,11 @@ class AttendanceViewModelTest {
         assertEquals("on_time",   statusByUserId["u_late"])
         assertEquals("excused",   statusByUserId["u_no_reason"])
         assertEquals("unexcused", statusByUserId["u_no_blank"])
-        assertEquals("unexcused", statusByUserId["u_no_rsvp"])
+        assertEquals(null, statusByUserId["u_no_rsvp"])
     }
 
     @Test
-    fun `given an unknown RSVP status, then default attendance status is unexcused`() = runTest {
+    fun `given an unknown RSVP status, then no default attendance status is selected`() = runTest {
         // Arrange — exercise the else branch with an unrecognized status
         val members = listOf(TeamMember(id = "m1", userId = "u1", teamId = TEAM_ID, role = "player"))
         val users = listOf(User(id = "u1", displayName = "Alice"))
@@ -136,7 +136,7 @@ class AttendanceViewModelTest {
         advanceUntilIdle()
 
         // Assert
-        assertEquals("unexcused", vm.uiState.members.single().status)
+        assertEquals(null, vm.uiState.members.single().status)
     }
 
     // ── Existing attendance overrides RSVP default ────────────────────────────

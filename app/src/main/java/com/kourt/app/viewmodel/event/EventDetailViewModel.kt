@@ -9,6 +9,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kourt.app.R
+import com.kourt.app.data.model.Event
 import com.kourt.app.data.model.Rsvp
 import com.kourt.app.data.repository.remote.AuthRepository
 import com.kourt.app.data.repository.remote.EventRepository
@@ -18,9 +19,12 @@ import com.kourt.app.data.repository.remote.TeamMemberRepository
 import com.kourt.app.data.repository.remote.UserRepository
 import com.kourt.app.ui.screens.event.detail.EventDetailScreenActions
 import com.kourt.app.ui.screens.event.detail.EventDetailScreenUiState
+import com.kourt.app.ui.screens.event.detail.EventActionType
 import com.kourt.app.ui.screens.event.detail.EventDetailUiItem
+import com.kourt.app.ui.screens.event.detail.EventScope
 import com.kourt.app.ui.screens.event.detail.NominatedPlayerUiItem
 import com.kourt.app.ui.screens.event.detail.RsvpMemberUiItem
+import com.kourt.app.viewmodel.dashboard.isEventOver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -45,6 +49,8 @@ class EventDetailViewModel @Inject constructor(
 
     var uiState by mutableStateOf(EventDetailScreenUiState())
         private set
+
+    private var loadedEvent: Event? = null
 
     init {
         loadEventDetail()
@@ -77,6 +83,7 @@ class EventDetailViewModel @Inject constructor(
                         return@coroutineScope
                     }
 
+                    loadedEvent = event
                     val membership = memberships.firstOrNull { it.teamId == event.teamId }
                     val role = membership?.role ?: ""
                     val isEditable = role in setOf("coach", "assistant", "admin")
@@ -99,6 +106,8 @@ class EventDetailViewModel @Inject constructor(
                         formattedDate = formattedDate,
                         location = event.location,
                         notes = event.notes,
+                        opponent = event.opponent,
+                        venueType = event.venueType,
                     )
 
                     // RSVP counts
@@ -171,6 +180,7 @@ class EventDetailViewModel @Inject constructor(
                         isLoading = false,
                         event = eventUiItem,
                         myRsvpStatus = myRsvpStatus,
+                        myRsvpReason = myRsvp?.reason.orEmpty(),
                         rsvpYes = rsvpYes,
                         rsvpLate = rsvpLate,
                         rsvpNo = rsvpNo,
@@ -179,6 +189,8 @@ class EventDetailViewModel @Inject constructor(
                         isEditable = isEditable,
                         canRsvp = canRsvp,
                         nominatedPlayers = nominatedPlayers,
+                        hasSeries = event.seriesId.isNotBlank(),
+                        isPast = isEventOver(java.util.concurrent.TimeUnit.MILLISECONDS.toDays(epochMillis), event.endTime),
                     )
                 }
             }.onFailure { e ->
@@ -258,5 +270,86 @@ class EventDetailViewModel @Inject constructor(
                 uiState = uiState.copy(isRsvpSubmitting = false, error = R.string.error_load_failed)
             }
         }
+    }
+
+    // ── Cancel / delete ───────────────────────────────────────────────────────
+
+    override fun onCancelEventClick() {
+        uiState = uiState.copy(pendingAction = EventActionType.CANCEL, actionScope = EventScope.THIS)
+    }
+
+    /** A single event with recorded results can't be deleted, so say so up front instead of after a confirm. */
+    override fun onDeleteEventClick() {
+        val event = loadedEvent ?: return
+        viewModelScope.launch {
+            runCatching {
+                if (event.seriesId.isBlank() && eventRepository.hasResults(event.id)) {
+                    uiState = uiState.copy(deleteBlocked = true)
+                } else {
+                    uiState = uiState.copy(pendingAction = EventActionType.DELETE, actionScope = EventScope.THIS)
+                }
+            }.onFailure { e ->
+                Log.e(TAG, "Failed to check results for $eventId", e)
+                uiState = uiState.copy(error = R.string.error_generic)
+            }
+        }
+    }
+
+    override fun onActionScopeChange(scope: EventScope) {
+        uiState = uiState.copy(actionScope = scope)
+    }
+
+    override fun onActionDismiss() {
+        uiState = uiState.copy(pendingAction = null)
+    }
+
+    override fun onDeleteBlockedDismiss() {
+        uiState = uiState.copy(deleteBlocked = false)
+    }
+
+    override fun onActionConfirm() {
+        val event = loadedEvent ?: return
+        val action = uiState.pendingAction ?: return
+        if (uiState.isActionRunning) return
+        val scope = uiState.actionScope
+        uiState = uiState.copy(pendingAction = null, isActionRunning = true, error = null, skippedCount = 0)
+        viewModelScope.launch {
+            runCatching {
+                val inScope = eventsInScope(event, scope)
+                when (action) {
+                    EventActionType.CANCEL -> {
+                        eventRepository.cancelEvents(inScope.filter { it.status != "cancelled" }.map { it.id })
+                        uiState = uiState.copy(isActionRunning = false)
+                        loadEventDetail()
+                    }
+                    EventActionType.DELETE -> {
+                        // Events with recorded results are kept; their stats totals would otherwise go stale.
+                        val withResults = inScope.filter { eventRepository.hasResults(it.id) }.map { it.id }.toSet()
+                        val deletable = inScope.filter { it.id !in withResults }
+                        if (deletable.isEmpty()) {
+                            uiState = uiState.copy(isActionRunning = false, deleteBlocked = true)
+                        } else {
+                            eventRepository.deleteEventsWithRelated(deletable.map { it.id })
+                            if (deletable.any { it.id == event.id }) {
+                                uiState = uiState.copy(isActionRunning = false, isClosed = true)
+                            } else {
+                                uiState = uiState.copy(isActionRunning = false, skippedCount = withResults.size)
+                                loadEventDetail()
+                            }
+                        }
+                    }
+                }
+            }.onFailure { e ->
+                Log.e(TAG, "Failed to $action event $eventId", e)
+                uiState = uiState.copy(isActionRunning = false, error = R.string.error_generic)
+            }
+        }
+    }
+
+    /** The events a cancel/delete applies to; "following" means this one and every later one of the series. */
+    private suspend fun eventsInScope(event: Event, scope: EventScope): List<Event> {
+        if (event.seriesId.isBlank() || scope == EventScope.THIS) return listOf(event)
+        val all = eventRepository.getEventsBySeriesId(event.teamId, event.seriesId)
+        return if (scope == EventScope.ALL) all else all.filter { it.date >= event.date }
     }
 }

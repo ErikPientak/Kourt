@@ -55,6 +55,7 @@ import com.kourt.app.ui.components.ErrorSnackbarEffect
 import com.kourt.app.ui.components.EventCard
 import com.kourt.app.ui.components.KourtAvatarLeading
 import com.kourt.app.ui.components.KourtTeamAvatar
+import com.kourt.app.ui.components.OtherTeamMenuItems
 import com.kourt.app.ui.components.RefreshOnReturn
 import com.kourt.app.ui.components.UpNextCard
 import com.kourt.app.ui.components.bottomSheets.RsvpReasonBottomSheet
@@ -84,6 +85,10 @@ fun PlayerDashboardScreen(
 
     // Reload when coming back from another screen (e.g. after an edit), not on first open or rotation.
     RefreshOnReturn { viewModel.refreshEvents() }
+
+    LaunchedEffect(uiState.navigateToOtherDashboard) {
+        if (uiState.navigateToOtherDashboard) navigation.navigateToDashboard()
+    }
 
     LaunchedEffect(uiState.navigateToEventDetailId) {
         val id = uiState.navigateToEventDetailId ?: return@LaunchedEffect
@@ -117,9 +122,11 @@ private fun PlayerDashboardContent(
                 playerName = uiState.playerName,
                 activeTeam = uiState.activeTeam,
                 teams = uiState.teams,
+                otherTeams = uiState.otherTeams,
                 isDropdownOpen = uiState.isTeamDropdownOpen,
                 onToggleDropdown = actions::onTeamDropdownToggle,
                 onTeamSelected = actions::onTeamSelected,
+                onOtherTeamSelected = actions::onOtherTeamSelected,
                 onSettingsTap = onSettingsTap,
             )
         },
@@ -205,9 +212,11 @@ private fun PlayerDashboardTopBar(
     playerName: String,
     activeTeam: TeamUiItem?,
     teams: List<TeamUiItem>,
+    otherTeams: List<TeamUiItem>,
     isDropdownOpen: Boolean,
     onToggleDropdown: () -> Unit,
     onTeamSelected: (String) -> Unit,
+    onOtherTeamSelected: (String) -> Unit,
     onSettingsTap: () -> Unit,
 ) {
     val outlineColor = MaterialTheme.colorScheme.surface
@@ -308,6 +317,7 @@ private fun PlayerDashboardTopBar(
                             onClick = { onTeamSelected(team.teamId) },
                         )
                     }
+                    OtherTeamMenuItems(teams = otherTeams, onTeamSelected = onOtherTeamSelected)
                 }
             }
 

@@ -28,6 +28,22 @@ import javax.inject.Inject
 
 private const val TAG = "AddTeamViewModel"
 private const val JOIN_CODE_LENGTH = 6
+
+/**
+ * Makes [userId] the team's one coach: an existing membership gets the `coach` role, otherwise one is
+ * created, and any other coach drops to `assistant`. Shared by Edit Team and Assign to Team so both
+ * paths leave the same data.
+ */
+suspend fun makeTeamCoach(teamMemberRepository: TeamMemberRepository, teamId: String, userId: String) {
+    val members = teamMemberRepository.getMembersByTeam(teamId)
+    members.filter { it.role == "coach" && it.userId != userId }
+        .forEach { teamMemberRepository.changeRole(TeamMemberRepository.memberDocId(it.userId, teamId), "assistant") }
+    val existing = members.find { it.userId == userId }
+    when {
+        existing == null -> teamMemberRepository.createMember(TeamMember(userId = userId, teamId = teamId, role = "coach"))
+        existing.role != "coach" -> teamMemberRepository.changeRole(TeamMemberRepository.memberDocId(userId, teamId), "coach")
+    }
+}
 private val JOIN_CODE_CHARS = ('A'..'Z') + ('0'..'9')
 
 @HiltViewModel
@@ -312,6 +328,10 @@ class AddTeamViewModel @Inject constructor(
                 )
 
                 teamRepository.updateTeam(updated)
+                // A picked user (non-blank id) becomes the coach; free text only changes the name.
+                uiState.selectedHeadCoach?.takeIf { it.id.isNotBlank() }?.let {
+                    makeTeamCoach(teamMemberRepository, uiState.teamId, it.id)
+                }
                 uiState = uiState.copy(isLoading = false, isSuccess = true)
                 Log.d(TAG, "Team updated: ${uiState.teamId}")
             }.onFailure { e ->

@@ -30,6 +30,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.AlertDialog
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -79,17 +87,48 @@ private fun EventDetailContent(
     onBack: () -> Unit,
     onEdit: () -> Unit,
 ) {
+    LaunchedEffect(uiState.isClosed) { if (uiState.isClosed) onBack() }
+    EventActionDialogs(uiState = uiState, actions = actions)
+
+    var menuOpen by remember { mutableStateOf(false) }
+
     BaseScreen(
         title = stringResource(R.string.event_detail_title),
         onBack = onBack,
         trailingIcon = if (uiState.isEditable) {
             {
-                IconButton(onClick = onEdit) {
-                    Icon(
-                        painter = painterResource(R.drawable.edit),
-                        contentDescription = stringResource(R.string.event_detail_edit_cd),
-                        tint = MaterialTheme.colorScheme.onBackground,
-                    )
+                Row {
+                    IconButton(onClick = onEdit) {
+                        Icon(
+                            painter = painterResource(R.drawable.edit),
+                            contentDescription = stringResource(R.string.event_detail_edit_cd),
+                            tint = MaterialTheme.colorScheme.onBackground,
+                        )
+                    }
+                    IconButton(onClick = { menuOpen = true }, enabled = !uiState.isActionRunning) {
+                        Icon(
+                            imageVector = Icons.Filled.MoreVert,
+                            contentDescription = stringResource(R.string.event_detail_more_cd),
+                            tint = MaterialTheme.colorScheme.onBackground,
+                        )
+                    }
+                    DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                        if (uiState.event?.status?.lowercase() != "cancelled") {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.event_action_cancel)) },
+                                onClick = { menuOpen = false; actions.onCancelEventClick() },
+                            )
+                        }
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = stringResource(R.string.event_action_delete),
+                                    color = MaterialTheme.colorScheme.error,
+                                )
+                            },
+                            onClick = { menuOpen = false; actions.onDeleteEventClick() },
+                        )
+                    }
                 }
             }
         } else null,
@@ -132,6 +171,14 @@ private fun EventDetailContent(
                         NotGoingSection(uiState = uiState, actions = actions)
                     }
 
+                    if (uiState.skippedCount > 0) {
+                        Text(
+                            text = stringResource(R.string.event_delete_skipped, uiState.skippedCount),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+
                     uiState.error?.let { errorRes ->
                         Text(
                             text = stringResource(errorRes),
@@ -165,6 +212,76 @@ private fun EventDetailContent(
     }
 }
 
+// ── Cancel / delete dialogs ───────────────────────────────────────────────────
+
+@Composable
+private fun EventActionDialogs(
+    uiState: EventDetailScreenUiState,
+    actions: EventDetailScreenActions,
+) {
+    val action = uiState.pendingAction
+    if (action != null) {
+        val isDelete = action == EventActionType.DELETE
+        AlertDialog(
+            onDismissRequest = actions::onActionDismiss,
+            title = { Text(stringResource(if (isDelete) R.string.delete_event_title else R.string.cancel_event_title)) },
+            text = {
+                Column {
+                    if (uiState.hasSeries) {
+                        listOf(
+                            EventScope.THIS to R.string.event_scope_this,
+                            EventScope.FOLLOWING to R.string.event_scope_following,
+                            EventScope.ALL to R.string.event_scope_all,
+                        ).forEach { (scope, label) ->
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                RadioButton(
+                                    selected = uiState.actionScope == scope,
+                                    onClick = { actions.onActionScopeChange(scope) },
+                                )
+                                Text(
+                                    text = stringResource(label),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.padding(start = 4.dp),
+                                )
+                            }
+                        }
+                        Spacer(Modifier.height(8.dp))
+                    }
+                    Text(stringResource(if (isDelete) R.string.delete_event_message else R.string.cancel_event_message))
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = actions::onActionConfirm) {
+                    Text(
+                        text = stringResource(if (isDelete) R.string.delete_event_confirm else R.string.cancel_event_confirm),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = actions::onActionDismiss) {
+                    Text(stringResource(R.string.cancel_event_keep))
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+        )
+    }
+
+    if (uiState.deleteBlocked) {
+        AlertDialog(
+            onDismissRequest = actions::onDeleteBlockedDismiss,
+            title = { Text(stringResource(R.string.delete_event_blocked_title)) },
+            text = { Text(stringResource(R.string.delete_event_blocked_message)) },
+            confirmButton = {
+                TextButton(onClick = actions::onDeleteBlockedDismiss) {
+                    Text(stringResource(R.string.action_ok))
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+        )
+    }
+}
+
 // ── Section: Event Info ───────────────────────────────────────────────────────
 
 @Composable
@@ -186,6 +303,22 @@ private fun EventInfoSection(event: EventDetailUiItem) {
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface,
                 )
+
+                val matchLine = listOfNotNull(
+                    event.opponent.takeIf { it.isNotBlank() }?.let { stringResource(R.string.event_detail_opponent, it) },
+                    when (event.venueType.lowercase()) {
+                        "home" -> stringResource(R.string.event_venue_home)
+                        "away" -> stringResource(R.string.event_venue_away)
+                        else -> null
+                    },
+                ).joinToString(" · ")
+                if (event.type.lowercase() == "match" && matchLine.isNotBlank()) {
+                    Text(
+                        text = matchLine,
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -322,22 +455,30 @@ private fun YourStatusSection(
                     .padding(horizontal = 16.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                RsvpStatusIcon(status = uiState.myRsvpStatus)
-                Spacer(modifier = Modifier.width(12.dp))
+                if (!uiState.isPast) {
+                    RsvpStatusIcon(status = uiState.myRsvpStatus)
+                    Spacer(modifier = Modifier.width(12.dp))
+                }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = rsvpStatusTitle(uiState.myRsvpStatus),
+                        text = if (uiState.isPast) stringResource(R.string.event_detail_ended_title)
+                        else rsvpStatusTitle(uiState.myRsvpStatus),
                         style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                     Text(
-                        text = rsvpStatusSubtitle(uiState.myRsvpStatus),
+                        text = if (uiState.isPast) stringResource(R.string.event_detail_ended_subtitle)
+                        else if (uiState.myRsvpStatus == "no" && uiState.myRsvpReason.isNotBlank())
+                            rsvpReasonLabel(uiState.myRsvpReason)
+                        else rsvpStatusSubtitle(uiState.myRsvpStatus),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     )
                 }
-                Spacer(modifier = Modifier.width(8.dp))
-                UpdatePill(onClick = actions::onUpdateRsvp)
+                if (!uiState.isPast) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    UpdatePill(onClick = actions::onUpdateRsvp)
+                }
             }
         }
 
@@ -357,7 +498,20 @@ private fun YourStatusSection(
                     )
                 },
                 label = stringResource(R.string.event_detail_going_label),
-                count = uiState.rsvpYes + uiState.rsvpLate,
+                count = uiState.rsvpYes,
+            )
+            RsvpStatChip(
+                modifier = Modifier.weight(1f),
+                icon = {
+                    Icon(
+                        imageVector = Icons.Filled.DateRange,
+                        contentDescription = null,
+                        tint = Color(0xFFF59E0B),
+                        modifier = Modifier.size(18.dp),
+                    )
+                },
+                label = stringResource(R.string.event_detail_late_label),
+                count = uiState.rsvpLate,
             )
             RsvpStatChip(
                 modifier = Modifier.weight(1f),
@@ -769,6 +923,12 @@ private val previewActions = object : EventDetailScreenActions {
     override fun onDismissReasonSheet() = Unit
     override fun onToggleShowAllGoing() = Unit
     override fun onToggleShowAllNotGoing() = Unit
+    override fun onCancelEventClick() = Unit
+    override fun onDeleteEventClick() = Unit
+    override fun onActionScopeChange(scope: EventScope) = Unit
+    override fun onActionConfirm() = Unit
+    override fun onActionDismiss() = Unit
+    override fun onDeleteBlockedDismiss() = Unit
 }
 
 @Preview(name = "EventDetail — dark", showBackground = true)

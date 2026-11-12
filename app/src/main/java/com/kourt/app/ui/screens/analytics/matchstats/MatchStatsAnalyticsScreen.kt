@@ -129,6 +129,20 @@ fun MatchStatsAnalyticsScreenContent(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
+                        PointsCard(
+                            pointsFor     = uiState.pointsFor,
+                            pointsAgainst = uiState.pointsAgainst,
+                            accent        = accent,
+                            modifier      = Modifier.fillMaxWidth(),
+                        )
+                    }
+                }
+
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
                         TeamRecordCard(
                             wins     = uiState.wins,
                             losses   = uiState.losses,
@@ -230,6 +244,66 @@ private fun RecordStatColumn(label: String, value: Int) {
                 fontSize = 28.sp,
             ),
             color = MaterialTheme.colorScheme.onSurface,
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall.copy(
+                letterSpacing = 1.sp,
+                fontWeight = FontWeight.Medium,
+            ),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+        )
+    }
+}
+
+// ── Points card ───────────────────────────────────────────────────────────────
+
+@Composable
+private fun PointsCard(
+    pointsFor: Int,
+    pointsAgainst: Int,
+    accent: androidx.compose.ui.graphics.Color,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surface,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+        ) {
+            PointsColumn(
+                label = stringResource(R.string.match_stats_analytics_points_for),
+                value = pointsFor,
+                color = accent,
+            )
+            PointsColumn(
+                label = stringResource(R.string.match_stats_analytics_points_against),
+                value = pointsAgainst,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+    }
+}
+
+@Composable
+private fun PointsColumn(
+    label: String,
+    value: Int,
+    color: androidx.compose.ui.graphics.Color,
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = value.toString(),
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 24.sp,
+            ),
+            color = color,
         )
         Text(
             text = label,
@@ -409,6 +483,8 @@ private val previewUiState = MatchStatsAnalyticsScreenUiState(
     losses        = 2,
     draws         = 1,
     matchesPlayed = 8,
+    pointsFor     = 612,
+    pointsAgainst = 548,
     topScorer     = previewPlayers.first(),
     players       = previewPlayers,
 )

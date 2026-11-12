@@ -86,17 +86,30 @@ class AttendanceAnalyticsViewModel @Inject constructor(
                     val userMap = users.associateBy { it.id }
 
                     // ── Player attendance items ────────────────────────────────
-                    val playerItems = stats.mapNotNull { ps ->
-                        val member = playerMembers.firstOrNull { it.id == ps.teamMemberId } ?: return@mapNotNull null
+                    val statsByMember = stats.associateBy { it.teamMemberId }
+                    val allItems = playerMembers.map { member ->
+                        val ps = statsByMember[member.id]
                         val user   = userMap[member.userId]
 
-                        val onTime   = ps.totalTrainingsOnTime
-                        val late     = ps.totalTrainingsLate
-                        val excused  = ps.totalTrainingsExcused
-                        val unexcused = ps.totalTrainingsUnexcused
+                        val onTime   = ps?.totalTrainingsOnTime ?: 0
+                        val late     = ps?.totalTrainingsLate ?: 0
+                        val excused  = ps?.totalTrainingsExcused ?: 0
+                        val unexcused = ps?.totalTrainingsUnexcused ?: 0
                         val total    = (onTime + late + excused + unexcused).toFloat()
 
-                        if (total == 0f) return@mapNotNull null
+                        if (total == 0f) {
+                            return@map PlayerAttendanceItem(
+                                teamMemberId   = member.id,
+                                displayName    = user?.displayName?.ifBlank { user.email } ?: member.id,
+                                avatarUrl      = user?.avatarId?.ifBlank { user.photoURL } ?: "",
+                                attendanceRate = 0f,
+                                onTimeRate     = 0f,
+                                lateRate       = 0f,
+                                absentRate     = 0f,
+                                reliability    = Reliability.NEEDS_ATTENTION,
+                                hasRecords     = false,
+                            )
+                        }
 
                         val attendanceRate = (onTime + late) / total
                         val onTimeRate     = onTime / total
@@ -110,7 +123,7 @@ class AttendanceAnalyticsViewModel @Inject constructor(
                         }
 
                         PlayerAttendanceItem(
-                            teamMemberId   = ps.teamMemberId,
+                            teamMemberId   = member.id,
                             displayName    = user?.displayName?.ifBlank { user.email }
                                 ?: member.id,
                             avatarUrl      = user?.avatarId?.ifBlank { user.photoURL } ?: "",
@@ -120,7 +133,11 @@ class AttendanceAnalyticsViewModel @Inject constructor(
                             absentRate     = absentRate,
                             reliability = reliability,
                         )
-                    }.sortedByDescending { it.attendanceRate }
+                    }
+                    // Players with records first (best attendance first), then those with none yet.
+                    // Team averages and "most reliable" only count players with records.
+                    val playerItems = allItems.filter { it.hasRecords }.sortedByDescending { it.attendanceRate }
+                    val noRecordItems = allItems.filter { !it.hasRecords }.sortedBy { it.displayName }
 
                     val teamAttendanceRate = if (playerItems.isNotEmpty())
                         playerItems.map { it.attendanceRate }.average().toFloat()
@@ -137,6 +154,12 @@ class AttendanceAnalyticsViewModel @Inject constructor(
                     val teamAbsentRate = if (playerItems.isNotEmpty())
                         playerItems.map { it.absentRate }.average().toFloat()
                     else 0f
+
+                    // Raw counts, only for players that have records.
+                    val recordedStats = playerItems.mapNotNull { statsByMember[it.teamMemberId] }
+                    val teamOnTimeCount = recordedStats.sumOf { it.totalTrainingsOnTime }
+                    val teamLateCount   = recordedStats.sumOf { it.totalTrainingsLate }
+                    val teamAbsentCount = recordedStats.sumOf { it.totalTrainingsExcused + it.totalTrainingsUnexcused }
 
                     val mostReliablePlayer = playerItems.maxByOrNull { it.attendanceRate }
 
@@ -199,11 +222,14 @@ class AttendanceAnalyticsViewModel @Inject constructor(
                         teamOnTimeRate     = teamOnTimeRate,
                         teamLateRate       = teamLateRate,
                         teamAbsentRate     = teamAbsentRate,
+                        teamOnTimeCount    = teamOnTimeCount,
+                        teamLateCount      = teamLateCount,
+                        teamAbsentCount    = teamAbsentCount,
                         mostReliablePlayer = mostReliablePlayer,
                         trendBars          = trendBars,
                         trendDelta         = trendDelta,
                         isTrendImproving   = isTrendImproving,
-                        players            = playerItems,
+                        players            = playerItems + noRecordItems,
                     )
 
                     Log.d(TAG, "Analytics load complete")

@@ -63,7 +63,7 @@ import com.kourt.app.viewmodel.event.AfterMatchStatsViewModel
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 private val NameColumnWidth  = 130.dp
-private val StatColumnWidth  = 56.dp
+private val StatColumnWidth  = 44.dp
 
 private data class ReadStatCol(@StringRes val label: Int, val value: (PlayerStatRowItem) -> String)
 
@@ -457,7 +457,7 @@ private fun ReadPlayerStatRow(
                 text = player.displayName,
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
+                maxLines = 2,
                 modifier = Modifier.weight(1f),
             )
         }

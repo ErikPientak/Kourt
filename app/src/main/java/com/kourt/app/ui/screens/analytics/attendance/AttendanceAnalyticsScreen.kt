@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -162,20 +163,35 @@ fun AttendanceAnalyticsScreenContent(
 
                 item {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(IntrinsicSize.Min),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        AttendanceRateCard(
-                            teamAttendanceRate = uiState.teamAttendanceRate,
-                            teamOnTimeRate     = uiState.teamOnTimeRate,
-                            teamLateRate       = uiState.teamLateRate,
-                            teamAbsentRate     = uiState.teamAbsentRate,
-                            modifier           = Modifier.weight(1f),
-                        )
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            AttendanceRateCard(
+                                teamAttendanceRate = uiState.teamAttendanceRate,
+                                teamOnTimeRate     = uiState.teamOnTimeRate,
+                                teamLateRate       = uiState.teamLateRate,
+                                teamAbsentRate     = uiState.teamAbsentRate,
+                                modifier           = Modifier.fillMaxWidth(),
+                            )
+                            AttendanceLegendCard(
+                                onTimeCount = uiState.teamOnTimeCount,
+                                lateCount   = uiState.teamLateCount,
+                                absentCount = uiState.teamAbsentCount,
+                                modifier    = Modifier.fillMaxWidth(),
+                            )
+                        }
                         MostReliableCard(
                             player   = uiState.mostReliablePlayer,
                             accent   = accent,
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight(),
                         )
                     }
                 }
@@ -317,6 +333,64 @@ private fun AttendanceRateCard(
     }
 }
 
+// ── Attendance legend ─────────────────────────────────────────────────────────
+
+@Composable
+private fun AttendanceLegendCard(
+    onTimeCount: Int,
+    lateCount: Int,
+    absentCount: Int,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surface,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            LegendRow(DonutOnTimeColor, stringResource(R.string.attendance_analytics_on_time_count), onTimeCount)
+            LegendRow(DonutLateColor, stringResource(R.string.attendance_analytics_late_count), lateCount)
+            LegendRow(DonutAbsentColor, stringResource(R.string.attendance_analytics_absent_count), absentCount)
+        }
+    }
+}
+
+@Composable
+private fun LegendRow(color: Color, label: String, count: Int) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .clip(CircleShape)
+                .background(color),
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall.copy(
+                letterSpacing = 1.sp,
+                fontWeight = FontWeight.Medium,
+            ),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
+        )
+        Text(
+            text = count.toString(),
+            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+    }
+}
+
 // ── Most reliable card ────────────────────────────────────────────────────────
 
 @Composable
@@ -335,10 +409,10 @@ private fun MostReliableCard(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
         ) {
             Text(
                 text = stringResource(R.string.attendance_analytics_most_reliable),
@@ -370,7 +444,7 @@ private fun MostReliableCard(
                     maxLines = 2,
                 )
                 Text(
-                    text = "${(player.attendanceRate * 100).toInt()}%",
+                    text = if (player.hasRecords) "${(player.attendanceRate * 100).toInt()}%" else "–",
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 24.sp,
@@ -448,7 +522,7 @@ private fun AttendanceBarChart(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(80.dp),
+            .height(96.dp),
         verticalAlignment = Alignment.Bottom,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
@@ -463,6 +537,14 @@ private fun AttendanceBarChart(
                 verticalArrangement = Arrangement.Bottom,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                Text(
+                    text = "${(bar.rate * 100).toInt()}%",
+                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (bar.isCurrentWeek) 0.8f else 0.5f),
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                )
+
                 Box(
                     modifier = Modifier
                         .weight(1f, fill = false)
@@ -557,7 +639,8 @@ private fun PlayerBreakdownRow(
                 )
 
                 Text(
-                    text = stringResource(player.reliability.label),
+                    text = if (player.hasRecords) stringResource(player.reliability.label)
+                    else stringResource(R.string.attendance_analytics_no_records),
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                     color = reliabilityColor,
                 )
@@ -689,6 +772,9 @@ private val previewBars = listOf(
 private val previewUiState = AttendanceAnalyticsScreenUiState(
     isLoading          = false,
     teamAttendanceRate = 0.74f,
+    teamOnTimeCount    = 41,
+    teamLateCount      = 9,
+    teamAbsentCount    = 14,
     mostReliablePlayer = previewPlayers.first(),
     trendBars          = previewBars,
     trendDelta         = 0.09f,

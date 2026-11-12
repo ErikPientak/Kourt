@@ -10,4 +10,10 @@ interface EventDetailScreenActions {
     fun onDismissReasonSheet()
     fun onToggleShowAllGoing()
     fun onToggleShowAllNotGoing()
+    fun onCancelEventClick()
+    fun onDeleteEventClick()
+    fun onActionScopeChange(scope: EventScope)
+    fun onActionConfirm()
+    fun onActionDismiss()
+    fun onDeleteBlockedDismiss()
 }

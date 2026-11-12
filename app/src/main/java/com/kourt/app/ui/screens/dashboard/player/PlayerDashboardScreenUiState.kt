@@ -17,6 +17,9 @@ data class PlayerDashboardScreenUiState(
     val teams: List<TeamUiItem> = emptyList(),
     val activeTeam: TeamUiItem? = null,
     val isTeamDropdownOpen: Boolean = false,
+    /** Teams where the user is coach/assistant (player dashboard); picking one opens the other dashboard. */
+    val otherTeams: List<TeamUiItem> = emptyList(),
+    val navigateToOtherDashboard: Boolean = false,
     val upNextEvent: EventUiItem? = null,
     val upNextAttendees: List<ClubMemberUiItem> = emptyList(),
     /** The current player's RSVP for upNextEvent. Raw Firestore value: "yes" / "late" / "no" / null. */

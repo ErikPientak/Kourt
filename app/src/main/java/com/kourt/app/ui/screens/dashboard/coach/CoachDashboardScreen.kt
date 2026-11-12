@@ -67,6 +67,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.text.input.KeyboardType
 import com.kourt.app.ui.Tabs.CoachHomeTab
 import com.kourt.app.ui.components.ErrorSnackbarEffect
+import com.kourt.app.ui.components.OtherTeamMenuItems
 import com.kourt.app.ui.components.RefreshOnReturn
 import com.kourt.app.ui.components.bottomSheets.ChangeRoleBottomSheet
 import com.kourt.app.ui.components.bottomSheets.GrowYourTeamBottomSheet
@@ -100,6 +101,10 @@ fun CoachDashboardScreen(
             navigation.navigateToAddEvent(teamId)
             viewModel.onAddEventNavigated()
         }
+    }
+
+    LaunchedEffect(uiState.navigateToOtherDashboard) {
+        if (uiState.navigateToOtherDashboard) navigation.navigateToPlayerDashboard()
     }
 
     LaunchedEffect(uiState.navigateToEventDetailId) {
@@ -220,9 +225,11 @@ private fun CoachDashboardContent(
                 coachName = uiState.coachName,
                 activeTeam = uiState.activeTeam,
                 teams = uiState.teams,
+                otherTeams = uiState.otherTeams,
                 isDropdownOpen = uiState.isTeamDropdownOpen,
                 onToggleDropdown = { actions.onTeamDropdownToggle() },
                 onTeamSelected = { actions.onTeamSelected(it) },
+                onOtherTeamSelected = { actions.onOtherTeamSelected(it) },
                 onSettingsTap = { navigation.navigateToSettingsScreen() },
                 onAnalyticsTap = { actions.onAnalyticsTap() },
             )
@@ -311,9 +318,11 @@ private fun CoachDashboardTopBar(
     coachName: String,
     activeTeam: TeamUiItem?,
     teams: List<TeamUiItem>,
+    otherTeams: List<TeamUiItem>,
     isDropdownOpen: Boolean,
     onToggleDropdown: () -> Unit,
     onTeamSelected: (String) -> Unit,
+    onOtherTeamSelected: (String) -> Unit,
     onSettingsTap: () -> Unit,
     onAnalyticsTap: () -> Unit,
 ) {
@@ -420,6 +429,7 @@ private fun CoachDashboardTopBar(
                             onClick = { onTeamSelected(team.teamId) },
                         )
                     }
+                    OtherTeamMenuItems(teams = otherTeams, onTeamSelected = onOtherTeamSelected)
                 }
             }
 

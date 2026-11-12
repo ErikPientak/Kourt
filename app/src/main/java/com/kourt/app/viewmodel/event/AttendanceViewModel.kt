@@ -138,10 +138,11 @@ class AttendanceViewModel @Inject constructor(
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private fun rsvpDefaultStatus(rsvpStatus: String?, reason: String?): String = when (rsvpStatus) {
+    /** Pre-selected status from the RSVP; no RSVP leaves it blank rather than inventing an absence. */
+    private fun rsvpDefaultStatus(rsvpStatus: String?, reason: String?): String? = when (rsvpStatus) {
         "yes", "late" -> "on_time"
         "no" -> if (reason.isNullOrBlank()) "unexcused" else "excused"
-        else -> "unexcused"
+        else -> null
     }
 
     // ── AttendanceScreenActions ───────────────────────────────────────────────

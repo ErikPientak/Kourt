@@ -25,6 +25,9 @@ android {
         versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Points Auth and Firestore at the local Firebase emulators (debug only, see buildTypes).
+        buildConfigField("boolean", "USE_FIREBASE_EMULATOR", "false")
     }
     signingConfigs {
         create("release") {
@@ -36,6 +39,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Opt in with: ./gradlew assembleDebug -PuseFirebaseEmulator=true
+            val useEmulator = project.findProperty("useFirebaseEmulator")?.toString() == "true"
+            buildConfigField("boolean", "USE_FIREBASE_EMULATOR", useEmulator.toString())
+        }
         release {
             signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true

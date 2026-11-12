@@ -92,6 +92,8 @@ class MatchStatsAnalyticsViewModel @Inject constructor(
                         losses        = teamStats?.losses ?: 0,
                         draws         = teamStats?.draws ?: 0,
                         matchesPlayed = teamStats?.matchesPlayed ?: 0,
+                        pointsFor     = teamStats?.totalPointsScored ?: 0,
+                        pointsAgainst = teamStats?.totalPointsAgainst ?: 0,
                         topScorer     = playerItems.maxByOrNull { it.totalPoints },
                         players       = playerItems,
                     )

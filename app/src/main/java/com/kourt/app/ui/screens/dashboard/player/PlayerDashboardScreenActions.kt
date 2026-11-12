@@ -5,6 +5,7 @@ import com.kourt.app.ui.screens.club.management.MemberFilter
 interface PlayerDashboardScreenActions {
     fun onTeamDropdownToggle()
     fun onTeamSelected(teamId: String)
+    fun onOtherTeamSelected(teamId: String)
     fun onRosterSearchQueryChange(query: String)
     fun onRosterFilterChange(filter: MemberFilter)
 

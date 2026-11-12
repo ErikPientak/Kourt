@@ -246,7 +246,7 @@ private fun AddTeamScreenContent(
             // ── Head Coach ────────────────────────────────────────────────────
             AuthFieldLabel(label = stringResource(R.string.add_team_head_coach_label))
             Spacer(modifier = Modifier.height(6.dp))
-            Box(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     value = uiState.headCoachQuery,
                     onValueChange = { actions.onHeadCoachQueryChange(it) },
@@ -274,33 +274,37 @@ private fun AddTeamScreenContent(
                     shape = RoundedCornerShape(12.dp),
                     colors = authTextFieldColors(placeholderColor = placeholderColor),
                 )
-                DropdownMenu(
-                    expanded = uiState.headCoachSuggestions.isNotEmpty(),
-                    onDismissRequest = {},
-                    properties = PopupProperties(focusable = false),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface),
-                ) {
-                    uiState.headCoachSuggestions.forEach { user ->
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = user.displayName,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface,
+                // Suggestions sit right under the field instead of in a popup, which could flip above it.
+                if (uiState.headCoachSuggestions.isNotEmpty()) {
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.surface,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp),
+                    ) {
+                        Column {
+                            uiState.headCoachSuggestions.forEach { user ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = user.displayName,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                        )
+                                    },
+                                    onClick = { actions.onHeadCoachSelected(user) },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Filled.Person,
+                                            contentDescription = null,
+                                            tint = iconTintColor,
+                                            modifier = Modifier.size(16.dp),
+                                        )
+                                    },
                                 )
-                            },
-                            onClick = { actions.onHeadCoachSelected(user) },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Filled.Person,
-                                    contentDescription = null,
-                                    tint = iconTintColor,
-                                    modifier = Modifier.size(16.dp),
-                                )
-                            },
-                        )
+                            }
+                        }
                     }
                 }
             }

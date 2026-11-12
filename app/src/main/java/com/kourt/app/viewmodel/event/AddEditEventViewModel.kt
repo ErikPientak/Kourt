@@ -167,6 +167,13 @@ class AddEditEventViewModel @Inject constructor(
             return
         }
 
+        val start = runCatching { java.time.LocalTime.parse(state.startTime) }.getOrNull()
+        val end = runCatching { java.time.LocalTime.parse(state.endTime) }.getOrNull()
+        if (start != null && end != null && !end.isAfter(start)) {
+            uiState = uiState.copy(error = R.string.error_event_end_before_start)
+            return
+        }
+
         // A new repeating event covers Starts on … Ends on instead of a single date.
         val isNewSeries = !state.isEditMode && state.repeatDays.isNotEmpty()
         val occurrenceDays = if (isNewSeries) {

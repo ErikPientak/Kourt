@@ -252,7 +252,7 @@
     <string name="error_create_club_failed">Failed to create club. Please try again.</string>
 
     <!-- Schedule tab -->
-    <string name="schedule_upcoming_events">UPCOMING EVENTS</string>
+    <string name="schedule_upcoming_events">EVENTS</string>
     <string name="schedule_no_events">No events on this date</string>
     <string name="schedule_log_attendance">Log Attendance</string>
     <string name="schedule_log_statistics">Log Statistics</string>
@@ -443,6 +443,9 @@
     <!-- Attendance Analytics -->
     <string name="attendance_analytics_title">Attendance Analytics</string>
     <string name="attendance_analytics_rate_label">ATTENDANCE RATE</string>
+    <string name="attendance_analytics_on_time_count">ON TIME</string>
+    <string name="attendance_analytics_late_count">LATE</string>
+    <string name="attendance_analytics_absent_count">ABSENT</string>
     <string name="attendance_analytics_most_reliable">MOST RELIABLE</string>
     <string name="attendance_analytics_trend_label">ATTENDANCE TREND</string>
     <string name="attendance_analytics_trend_improving">Improving</string>
@@ -469,6 +472,8 @@
     <string name="match_stats_analytics_wins">W</string>
     <string name="match_stats_analytics_losses">L</string>
     <string name="match_stats_analytics_draws">D</string>
+    <string name="match_stats_analytics_points_for">POINTS FOR</string>
+    <string name="match_stats_analytics_points_against">POINTS AGAINST</string>
     <string name="match_stats_analytics_prev_cd">Previous analytics screen</string>
 
     <!-- Labels for values stored in Firestore and shared UI text -->
@@ -492,4 +497,18 @@
     <string name="after_match_stats_match_title">Match (%1$s) - %2$s</string>
     <string name="common_back_cd">Navigate back</string>
     <string name="avatar_picker_title">Choose Avatar</string>
+    <string name="event_detail_more_cd">More actions</string>
+    <string name="event_scope_this">This event only</string>
+    <string name="event_scope_following">This and following events</string>
+    <string name="event_scope_all">All events in the series</string>
+    <string name="delete_event_blocked_title">Can\'t delete event</string>
+    <string name="delete_event_blocked_message">Attendance or match stats were recorded for this event, so it can\'t be deleted. Cancel it instead.</string>
+    <string name="event_delete_skipped">%1$d events with recorded results were kept.</string>
+    <string name="action_ok">OK</string>
+    <string name="error_event_has_results">This event has recorded results and can\'t be deleted. Cancel it instead.</string>
+    <string name="event_detail_ended_title">This event has ended</string>
+    <string name="event_detail_ended_subtitle">RSVP is closed</string>
+    <string name="attendance_analytics_no_records">No records yet</string>
+    <string name="event_detail_opponent">vs. %1$s</string>
+    <string name="event_detail_late_label">LATE</string>
 </resources>

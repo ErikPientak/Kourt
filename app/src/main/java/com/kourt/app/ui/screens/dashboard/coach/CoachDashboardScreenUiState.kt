@@ -17,6 +17,8 @@ data class TeamUiItem(
     val accentColor: String = "",
     val initials: String = "",
     val joinCode: String = "",
+    /** The user's role in this team; only filled for teams that belong to the other dashboard. */
+    val role: String = "",
 )
 
 @Immutable
@@ -53,6 +55,9 @@ data class CoachDashboardScreenUiState(
     val teams: List<TeamUiItem> = emptyList(),
     val activeTeam: TeamUiItem? = null,
     val isTeamDropdownOpen: Boolean = false,
+    /** Teams where the user is a player/parent (coach dashboard); picking one opens the other dashboard. */
+    val otherTeams: List<TeamUiItem> = emptyList(),
+    val navigateToOtherDashboard: Boolean = false,
     val upNextEvent: EventUiItem? = null,
     val upNextAttendees: List<ClubMemberUiItem> = emptyList(),
     val upcomingEvents: List<EventUiItem> = emptyList(),

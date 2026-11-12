@@ -6,6 +6,8 @@ import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
 
+private const val WRITES_PER_BATCH = 450
+
 @Singleton
 open class EventRepository @Inject constructor(
     private val firestore: FirebaseFirestore
@@ -50,6 +52,43 @@ open class EventRepository @Inject constructor(
 
     suspend fun deleteEvent(id: String) {
         collection.document(id).delete().await()
+    }
+
+    /** True when attendance or match stats were recorded for the event; such events must not be deleted. */
+    suspend fun hasResults(eventId: String): Boolean {
+        val attendance = firestore.collection("attendance")
+            .whereEqualTo("eventId", eventId).limit(1).get().await()
+        if (!attendance.isEmpty) return true
+        return firestore.collection("matchStats").document(eventId).get().await().exists()
+    }
+
+    /** Marks all [eventIds] cancelled in one batch (chunked below the 500-write limit). */
+    suspend fun cancelEvents(eventIds: List<String>) {
+        eventIds.chunked(WRITES_PER_BATCH).forEach { chunk ->
+            val batch = firestore.batch()
+            chunk.forEach { batch.update(collection.document(it), "status", "cancelled") }
+            batch.commit().await()
+        }
+    }
+
+    /**
+     * Deletes the events together with their RSVPs and nominations. The security rules look the
+     * team up through the event document, so the related docs go first and the events last.
+     * Callers must have checked [hasResults]: stats totals are not rolled back here.
+     */
+    suspend fun deleteEventsWithRelated(eventIds: List<String>) {
+        val refs = mutableListOf<com.google.firebase.firestore.DocumentReference>()
+        eventIds.forEach { id ->
+            firestore.collection("RSVP").whereEqualTo("eventId", id).get().await()
+                .documents.forEach { refs.add(it.reference) }
+            refs.add(firestore.collection("nominations").document(id))
+        }
+        eventIds.forEach { refs.add(collection.document(it)) }
+        refs.chunked(WRITES_PER_BATCH).forEach { chunk ->
+            val batch = firestore.batch()
+            chunk.forEach { batch.delete(it) }
+            batch.commit().await()
+        }
     }
 
 }

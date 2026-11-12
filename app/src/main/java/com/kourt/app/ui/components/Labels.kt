@@ -54,7 +54,10 @@ fun rsvpReasonLabel(reason: String): String = when (reason) {
 @Composable
 fun memberSubtitle(member: ClubMemberUiItem): String = when {
     member.childName != null -> stringResource(R.string.member_subtitle_guardian, member.childName)
-    member.teamNames.isNotBlank() -> stringResource(R.string.member_subtitle_team, member.teamNames)
+    member.teamNames.isNotBlank() -> {
+        val teams = stringResource(R.string.member_subtitle_team, member.teamNames)
+        if (member.jerseyNumber > 0) "#${member.jerseyNumber} · $teams" else teams
+    }
     else -> ""
 }
 

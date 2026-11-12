@@ -23,6 +23,7 @@ import com.kourt.app.ui.screens.club.management.EventStatusFilter
 import com.kourt.app.ui.screens.club.management.MemberFilter
 import com.kourt.app.ui.screens.dashboard.coach.EventUiItem
 import com.kourt.app.viewmodel.dashboard.isEventOver
+import com.kourt.app.viewmodel.team.makeTeamCoach
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -346,7 +347,9 @@ class ClubManagementViewModel @Inject constructor(
 
         viewModelScope.launch {
             runCatching {
-                if (existing != null) {
+                if (newRole == "coach") {
+                    makeTeamCoach(teamMemberRepository, teamId, member.userId)
+                } else if (existing != null) {
                     teamMemberRepository.changeRole(existing.memberId, newRole)
                 } else {
                     teamMemberRepository.createMember(
@@ -356,6 +359,15 @@ class ClubManagementViewModel @Inject constructor(
                             role = newRole,
                         )
                     )
+                }
+                // Keep the team's head coach name in step with the coach membership.
+                uiState.teams.find { it.id == teamId }?.let { team ->
+                    val name = when {
+                        newRole == "coach" -> member.displayName
+                        existing?.role == "coach" && team.headCoach == member.displayName -> ""
+                        else -> team.headCoach
+                    }
+                    if (name != team.headCoach) teamRepository.updateTeam(team.copy(headCoach = name))
                 }
                 Log.d(TAG, "Set role: userId=${member.userId}, teamId=$teamId, role=$newRole")
                 loadMembers(uiState.teams)
@@ -491,7 +503,12 @@ class ClubManagementViewModel @Inject constructor(
         uiState = uiState.copy(eventForDelete = null)
         viewModelScope.launch {
             runCatching {
-                eventRepository.deleteEvent(eventId)
+                // Played events keep their results so the season stats stay correct.
+                if (eventRepository.hasResults(eventId)) {
+                    uiState = uiState.copy(error = R.string.error_event_has_results)
+                    return@runCatching
+                }
+                eventRepository.deleteEventsWithRelated(listOf(eventId))
                 val updated = uiState.events.filter { it.eventId != eventId }
                 uiState = uiState.copy(
                     events = updated,

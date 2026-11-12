@@ -63,6 +63,16 @@ class CoachDashboardViewModel @Inject constructor(
         uiState = uiState.copy(isMembersLoading = true)
     }
 
+    override fun onOtherTeamsLoaded(teams: List<TeamUiItem>) {
+        uiState = uiState.copy(otherTeams = teams)
+    }
+
+    override fun onOtherTeamSelected(teamId: String) {
+        val team = uiState.otherTeams.firstOrNull { it.teamId == teamId } ?: return
+        rememberOtherTeam(team)
+        uiState = uiState.copy(isTeamDropdownOpen = false, navigateToOtherDashboard = true)
+    }
+
     override fun onLoadError(error: Int) {
         uiState = uiState.copy(isLoading = false, isMembersLoading = false, error = error)
     }
