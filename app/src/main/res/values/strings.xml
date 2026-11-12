@@ -472,8 +472,7 @@
     <string name="match_stats_analytics_wins">W</string>
     <string name="match_stats_analytics_losses">L</string>
     <string name="match_stats_analytics_draws">D</string>
-    <string name="match_stats_analytics_points_for">POINTS FOR</string>
-    <string name="match_stats_analytics_points_against">POINTS AGAINST</string>
+    <string name="match_stats_analytics_season_score">SEASON SCORE</string>
     <string name="match_stats_analytics_prev_cd">Previous analytics screen</string>
 
     <!-- Labels for values stored in Firestore and shared UI text -->

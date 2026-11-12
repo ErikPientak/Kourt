@@ -467,8 +467,7 @@
     <string name="match_stats_analytics_wins">V</string>
     <string name="match_stats_analytics_losses">P</string>
     <string name="match_stats_analytics_draws">R</string>
-    <string name="match_stats_analytics_points_for">DANÉ BODY</string>
-    <string name="match_stats_analytics_points_against">OBDRŽENÉ BODY</string>
+    <string name="match_stats_analytics_season_score">SKÓRE SEZÓNY</string>
     <string name="match_stats_analytics_prev_cd">Předchozí obrazovka analýzy</string>
 
     <!-- Labels for values stored in Firestore and shared UI text -->

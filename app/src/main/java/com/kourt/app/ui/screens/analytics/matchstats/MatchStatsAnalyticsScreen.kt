@@ -1,6 +1,12 @@
 package com.kourt.app.ui.screens.analytics.matchstats
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -125,34 +131,43 @@ fun MatchStatsAnalyticsScreenContent(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 item {
+                    // Left: record + season score stacked; right: top scorer. Both columns share the
+                    // same height so there is no dead space under the shorter card.
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(IntrinsicSize.Min),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        PointsCard(
-                            pointsFor     = uiState.pointsFor,
-                            pointsAgainst = uiState.pointsAgainst,
-                            accent        = accent,
-                            modifier      = Modifier.fillMaxWidth(),
-                        )
-                    }
-                }
-
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        TeamRecordCard(
-                            wins     = uiState.wins,
-                            losses   = uiState.losses,
-                            draws    = uiState.draws,
-                            modifier = Modifier.weight(1f),
-                        )
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight(),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            TeamRecordCard(
+                                wins     = uiState.wins,
+                                losses   = uiState.losses,
+                                draws    = uiState.draws,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f),
+                            )
+                            SeasonScoreCard(
+                                pointsFor     = uiState.pointsFor,
+                                pointsAgainst = uiState.pointsAgainst,
+                                accent        = accent,
+                                modifier      = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f),
+                            )
+                        }
                         TopScorerCard(
                             player   = uiState.topScorer,
                             accent   = accent,
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight(),
                         )
                     }
                 }
@@ -207,10 +222,10 @@ private fun TeamRecordCard(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
         ) {
             Text(
                 text = stringResource(R.string.match_stats_analytics_team_record),
@@ -256,63 +271,50 @@ private fun RecordStatColumn(label: String, value: Int) {
     }
 }
 
-// ── Points card ───────────────────────────────────────────────────────────────
+// ── Season score card ─────────────────────────────────────────────────────────
 
 @Composable
-private fun PointsCard(
+private fun SeasonScoreCard(
     pointsFor: Int,
     pointsAgainst: Int,
     accent: androidx.compose.ui.graphics.Color,
     modifier: Modifier = Modifier,
 ) {
+    val textColor = MaterialTheme.colorScheme.onSurface
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.surface,
     ) {
-        Row(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
         ) {
-            PointsColumn(
-                label = stringResource(R.string.match_stats_analytics_points_for),
-                value = pointsFor,
-                color = accent,
+            Text(
+                text = stringResource(R.string.match_stats_analytics_season_score),
+                style = MaterialTheme.typography.labelSmall.copy(
+                    letterSpacing = 1.sp,
+                    fontWeight = FontWeight.Medium,
+                ),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                textAlign = TextAlign.Center,
             )
-            PointsColumn(
-                label = stringResource(R.string.match_stats_analytics_points_against),
-                value = pointsAgainst,
-                color = MaterialTheme.colorScheme.onSurface,
+            Text(
+                text = buildAnnotatedString {
+                    withStyle(SpanStyle(color = accent)) { append(pointsFor.toString()) }
+                    withStyle(SpanStyle(color = textColor)) { append(" : $pointsAgainst") }
+                },
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 24.sp,
+                ),
+                textAlign = TextAlign.Center,
+                maxLines = 1,
             )
         }
-    }
-}
-
-@Composable
-private fun PointsColumn(
-    label: String,
-    value: Int,
-    color: androidx.compose.ui.graphics.Color,
-) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = value.toString(),
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontWeight = FontWeight.ExtraBold,
-                fontSize = 24.sp,
-            ),
-            color = color,
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall.copy(
-                letterSpacing = 1.sp,
-                fontWeight = FontWeight.Medium,
-            ),
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-        )
     }
 }
 
@@ -334,10 +336,10 @@ private fun TopScorerCard(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
         ) {
             Text(
                 text = stringResource(R.string.match_stats_analytics_top_scorer),
