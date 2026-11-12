@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -54,6 +55,10 @@ fun SetupScreen(
             viewModel.onSaveConsumed()
             navigation.navigateToPlayerDashboard()
         }
+    }
+
+    LaunchedEffect(uiState.isLoggedOut) {
+        if (uiState.isLoggedOut) navigation.navigateToLoginScreen()
     }
 
     val previousRoute = navigation.getNavController().previousBackStackEntry?.destination?.route
@@ -238,5 +243,18 @@ internal fun SetupScreenContent(
         }
 
         Spacer(modifier = Modifier.height(40.dp))
+        if (onBack == null) {
+            Spacer(modifier = Modifier.height(16.dp))
+            TextButton(
+                onClick = { actions.onLogout() },
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+            ) {
+                Text(
+                    text = stringResource(R.string.settings_log_out),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                )
+            }
+        }
     }
 }

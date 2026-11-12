@@ -163,6 +163,10 @@ private fun EventDetailContent(
                         YourStatusSection(uiState = uiState, actions = actions)
                     }
 
+                    if (!uiState.canRsvp) {
+                        RsvpSummaryChips(uiState = uiState)
+                    }
+
                     if (uiState.goingMembers.isNotEmpty() || uiState.rsvpYes + uiState.rsvpLate > 0) {
                         GoingSection(uiState = uiState, actions = actions)
                     }
@@ -247,7 +251,17 @@ private fun EventActionDialogs(
                         }
                         Spacer(Modifier.height(8.dp))
                     }
-                    Text(stringResource(if (isDelete) R.string.delete_event_message else R.string.cancel_event_message))
+                    val manyEvents = uiState.hasSeries && uiState.actionScope != EventScope.THIS
+                    Text(
+                        stringResource(
+                            when {
+                                isDelete && manyEvents -> R.string.delete_events_message
+                                isDelete -> R.string.delete_event_message
+                                manyEvents -> R.string.cancel_events_message
+                                else -> R.string.cancel_event_message
+                            }
+                        )
+                    )
                 }
             },
             confirmButton = {
@@ -282,6 +296,56 @@ private fun EventActionDialogs(
     }
 }
 
+// ── RSVP summary chips (players in their status section, staff above the Going list) ─────────
+
+@Composable
+private fun RsvpSummaryChips(uiState: EventDetailScreenUiState) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        RsvpStatChip(
+            modifier = Modifier.weight(1f),
+            icon = {
+                Icon(
+                    imageVector = Icons.Filled.Check,
+                    contentDescription = null,
+                    tint = Color(0xFF22C55E),
+                    modifier = Modifier.size(18.dp),
+                )
+            },
+            label = stringResource(R.string.event_detail_going_label),
+            count = uiState.rsvpYes,
+        )
+        RsvpStatChip(
+            modifier = Modifier.weight(1f),
+            icon = {
+                Icon(
+                    imageVector = Icons.Filled.DateRange,
+                    contentDescription = null,
+                    tint = Color(0xFFF59E0B),
+                    modifier = Modifier.size(18.dp),
+                )
+            },
+            label = stringResource(R.string.event_detail_late_label),
+            count = uiState.rsvpLate,
+        )
+        RsvpStatChip(
+            modifier = Modifier.weight(1f),
+            icon = {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = null,
+                    tint = Color(0xFFEF4444),
+                    modifier = Modifier.size(18.dp),
+                )
+            },
+            label = stringResource(R.string.event_detail_not_going_label),
+            count = uiState.rsvpNo,
+        )
+    }
+}
+
 // ── Section: Event Info ───────────────────────────────────────────────────────
 
 @Composable
@@ -303,6 +367,14 @@ private fun EventInfoSection(event: EventDetailUiItem) {
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface,
                 )
+
+                if (event.status.lowercase() == "cancelled") {
+                    Text(
+                        text = stringResource(R.string.event_detail_cancelled).uppercase(),
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
 
                 val matchLine = listOfNotNull(
                     event.opponent.takeIf { it.isNotBlank() }?.let { stringResource(R.string.event_detail_opponent, it) },
@@ -482,51 +554,9 @@ private fun YourStatusSection(
             }
         }
 
-        // Stat chips row
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            RsvpStatChip(
-                modifier = Modifier.weight(1f),
-                icon = {
-                    Icon(
-                        imageVector = Icons.Filled.Check,
-                        contentDescription = null,
-                        tint = Color(0xFF22C55E),
-                        modifier = Modifier.size(18.dp),
-                    )
-                },
-                label = stringResource(R.string.event_detail_going_label),
-                count = uiState.rsvpYes,
-            )
-            RsvpStatChip(
-                modifier = Modifier.weight(1f),
-                icon = {
-                    Icon(
-                        imageVector = Icons.Filled.DateRange,
-                        contentDescription = null,
-                        tint = Color(0xFFF59E0B),
-                        modifier = Modifier.size(18.dp),
-                    )
-                },
-                label = stringResource(R.string.event_detail_late_label),
-                count = uiState.rsvpLate,
-            )
-            RsvpStatChip(
-                modifier = Modifier.weight(1f),
-                icon = {
-                    Icon(
-                        imageVector = Icons.Filled.Close,
-                        contentDescription = null,
-                        tint = Color(0xFFEF4444),
-                        modifier = Modifier.size(18.dp),
-                    )
-                },
-                label = stringResource(R.string.event_detail_not_going_label),
-                count = uiState.rsvpNo,
-            )
-        }
+        RsvpSummaryChips(uiState = uiState)
+
+
     }
 }
 

@@ -7,4 +7,5 @@ data class SetupScreenUiState(
     val isLoading: Boolean = false,
     @StringRes val error: Int? = null,
     val isSuccess: Boolean = false,
+    val isLoggedOut: Boolean = false,
 )

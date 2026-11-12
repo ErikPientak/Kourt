@@ -367,7 +367,13 @@ class ClubManagementViewModel @Inject constructor(
                         existing?.role == "coach" && team.headCoach == member.displayName -> ""
                         else -> team.headCoach
                     }
-                    if (name != team.headCoach) teamRepository.updateTeam(team.copy(headCoach = name))
+                    if (name != team.headCoach) {
+                        teamRepository.updateTeam(team.copy(headCoach = name))
+                        // Show the new name on the team card right away; the list isn't reloaded here.
+                        uiState = uiState.copy(
+                            teams = uiState.teams.map { if (it.id == teamId) it.copy(headCoach = name) else it },
+                        )
+                    }
                 }
                 Log.d(TAG, "Set role: userId=${member.userId}, teamId=$teamId, role=$newRole")
                 loadMembers(uiState.teams)

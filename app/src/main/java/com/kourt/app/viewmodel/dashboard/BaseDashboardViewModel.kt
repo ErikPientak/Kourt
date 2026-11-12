@@ -43,6 +43,16 @@ internal fun isEventOver(epochDay: Long, endTime: String, now: LocalDateTime = L
     return if (end == null) day < now.toLocalDate() else day.atTime(end) <= now
 }
 
+/**
+ * Epoch days from [epochDays] that fall in [month] (0-based, as Calendar) of [year]. Uses that month's own
+ * length; taking it from "now" left the 31st without a dot in 31-day months seen from a 30-day month.
+ */
+internal fun eventDaysInMonth(epochDays: Collection<Long>, year: Int, month: Int): Set<Long> {
+    val first = LocalDate.of(year, month + 1, 1)
+    val range = first.toEpochDay()..first.plusMonths(1).minusDays(1).toEpochDay()
+    return epochDays.filter { it in range }.toSet()
+}
+
 private val DASHBOARD_ROLES = setOf("coach", "assistant", "player", "parent")
 
 private val ROLE_ORDER = mapOf("admin" to 0, "coach" to 1, "assistant" to 2, "player" to 3, "parent" to 4)
@@ -243,18 +253,8 @@ abstract class BaseDashboardViewModel(
 
     // ── Shared pure helpers ───────────────────────────────────────────────────
 
-    protected fun computeEventDaysInView(events: List<EventUiItem>, year: Int, month: Int): Set<Long> {
-        val start = Calendar.getInstance().apply {
-            set(year, month, 1, 0, 0, 0); set(Calendar.MILLISECOND, 0)
-        }
-        val end = Calendar.getInstance().apply {
-            set(year, month, getActualMaximum(Calendar.DAY_OF_MONTH), 23, 59, 59)
-            set(Calendar.MILLISECOND, 999)
-        }
-        val startDay = TimeUnit.MILLISECONDS.toDays(start.timeInMillis)
-        val endDay = TimeUnit.MILLISECONDS.toDays(end.timeInMillis)
-        return events.filter { it.epochDay in startDay..endDay }.map { it.epochDay }.toSet()
-    }
+    protected fun computeEventDaysInView(events: List<EventUiItem>, year: Int, month: Int): Set<Long> =
+        eventDaysInMonth(events.map { it.epochDay }, year, month)
 
     protected fun applyMemberFilter(
         members: List<ClubMemberUiItem>,

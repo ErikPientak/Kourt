@@ -167,10 +167,8 @@ class AddEditEventViewModel @Inject constructor(
             return
         }
 
-        val start = runCatching { java.time.LocalTime.parse(state.startTime) }.getOrNull()
-        val end = runCatching { java.time.LocalTime.parse(state.endTime) }.getOrNull()
-        if (start != null && end != null && !end.isAfter(start)) {
-            uiState = uiState.copy(error = R.string.error_event_end_before_start)
+        if (!isEndAfterStart(state.startTime, state.endTime)) {
+            uiState = uiState.copy(error = R.string.error_event_end_time_before_start)
             return
         }
 
@@ -357,4 +355,11 @@ internal fun calculateOccurrenceDates(
         .filter { it.dayOfWeek.value in repeatDays }
         .map { it.toEpochDay() }
         .toList()
+}
+
+/** False only when both times parse ("HH:mm") and the end is not after the start. */
+internal fun isEndAfterStart(startTime: String, endTime: String): Boolean {
+    val start = runCatching { java.time.LocalTime.parse(startTime) }.getOrNull() ?: return true
+    val end = runCatching { java.time.LocalTime.parse(endTime) }.getOrNull() ?: return true
+    return end.isAfter(start)
 }

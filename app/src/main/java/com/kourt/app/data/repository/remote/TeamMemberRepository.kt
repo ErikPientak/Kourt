@@ -32,6 +32,10 @@ open class TeamMemberRepository @Inject constructor(
         collection.whereEqualTo("userId", userId).get().await()
             .toObjects(TeamMember::class.java).firstOrNull()
 
+    /** Single-doc read by the deterministic id; allowed for anyone who can view the team. */
+    suspend fun getMember(userId: String, teamId: String): TeamMember? =
+        collection.document(memberDocId(userId, teamId)).get().await().toObject(TeamMember::class.java)
+
     suspend fun createMember(member: TeamMember): String {
         val id = memberDocId(member.userId, member.teamId)
         collection.document(id).set(member).await()

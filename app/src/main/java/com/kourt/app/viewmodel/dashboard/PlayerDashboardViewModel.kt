@@ -82,6 +82,9 @@ class PlayerDashboardViewModel @Inject constructor(
         uiState = uiState.copy(playerName = name, teams = teams, activeTeam = activeTeam)
     }
 
+    /** Team of the last data load; a reload of the same team keeps date, month, search and filter. */
+    private var loadedTeamId: String? = null
+
     override fun onTeamDataLoaded(
         teamId: String,
         upNextEvent: EventUiItem?,
@@ -93,6 +96,12 @@ class PlayerDashboardViewModel @Inject constructor(
         todayEpochDay: Long,
         eventDaysInView: Set<Long>
     ) {
+        val isReload = teamId == loadedTeamId
+        loadedTeamId = teamId
+        val query = if (isReload) uiState.memberSearchQuery else ""
+        val filter = if (isReload) uiState.memberFilter else MemberFilter.ALL
+        val year = if (isReload) uiState.calendarYear else calendarYear
+        val month = if (isReload) uiState.calendarMonth else calendarMonth
         uiState = uiState.copy(
             isLoading = false,
             isMembersLoading = false,
@@ -100,13 +109,13 @@ class PlayerDashboardViewModel @Inject constructor(
             upcomingEvents = upcomingEvents.withMyRsvps(),
             allEvents = allEvents.withMyRsvps(),
             members = members,
-            filteredMembers = applyMemberFilter(members, "", MemberFilter.ALL),
-            memberSearchQuery = "",
-            memberFilter = MemberFilter.ALL,
-            calendarYear = calendarYear,
-            calendarMonth = calendarMonth,
-            selectedEpochDay = todayEpochDay,
-            eventDaysInView = eventDaysInView,
+            filteredMembers = applyMemberFilter(members, query, filter),
+            memberSearchQuery = query,
+            memberFilter = filter,
+            calendarYear = year,
+            calendarMonth = month,
+            selectedEpochDay = if (isReload) uiState.selectedEpochDay else todayEpochDay,
+            eventDaysInView = if (isReload) computeEventDaysInView(allEvents, year, month) else eventDaysInView,
             myRsvpStatus = null,
         )
         if (upNextEvent != null) loadRsvpData(upNextEvent.eventId)

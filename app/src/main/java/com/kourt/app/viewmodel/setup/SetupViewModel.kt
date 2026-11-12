@@ -94,9 +94,16 @@ class SetupViewModel @Inject constructor(
                 uiState = uiState.copy(isLoading = false, isSuccess = true)
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to join team", e)
-                uiState = uiState.copy(isLoading = false, error = R.string.error_invalid_join_code)
+                // "No team found" only when the code matched nothing (handled above); anything else is generic.
+                uiState = uiState.copy(isLoading = false, error = R.string.error_generic)
             }
         }
+    }
+
+    /** First-run escape hatch: a new user who signed up with the wrong account can sign out here. */
+    override fun onLogout() {
+        authRepository.signOut()
+        uiState = uiState.copy(isLoggedOut = true)
     }
 
     override fun onSaveConsumed() {

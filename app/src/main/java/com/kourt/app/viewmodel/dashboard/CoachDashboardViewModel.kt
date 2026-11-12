@@ -81,6 +81,9 @@ class CoachDashboardViewModel @Inject constructor(
         uiState = uiState.copy(coachName = name, teams = teams, activeTeam = activeTeam)
     }
 
+    /** Team of the last data load; a reload of the same team keeps date, month, search and filter. */
+    private var loadedTeamId: String? = null
+
     override fun onTeamDataLoaded(
         teamId: String,
         upNextEvent: EventUiItem?,
@@ -92,6 +95,12 @@ class CoachDashboardViewModel @Inject constructor(
         todayEpochDay: Long,
         eventDaysInView: Set<Long>
     ) {
+        val isReload = teamId == loadedTeamId
+        loadedTeamId = teamId
+        val query = if (isReload) uiState.memberSearchQuery else ""
+        val filter = if (isReload) uiState.memberFilter else MemberFilter.ALL
+        val year = if (isReload) uiState.calendarYear else calendarYear
+        val month = if (isReload) uiState.calendarMonth else calendarMonth
         val uid = authRepository.currentUser?.uid
         val myRole = members.firstOrNull { it.userId == uid }?.role ?: ""
         val rosterMembers = if (uid != null) members.filter { it.userId != uid } else members
@@ -102,13 +111,13 @@ class CoachDashboardViewModel @Inject constructor(
             upcomingEvents = upcomingEvents,
             allEvents = allEvents,
             members = rosterMembers,
-            filteredMembers = applyMemberFilter(rosterMembers, "", MemberFilter.ALL),
-            memberSearchQuery = "",
-            memberFilter = MemberFilter.ALL,
-            calendarYear = calendarYear,
-            calendarMonth = calendarMonth,
-            selectedEpochDay = todayEpochDay,
-            eventDaysInView = eventDaysInView,
+            filteredMembers = applyMemberFilter(rosterMembers, query, filter),
+            memberSearchQuery = query,
+            memberFilter = filter,
+            calendarYear = year,
+            calendarMonth = month,
+            selectedEpochDay = if (isReload) uiState.selectedEpochDay else todayEpochDay,
+            eventDaysInView = if (isReload) computeEventDaysInView(allEvents, year, month) else eventDaysInView,
             currentUserRole = myRole,
         )
         if (upNextEvent != null) loadRsvpCounts(upNextEvent.eventId)

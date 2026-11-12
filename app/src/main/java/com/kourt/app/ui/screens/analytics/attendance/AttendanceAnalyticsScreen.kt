@@ -444,7 +444,7 @@ private fun MostReliableCard(
                     maxLines = 2,
                 )
                 Text(
-                    text = if (player.hasRecords) "${(player.attendanceRate * 100).toInt()}%" else "–",
+                    text = "${(player.attendanceRate * 100).toInt()}%",
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 24.sp,
@@ -614,7 +614,7 @@ private fun PlayerBreakdownRow(
                 )
 
                 Text(
-                    text = "${(player.attendanceRate * 100).toInt()}%",
+                    text = if (player.hasRecords) "${(player.attendanceRate * 100).toInt()}%" else "–",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
@@ -642,7 +642,8 @@ private fun PlayerBreakdownRow(
                     text = if (player.hasRecords) stringResource(player.reliability.label)
                     else stringResource(R.string.attendance_analytics_no_records),
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                    color = reliabilityColor,
+                    color = if (player.hasRecords) reliabilityColor
+                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                 )
             }
 

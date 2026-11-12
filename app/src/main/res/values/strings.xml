@@ -510,4 +510,8 @@
     <string name="attendance_analytics_no_records">No records yet</string>
     <string name="event_detail_opponent">vs. %1$s</string>
     <string name="event_detail_late_label">LATE</string>
+    <string name="error_event_end_time_before_start">The end time must be after the start time.</string>
+    <string name="event_detail_cancelled">Cancelled</string>
+    <string name="delete_events_message">The selected events will be permanently deleted and cannot be recovered. Events with recorded results are kept.</string>
+    <string name="cancel_events_message">The selected events will be marked as cancelled and shown as crossed out to all members.</string>
 </resources>

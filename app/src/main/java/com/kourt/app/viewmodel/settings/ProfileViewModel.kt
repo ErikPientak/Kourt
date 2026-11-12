@@ -103,9 +103,28 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Another user's memberships can't be listed by userId (the rules check each team), so for a
+     * read-only profile look the user up in each team of the viewer's clubs by the member doc id.
+     */
+    private suspend fun membershipsOf(uid: String): List<com.kourt.app.data.model.TeamMember> {
+        val viewer = authRepository.currentUser?.uid
+        if (viewer == null || uid == viewer) return teamMemberRepository.getMembersByUser(uid)
+        val clubIds = (clubRepository.getClubsByAdminId(viewer).map { it.id } + appPreferencesRepository.activeClubId)
+            .filter { it.isNotBlank() }
+            .distinct()
+        return coroutineScope {
+            clubIds.flatMap { teamRepository.getTeamsByClub(it) }
+                .distinctBy { it.id }
+                .map { team -> async { runCatching { teamMemberRepository.getMember(uid, team.id) }.getOrNull() } }
+                .awaitAll()
+                .filterNotNull()
+        }
+    }
+
     private suspend fun buildMembershipRows(uid: String): List<MembershipRowUiItem> {
         return try {
-            val members = teamMemberRepository.getMembersByUser(uid)
+            val members = membershipsOf(uid)
             coroutineScope {
                 members.map { member ->
                     async {
@@ -126,6 +145,8 @@ class ProfileViewModel @Inject constructor(
             }.filter { it.clubName.isNotEmpty() || it.subtitle.isNotEmpty() }
         } catch (e: Exception) {
             Log.e(TAG, "buildMembershipRows failed", e)
+            // Say so instead of showing "No teams yet" for a user who has teams.
+            uiState = uiState.copy(error = R.string.error_load_failed)
             emptyList()
         }
     }

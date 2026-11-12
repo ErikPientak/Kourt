@@ -505,4 +505,8 @@
     <string name="attendance_analytics_no_records">Zatím bez záznamů</string>
     <string name="event_detail_opponent">proti %1$s</string>
     <string name="event_detail_late_label">POZDĚ</string>
+    <string name="error_event_end_time_before_start">Konec musí být později než začátek.</string>
+    <string name="event_detail_cancelled">Zrušeno</string>
+    <string name="delete_events_message">Vybrané události budou trvale smazány a akci nelze vzít zpět. Události se zaznamenanými výsledky zůstanou zachovány.</string>
+    <string name="cancel_events_message">Vybrané události budou označeny jako zrušené a všem členům se zobrazí jako přeškrtnuté.</string>
 </resources>

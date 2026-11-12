@@ -5,4 +5,5 @@ interface SetupScreenActions {
     fun onCreateClub()
     fun onJoinTeam()
     fun onSaveConsumed()
+    fun onLogout()
 }
